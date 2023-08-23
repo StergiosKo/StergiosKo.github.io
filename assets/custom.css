@@ -1,15 +1,28 @@
+a{
+    text-decoration: none;
+    color: black;
+}
+a:hover{
+    color: green;
+}
+
 .custom-button{
     padding: 10px 20px;
     border: 1px solid black;
     color: black;
-    background: rgb(219, 211, 211);
+    background: white;
     transition: 0.3s;
+    margin: 1rem 0;
 }
 .custom-button:hover{
     background-color: black;
     color: white;
 }
 
-#header{
+.mtg-card a{
+    margin-top: 5px;
+}
+
+header{
     height: 300px;
 }
