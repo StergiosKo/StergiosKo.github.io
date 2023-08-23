@@ -24,5 +24,8 @@ a:hover{
 }
 
 header{
+    height: 100px;
+}
+.homepage header{
     height: 300px;
 }
