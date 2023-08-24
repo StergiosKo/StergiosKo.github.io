@@ -1,3 +1,12 @@
+/* General */
+:root{
+    --mtg-white: #fffbd5;
+    --mtg-blue: #aae0fa;
+    --mtg-black: #cbc2bf;
+    --mtg-red: #f9aa8f;
+    --mtg-green: #9bd3ae;
+    --mtg-multi: #d0ae5f;
+}
 a{
     text-decoration: none;
     color: black;
@@ -5,7 +14,12 @@ a{
 a:hover{
     color: green;
 }
-
+header{
+    height: 100px;
+}
+.homepage header{
+    height: 300px;
+}
 .custom-button{
     padding: 10px 20px;
     border: 1px solid black;
@@ -18,14 +32,98 @@ a:hover{
     background-color: black;
     color: white;
 }
-
+/* MtG */
+.mtg-cards{
+    margin-top: 3rem;
+}
+.mtg-card{
+    margin: 1.5rem 0;
+}
+.mtg-card h3{
+    padding-top: 10px
+}
 .mtg-card a{
     margin-top: 5px;
 }
-
-header{
-    height: 100px;
+.filters ul{
+    display: flex;
+    list-style: none;
+    flex-wrap: wrap;
+    justify-content: center;
 }
-.homepage header{
-    height: 300px;
+.filters ul li{
+    display: flex;
+    border: 1px solid black;
+    margin: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    text-align: center;
+}
+.filters ul li img{
+    width: 40px;
+    margin-right: 15px;
+}
+.filters ul li a{
+    padding: 5px 20px;
+    transition: 0.3s;
+}
+.filters ul li:hover{
+    background-color: rgb(192, 188, 188);
+    border: 1px solid rgb(192, 188, 188);
+}
+.filters ul li:hover a, .mtg-card a:hover{
+    text-shadow: -1px 1px 2px #000,
+    1px 1px 2px #000,
+    1px -1px 0 #000,
+    -1px -1px 0 #000;
+}
+.filters ul li.all:hover a{
+    color: white;
+}
+.filters ul li.white:hover a, .mtg-card.white a:hover{
+    color: var(--mtg-white);
+}
+.filters ul li.blue:hover a, .mtg-card.blue a:hover{
+    color: var(--mtg-blue);
+}
+.filters ul li.black:hover a, .mtg-card.black a:hover{
+    color: var(--mtg-black);
+}
+.filters ul li.red:hover a, .mtg-card.red a:hover{
+    color: var(--mtg-red);
+}
+.filters ul li.green:hover a, .mtg-card.green a:hover{
+    color: var(--mtg-green);
+}
+.filters ul li.multi:hover a, .mtg-card.multi a:hover{
+    color: var(--mtg-multi);
+}
+.filters ul li.active{
+    font-size: 0;
+}
+.filters ul li.active img{
+    margin-right: 0;
+}
+.filters ul li.all.active{
+    background: #bbbbbb;
+}
+.filters ul li.white.active{
+    background: var(--mtg-white);
+}
+.filters ul li.blue.active{
+    background: var(--mtg-blue);
+}
+.filters ul li.black.active{
+    background: var(--mtg-black);
+}
+.filters ul li.red.active{
+    background: var(--mtg-red);
+}
+.filters ul li.green.active{
+    background: var(--mtg-green);
+}
+.filters ul li.multi.active{
+    background: var(--mtg-multi);
 }
