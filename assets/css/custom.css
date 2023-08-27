@@ -6,6 +6,7 @@
     --mtg-red: #f9aa8f;
     --mtg-green: #9bd3ae;
     --mtg-multi: #d0ae5f;
+    --mtg-land: #b97a57;
 }
 a{
     text-decoration: none;
@@ -79,9 +80,18 @@ header{
     1px -1px 0 #000,
     -1px -1px 0 #000;
 }
+.mtg-card div a{
+    display: inline-block;
+    padding: 0 5px;
+    vertical-align: -webkit-baseline-middle;
+}
+.mtg-card div a.download-icon:hover svg path{
+    fill: #33b5bf;
+}
 .filters ul li.all:hover a{
     color: white;
 }
+/* Colors */
 .filters ul li.white:hover a, .mtg-card.white a:hover{
     color: var(--mtg-white);
 }
@@ -99,6 +109,9 @@ header{
 }
 .filters ul li.multi:hover a, .mtg-card.multi a:hover{
     color: var(--mtg-multi);
+}
+.filters ul li.land:hover a, .mtg-card.land a:hover{
+    color: var(--mtg-land);
 }
 .filters ul li.active{
     font-size: 0;
@@ -126,4 +139,7 @@ header{
 }
 .filters ul li.multi.active{
     background: var(--mtg-multi);
+}
+.filters ul li.land.active{
+    background: var(--mtg-land);
 }

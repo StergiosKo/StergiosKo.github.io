@@ -1,0 +1,1104 @@
+{
+  "spoiler": {
+    "card": [
+      {
+        "name": "Antarcticite, Protector of Winter",
+        "cost": "1W",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "U",
+        "rules": "First strike, reconstruct 2 (When this creature dies, create a 0/1 gem creature token with the same colors. You may cast this card from your graveyard by sacrificing two gem creatures that share a color with it in addition to its other costs.)\nSacrifice Antarcticite: Target creature gains indestructible and cannot be exiled until end of turn.",
+        "flavor": "“We low-hardness Gems have nothing if not our \ncourage.”",
+        "stats": {
+          "power": 3,
+          "toughness": 2
+        },
+        "illustrator": "樹凪ナルク",
+        "notes": "https://www.pixiv.net/artworks/65882344",
+        "number": "1/61"
+      },
+      {
+        "name": "Diamond, Jealousy and Kindness",
+        "cost": "WWW",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "M",
+        "rules": "Reconstruct 3\nLustrous — When Diamond enters the battlefield, exile target nonland permanent if you have no other creatures that share a color with Diamond.\nWhen Diamond attacks, put a +1/+1 counter on each other creature you control.",
+        "flavor": "",
+        "stats": {
+          "power": 3,
+          "toughness": 3
+        },
+        "illustrator": "はむメロン",
+        "notes": "https://www.pixiv.net/artworks/104831928",
+        "number": "2/61"
+      },
+      {
+        "name": "Forgotten Purpose",
+        "cost": "W",
+        "type": {
+          "supertype": "Enchantment",
+          "subtype": "Aura"
+        },
+        "rarity": "C",
+        "rules": "Enchant creature\nEnchanted creature has -3/-0 while attacking.\n4W: Exile enchanted creature. Activate this ability only if a creature you control entered the battlefield this turn.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "ヒトトセ",
+        "notes": "https://www.pixiv.net/artworks/110256978",
+        "number": "3/61"
+      },
+      {
+        "name": "Kind Tradition",
+        "cost": "WW",
+        "type": {
+          "supertype": "Sorcery",
+          "subtype": ""
+        },
+        "rarity": "U",
+        "rules": "Put a +1/+1 counter on target creature and gain 3 life.\nIf a creature entered the battlefield this turn, draw a card.",
+        "flavor": "Antarc once again asked the yearly tradition from Sensei, possible for good luck.",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "こじま",
+        "notes": "https://www.pixiv.net/artworks/53458758",
+        "number": "4/61"
+      },
+      {
+        "name": "Lunarian Collector",
+        "cost": "3W",
+        "type": {
+          "supertype": "Creature",
+          "subtype": "Spirit"
+        },
+        "rarity": "C",
+        "rules": "Flying\nWhen Lunarian Collector enters the battlefield, exile target creature with 2 or less power until Lunarian Collector leaves the battlefield.",
+        "flavor": "",
+        "stats": {
+          "power": 3,
+          "toughness": 3
+        },
+        "illustrator": "RU@Skebはじめました",
+        "notes": "https://www.pixiv.net/artworks/66106957",
+        "number": "5/61"
+      },
+      {
+        "name": "Remember the fun times",
+        "cost": "2W",
+        "type": {
+          "supertype": "Sorcery",
+          "subtype": ""
+        },
+        "rarity": "C",
+        "rules": "Prevent any combat damage that would be dealt this turn.\nLustrous — Gain 4 life if you have no creatures that share a color with Remember the fun times.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "kay",
+        "notes": "https://www.pixiv.net/artworks/69357351",
+        "number": "6/61"
+      },
+      {
+        "name": "Rutile, Fighting for Research",
+        "cost": "3W",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "C",
+        "rules": "Vigilance, reconstruct 3 (When this creature dies, create a 0/1 gem creature token with the same colors. You may cast this card from your graveyard by sacrificing three gem creatures that share a color with it in addition to its other costs.)\nWhen Rutile attacks or blocks, gain 2 life.",
+        "flavor": "“You quack doctor” — Phos",
+        "stats": {
+          "power": 4,
+          "toughness": 5
+        },
+        "illustrator": "スグリん",
+        "notes": "https://www.pixiv.net/artworks/66295273",
+        "number": "7/61"
+      },
+      {
+        "name": "Rutile, Veteran Doctor",
+        "cost": "WW",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "R",
+        "rules": "Reconstruct 4\nWhen a creature you control enters the battlefield from the graveyard, add two +1/+1 counters to it.\nT, 1W: Create a 0/1 white and red \ngem creature token",
+        "flavor": "",
+        "stats": {
+          "power": 2,
+          "toughness": 1
+        },
+        "illustrator": "扣",
+        "notes": "https://www.pixiv.net/artworks/62835920",
+        "number": "8/61"
+      },
+      {
+        "name": "Yellow, Elder Gem",
+        "cost": "3WW",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "U",
+        "rules": "Flash, reconstruct 3\nWhen Yellow enters the battlefield, put three +1/+1 counters on target creature. It gains lifelink until end of turn.",
+        "flavor": "",
+        "stats": {
+          "power": 5,
+          "toughness": 6
+        },
+        "illustrator": "U助",
+        "notes": "https://www.pixiv.net/artworks/66024005",
+        "number": "9/61"
+      },
+      {
+        "name": "Amethyst, Gem Twins",
+        "cost": "2U",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "C",
+        "rules": "Flash, reconstruct 3 (When this creature dies, create a 0/1 gem creature token with the same colors. You may cast this card from your graveyard by sacrificing three gem creatures that share a color with it in addition to its other costs.)\nWhen Amethyst enters the battlefield, copy target spell with converted mana cost of 3 or less. You may choose new targets for the copy.",
+        "flavor": "",
+        "stats": {
+          "power": 1,
+          "toughness": 1
+        },
+        "illustrator": "Acy",
+        "notes": "https://www.pixiv.net/artworks/67354775",
+        "number": "10/61"
+      },
+      {
+        "name": "Bittersweet Memories",
+        "cost": "U",
+        "type": {
+          "supertype": "Sorcery",
+          "subtype": ""
+        },
+        "rarity": "C",
+        "rules": "Draw a card and then discard a card. If this spell wasn’t cast from your hand, draw three cards instead.",
+        "flavor": "Memories that were repressed, provide the most value",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "みのるん",
+        "notes": "https://www.pixiv.net/artworks/80503552",
+        "number": "11/61"
+      },
+      {
+        "name": "Corrupted Knowledge",
+        "cost": "2UU",
+        "type": {
+          "supertype": "Sorcery",
+          "subtype": ""
+        },
+        "rarity": "M",
+        "rules": "Draw three cards. Until end of turn, whenever you cast a spell, each player exiles the top 5 cards of their deck.\nLustrous —Each player exiles the top 20 cards of their deck if you have no creatures that share a color with Corrupted Knowledge.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "古陵",
+        "notes": "https://www.pixiv.net/artworks/104774047",
+        "number": "12/61"
+      },
+      {
+        "name": "Lapis’ Head, New Host",
+        "cost": "2U",
+        "type": {
+          "supertype": "Legendary Artifact",
+          "subtype": "Equipment"
+        },
+        "rarity": "U",
+        "rules": "Equipped creature gains +2/+2, becomes blue in addition to its other colors and has ward 2 (Whenever this permanent becomes the target of a spell or ability an opponent controls, counter it unless that player pays 2.)\nEquip 3. This ability costs 0 if it targets a creature that entered the battlefield from the graveyard this turn.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "みちょ",
+        "notes": "https://www.pixiv.net/artworks/64189086",
+        "number": "13/61"
+      },
+      {
+        "name": "Lapis, the Knowledgable",
+        "cost": "3UUU",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "R",
+        "rules": "Reconstruct 4\nWhen Lapis enters or leaves the battlefield, draw two cards. Then you may cast an instant or sorcery card from your graveyard with converted mana cost of X or less, where X is the number of cards in your hand, without paying its mana cost. If a spell cast from your graveyard this way would be put into your graveyard, \nexile it instead.",
+        "flavor": "",
+        "stats": {
+          "power": 5,
+          "toughness": 5
+        },
+        "illustrator": "Kiyo",
+        "notes": "https://www.pixiv.net/artworks/66989309",
+        "number": "14/61"
+      },
+      {
+        "name": "Otherwordly Manipulation",
+        "cost": "1U",
+        "type": {
+          "supertype": "Enchantment",
+          "subtype": "Aura"
+        },
+        "rarity": "U",
+        "rules": "Enchant creature\nEnchanted creature gets +1/+1 and attacks each turn if able.\nWhen Otherwordly Manipulation leaves the battlefield, draw two cards.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "古陵",
+        "notes": "https://www.pixiv.net/artworks/109420978",
+        "number": "15/61"
+      },
+      {
+        "name": "Phos, Plagued with Regrets",
+        "cost": "3U",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "U",
+        "rules": "When Phos enters the battlefield, each player mills 5.\nT, Exile a card from your graveyard: Creatures you control become that color until end of turn.",
+        "flavor": "Phos’ mistakes would become memories indistinguishable from real life.",
+        "stats": {
+          "power": 3,
+          "toughness": 3
+        },
+        "illustrator": "ushio",
+        "notes": "https://www.pixiv.net/artworks/71714578",
+        "number": "16/61"
+      },
+      {
+        "name": "Twins Drifted Apart",
+        "cost": "1U",
+        "type": {
+          "supertype": "Sorcery",
+          "subtype": ""
+        },
+        "rarity": "U",
+        "rules": "Choose two target creatures an opponent controls that share a color. Secretly choose one of them. At the start of your next turn, exile that creature and return it to the battlefield under your control.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "T.クラエス",
+        "notes": "https://www.pixiv.net/artworks/75147743",
+        "number": "17/61"
+      },
+      {
+        "name": "What you once were",
+        "cost": "UU",
+        "type": {
+          "supertype": "Instant",
+          "subtype": ""
+        },
+        "rarity": "R",
+        "rules": "Counter target spell that shares a color with target card in a graveyard.",
+        "flavor": "You may forget what you were, but your friends wont.",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "精肉組合",
+        "notes": "https://www.pixiv.net/artworks/110298126",
+        "number": "18/61"
+      },
+      {
+        "name": "Bort, Bored of Combat",
+        "cost": "3BB",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "C",
+        "rules": "Reconstruct 4\nWhen Bort enters or leaves the battlefield, you gain 2 life and each opponent loses 2 life.",
+        "flavor": "After more than 200 years of peace, Bort found out that fighting is no longer enjoyable.",
+        "stats": {
+          "power": 4,
+          "toughness": 6
+        },
+        "illustrator": "花婿",
+        "notes": "https://www.pixiv.net/artworks/101795291",
+        "number": "19/61"
+      },
+      {
+        "name": "Bort, Synthetic Diamond",
+        "cost": "BBB",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "R",
+        "rules": "First strike, reconstruct 3\nLustrous — When Bort attacks. destroy target creature if you have no other creatures that share a color with Bort\nWhen a source deals 3 or less damage to Bort, prevent it.",
+        "flavor": "The toughest of the diamonds is as great at dealing hits as it is at receiving them.",
+        "stats": {
+          "power": 4,
+          "toughness": 4
+        },
+        "illustrator": "Acy",
+        "notes": "https://www.pixiv.net/artworks/67317665",
+        "number": "20/61"
+      },
+      {
+        "name": "Constant Regrets",
+        "cost": "2BB",
+        "type": {
+          "supertype": "Enchantment",
+          "subtype": ""
+        },
+        "rarity": "C",
+        "rules": "Whenever a creature you control dies, each player loses 1 life.\nWhenever a creature you control is exiled, each player loses 3 life.",
+        "flavor": "Phos tries again and again, each time resulting in bigger causalities.",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "古陵",
+        "notes": "https://www.pixiv.net/artworks/86525603",
+        "number": "21/61"
+      },
+      {
+        "name": "Curse of the Guilty",
+        "cost": "B",
+        "type": {
+          "supertype": "Enchantment",
+          "subtype": "Aura Curse"
+        },
+        "rarity": "R",
+        "rules": "Enchant player\nAt the end of your turn and at the end of enchanted player’s turn, if a creature they control died that turn, they lose 2 life.",
+        "flavor": "Every little detail is watched. It is your fault.",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "古陵",
+        "notes": "https://www.pixiv.net/artworks/95363853",
+        "number": "22/61"
+      },
+      {
+        "name": "Remorseful Facade",
+        "cost": "1B",
+        "type": {
+          "supertype": "Instant",
+          "subtype": ""
+        },
+        "rarity": "U",
+        "rules": "As an additional cost to cast this spell, sacrifice a creature.\nDestroy target creature that shares a color with the sacrificed creature. Create a 0/1 gem creature token with the same colors of the destroyed creature.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "古陵",
+        "notes": "https://www.pixiv.net/artworks/81257872",
+        "number": "23/61"
+      },
+      {
+        "name": "Self Manipulation",
+        "cost": "3B",
+        "type": {
+          "supertype": "Sorcery",
+          "subtype": ""
+        },
+        "rarity": "C",
+        "rules": "Draw two cards and lose 2 life. Create a 0/1 black gem creature token.",
+        "flavor": "Ghost would alter Cairngorm actions from just within an eye.",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "ushio",
+        "notes": "https://www.pixiv.net/artworks/71714578",
+        "number": "24/61"
+      },
+      {
+        "name": "Yellow, Constant Suffering",
+        "cost": "1B",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "C",
+        "rules": "Reconstruct 2 (When this creature dies, create a 0/1 gem creature token with the same colors. You may cast this card from your graveyard by sacrificing two gem creatures that share a color with it in addition to its other costs.)\nWhen Yellow enters the battlefield, you lose 2 life.",
+        "flavor": "Having lived such a long life, Yellow would be \nno stranger to unfortunate events.",
+        "stats": {
+          "power": 4,
+          "toughness": 2
+        },
+        "illustrator": "ushio",
+        "notes": "https://www.pixiv.net/artworks/71714578",
+        "number": "25/61"
+      },
+      {
+        "name": "Cinnabar, Cursed to Wonder Alone",
+        "cost": "RR",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "R",
+        "rules": "Reconstruct 2\nIf a creature damaged by Cinnabar would die this turn, exile it instead.\nWhen Cinnabar enters the battlefield or attacks, it deals 1 damage to each other\ncreature.",
+        "flavor": "",
+        "stats": {
+          "power": 1,
+          "toughness": 2
+        },
+        "illustrator": "Azomo",
+        "notes": "https://www.pixiv.net/artworks/65665746",
+        "number": "26/61"
+      },
+      {
+        "name": "Cinnabar, Night Watcher",
+        "cost": "2R",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "U",
+        "rules": "Defender, reconstruct 3\n2R, T: Exile the top two cards of your deck. If they share a color, you may cast them until end of turn.",
+        "flavor": "",
+        "stats": {
+          "power": 5,
+          "toughness": 4
+        },
+        "illustrator": "微生物/７",
+        "notes": "https://www.pixiv.net/artworks/75163353",
+        "number": "27/61"
+      },
+      {
+        "name": "Cinnabar’s Poison",
+        "cost": "R",
+        "type": {
+          "supertype": "Instant",
+          "subtype": ""
+        },
+        "rarity": "C",
+        "rules": "Cinnabar’s Poison deals 2 damage to target creature or player. If a creature damaged by Cinnabar’s Poison dies this turn, exile it instead.\nLustrous — Cinnabar’s Poison deals 2 damage to each opponent if you have no creatures that share a color with Cinnabar’s Poison.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "RU@Skebはじめました",
+        "notes": "https://www.pixiv.net/artworks/99817181",
+        "number": "28/61"
+      },
+      {
+        "name": "Padparadscha, Awaken Menace",
+        "cost": "4RR",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "R",
+        "rules": "Haste, reconstruct 4\nYou may pay 2RR and exile a red card from your hand, rather than pay this spell’s mana cost. If you do, it enters the battlefield tapped.\nWhen Padparadscha enters the battlefield it deals 4 damage to target creature.",
+        "flavor": "",
+        "stats": {
+          "power": 7,
+          "toughness": 6
+        },
+        "illustrator": "微生物/７",
+        "notes": "https://www.pixiv.net/artworks/73120356",
+        "number": "29/61"
+      },
+      {
+        "name": "Unyielding Treatment",
+        "cost": "1R",
+        "type": {
+          "supertype": "Sorcery",
+          "subtype": ""
+        },
+        "rarity": "U",
+        "rules": "As an additional cost to cast this spell, discard a card.\nSearch your library for a card that shares a color with the discarded card and put it in your hand. Shuffle your library afterwards.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "みちょ",
+        "notes": "https://www.pixiv.net/artworks/64189086",
+        "number": "30/61"
+      },
+      {
+        "name": "Jade, Master Spokesman",
+        "cost": "2GG",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "C",
+        "rules": "Reconstruct 3\nWhen Jade enters the battlefield. up to one target creature you control fights another target creature.",
+        "flavor": "Jade is responsible for the patrolling routes of the gems.",
+        "stats": {
+          "power": 3,
+          "toughness": 6
+        },
+        "illustrator": "Acy",
+        "notes": "https://www.pixiv.net/artworks/67335756",
+        "number": "31/61"
+      },
+      {
+        "name": "New Start from Within",
+        "cost": "4G",
+        "type": {
+          "supertype": "Sorcery",
+          "subtype": ""
+        },
+        "rarity": "R",
+        "rules": "Reveal the top 6 cards of your deck. Put all creature cards among them in your hand and put the rest in your graveyard\nLustrous — Put a creature card from your hand into the battlefield if you have no creatures that share a color with New Start from Within.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "古陵",
+        "notes": "https://www.pixiv.net/artworks/107013445",
+        "number": "32/61"
+      },
+      {
+        "name": "Path of Rememberance",
+        "cost": "G",
+        "type": {
+          "supertype": "Sorcery",
+          "subtype": ""
+        },
+        "rarity": "C",
+        "rules": "Return target land card from your graveyard to your hand.\nLustrous — Create a 0/1 green gem creature token.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "古陵",
+        "notes": "https://www.pixiv.net/artworks/93914214",
+        "number": "33/61"
+      },
+      {
+        "name": "Phosphophylite, Curious Gem",
+        "cost": "G",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "M",
+        "rules": "Reconstruct 3 (When this creature dies, create a 0/1 gem creature token with the same colors. You may cast this card from your graveyard by sacrificing three gem creatures that share a color with it in addition to its other costs.)\nYou may use other colored gem creatures to reconstruct Phosphophylite. If you do, it transforms and becomes \nthat colors in addition to its other colors.",
+        "flavor": "",
+        "stats": {
+          "power": 1,
+          "toughness": 1
+        },
+        "illustrator": "Azomo",
+        "notes": "https://www.pixiv.net/artworks/65617348",
+        "number": "34/61"
+      },
+      {
+        "name": "A Relaxing Day in the Fields",
+        "cost": "2G",
+        "type": {
+          "supertype": "Sorcery",
+          "subtype": ""
+        },
+        "rarity": "C",
+        "rules": "Search your library for a land card and put it on the battlefield tapped. Shuffle your library afterwards. Then gain 1 life for each land you control.",
+        "flavor": "Everyone wishes for a day where no one gets hurt. Lets hope this is the one.",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "微生物/７",
+        "notes": "https://www.pixiv.net/artworks/75163353",
+        "number": "35/61"
+      },
+      {
+        "name": "Shattered Recollection",
+        "cost": "1G",
+        "type": {
+          "supertype": "Instant",
+          "subtype": ""
+        },
+        "rarity": "U",
+        "rules": "Look at the top 4 cards of your library. You may put a land card from among them to the battlefield. Return the rest in the bottom of your deck in any order.\nLustrous — Return target land card from your graveyard to your hand if you have no creatures that share a color with Shattered Recollection.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "おーぶりー",
+        "notes": "https://www.pixiv.net/artworks/85712406",
+        "number": "36/61"
+      },
+      {
+        "name": "Attack of the Traitors",
+        "cost": "9RWB",
+        "type": {
+          "supertype": "Instant",
+          "subtype": ""
+        },
+        "rarity": "M",
+        "rules": "This card costs 1 less to cast for each gem creature card in your graveyard and exile.\nChoose up to one creature card in your hand, up to one in your graveyard and up to one in exile. Return these cards to the battlefield. After this phase, there is an additional combat phase.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "せんび",
+        "notes": "https://www.pixiv.net/artworks/78791423",
+        "number": "37/61"
+      },
+      {
+        "name": "Inevitable Change",
+        "cost": "UB",
+        "type": {
+          "supertype": "Sorcery",
+          "subtype": ""
+        },
+        "rarity": "U",
+        "rules": "As an additional cost to cast this card, sacrifice a creature.\nDraw X cards where X is that creature’s power.\nWhen you lustrous a card, you may return Inevitable Change from your graveyard to your hand.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "",
+        "notes": "",
+        "number": "38/61"
+      },
+      {
+        "name": "Lunarian Abduction",
+        "cost": "1RW",
+        "type": {
+          "supertype": "Instant",
+          "subtype": ""
+        },
+        "rarity": "C",
+        "rules": "Lunarian Abduction deals 5 damage to target creature. If that creature would die, exile it instead and Lunarian Abduction deals 3 damage to that creature’s controller.",
+        "flavor": "The lunarians hunt their lustrous pray and collect their pieces to decorate the moon.",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "寒川(仮)",
+        "notes": "https://www.pixiv.net/artworks/108204010",
+        "number": "39/61"
+      },
+      {
+        "name": "Obsidian & Red Beryl, Hard Working Gems",
+        "cost": "3BR",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "C",
+        "rules": "Menace, reconstruct 2 (When this creature dies, create a 0/1 gem creature token with the same colors. You may cast this card from your graveyard by sacrificing two gem creatures that share a color with it in addition to its other costs.)",
+        "flavor": "",
+        "stats": {
+          "power": 7,
+          "toughness": 6
+        },
+        "illustrator": "RU@Skebはじめました",
+        "notes": "https://www.pixiv.net/artworks/65725976",
+        "number": "40/61"
+      },
+      {
+        "name": "Phosphophylite, Suspicious Gem",
+        "cost": "4BG",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "U",
+        "rules": "Reconstruct 1 (When this creature dies, create a 0/1 gem creature token with the same colors. You may cast this card from your graveyard by sacrificing a gem creature that shares a color with it in addition to its other costs.)\nWhen Phosphophylite enters or leaves the battlefield,. each player sacrifices a creature and mills 6.",
+        "flavor": "“Sensei is hiding something”",
+        "stats": {
+          "power": 3,
+          "toughness": 5
+        },
+        "illustrator": "韭方★JoFang",
+        "notes": "https://www.pixiv.net/artworks/65751842",
+        "number": "41/61"
+      },
+      {
+        "name": "Pickup Winter Duty",
+        "cost": "WB",
+        "type": {
+          "supertype": "Sorcery",
+          "subtype": ""
+        },
+        "rarity": "C",
+        "rules": "Put a +1/+1 on each of up to two target creatures and you lose 2 life. If a creature you control returned to the battlefield from the graveyard this turn, put an additional +1/+1 counter on those creatures.",
+        "flavor": "Even if you are broken, someone needs to do the winter duty.",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "RU@Skebはじめました",
+        "notes": "https://www.pixiv.net/artworks/65948082",
+        "number": "42/61"
+      },
+      {
+        "name": "The Story of a Useless Gem",
+        "cost": "WUBRG",
+        "type": {
+          "supertype": "Enchantment",
+          "subtype": ""
+        },
+        "rarity": "R",
+        "rules": "Indestructible\nWhenever a creature you control enters the battlefield, put a gem counter on The Story of a Useless Gem.\nCreatures you control gain +2/+2 for each gem counter on The Story of a Useless Gem.\nAt the end of your turn, if The Story of a Useless Gem has 10 or more gem counters, you lose the game.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "山見ハス",
+        "notes": "https://www.pixiv.net/artworks/73305603",
+        "number": "43/61"
+      },
+      {
+        "name": "Tainted Offer",
+        "cost": "2UUB",
+        "type": {
+          "supertype": "Sorcery",
+          "subtype": ""
+        },
+        "rarity": "R",
+        "rules": "For each creature target opponent controls, they may choose to lose 2 life and let you draw a card. For each creature they don’t, gain control of that creature.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "",
+        "notes": "",
+        "number": "44/61"
+      },
+      {
+        "name": "Yellow & Zircon, Compasionate Duo",
+        "cost": "1WU",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "U",
+        "rules": "Flash, reconstruct 4 (When this creature dies, create a 0/1 gem creature token with the same colors. You may cast this card from your graveyard by sacrificing four gem creatures that share a color with it in addition to its other costs.)\nWhen Yellow & Zircon enters the battlefield,\nchange a target of target spell or ability to \nYellow & Zircon",
+        "flavor": "",
+        "stats": {
+          "power": 2,
+          "toughness": 2
+        },
+        "illustrator": "こゆき*❅·̩͙リク募集中",
+        "notes": "https://www.pixiv.net/artworks/101114420",
+        "number": "45/61"
+      },
+      {
+        "name": "Inclusionless Part",
+        "cost": 1,
+        "type": {
+          "supertype": "Artifact",
+          "subtype": ""
+        },
+        "rarity": "C",
+        "rules": "When Inclusionless Part enters the battlefield, create a 0/1 colorless gem creature token.\nT: Target creature you control becomes the color of your choice until end of turn.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "古陵",
+        "notes": "https://www.pixiv.net/artworks/99785978",
+        "number": "46/61"
+      },
+      {
+        "name": "Petal of Lost Memories",
+        "cost": 0,
+        "type": {
+          "supertype": "Artifact",
+          "subtype": ""
+        },
+        "rarity": "M",
+        "rules": "T, Sacrifice Petal of Lost Memories: Add three mana of any one color to your mana pool. Activate this ability only if a card returned to the battlefield from your graveyard this turn.",
+        "flavor": "For the lustrous, the body contains all their memories. Recovered parts will restore their lost memories.",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "古陵",
+        "notes": "https://www.pixiv.net/artworks/87544782",
+        "number": "47/61"
+      },
+      {
+        "name": "Land of the Guilty Memories",
+        "cost": "",
+        "type": {
+          "supertype": "Land",
+          "subtype": ""
+        },
+        "rarity": "U",
+        "rules": "Land of the Guilty Memories enters the battlefield tapped.\nWhen Land of the Guilty Memories enters the battlefield, each player mills 2.\nT: Add B or U.",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "古陵",
+        "notes": "https://www.pixiv.net/artworks/108112329",
+        "number": "48/61"
+      },
+      {
+        "name": "Plains",
+        "cost": "",
+        "type": {
+          "supertype": "Basic Land",
+          "subtype": "Plains"
+        },
+        "rarity": "B",
+        "rules": "T: Add W",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "KOKO",
+        "notes": "https://www.pixiv.net/artworks/66301669",
+        "number": "49/61"
+      },
+      {
+        "name": "Plains",
+        "cost": "",
+        "type": {
+          "supertype": "Basic Land",
+          "subtype": "Plains"
+        },
+        "rarity": "B",
+        "rules": "T: Add W",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "KOKO",
+        "notes": "https://www.pixiv.net/artworks/66301669",
+        "number": "50/61"
+      },
+      {
+        "name": "Plains",
+        "cost": "",
+        "type": {
+          "supertype": "Basic Land",
+          "subtype": "Plains"
+        },
+        "rarity": "B",
+        "rules": "T: Add W",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "KOKO",
+        "notes": "https://www.pixiv.net/artworks/66301669",
+        "number": "51/61"
+      },
+      {
+        "name": "Island",
+        "cost": "",
+        "type": {
+          "supertype": "Basic Land",
+          "subtype": "Island"
+        },
+        "rarity": "B",
+        "rules": "T: Add U",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "KOKO",
+        "notes": "https://www.pixiv.net/artworks/66301669",
+        "number": "52/61"
+      },
+      {
+        "name": "Island",
+        "cost": "",
+        "type": {
+          "supertype": "Basic Land",
+          "subtype": "Island"
+        },
+        "rarity": "B",
+        "rules": "T: Add U",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "KOKO",
+        "notes": "https://www.pixiv.net/artworks/66301669",
+        "number": "53/61"
+      },
+      {
+        "name": "Island",
+        "cost": "",
+        "type": {
+          "supertype": "Basic Land",
+          "subtype": "Island"
+        },
+        "rarity": "B",
+        "rules": "T: Add U",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "KOKO",
+        "notes": "https://www.pixiv.net/artworks/66301669",
+        "number": "54/61"
+      },
+      {
+        "name": "Swamp",
+        "cost": "",
+        "type": {
+          "supertype": "Basic Land",
+          "subtype": "Swamp"
+        },
+        "rarity": "B",
+        "rules": "T: Add B",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "KOKO",
+        "notes": "https://www.pixiv.net/artworks/66301669",
+        "number": "55/61"
+      },
+      {
+        "name": "Swamp",
+        "cost": "",
+        "type": {
+          "supertype": "Basic Land",
+          "subtype": "Swamp"
+        },
+        "rarity": "B",
+        "rules": "T: Add B",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "KOKO",
+        "notes": "https://www.pixiv.net/artworks/66301669",
+        "number": "56/61"
+      },
+      {
+        "name": "Mountain",
+        "cost": "",
+        "type": {
+          "supertype": "Basic Land",
+          "subtype": "Mountain"
+        },
+        "rarity": "B",
+        "rules": "T: Add R",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "KOKO",
+        "notes": "https://www.pixiv.net/artworks/66301669",
+        "number": "57/61"
+      },
+      {
+        "name": "Mountain",
+        "cost": "",
+        "type": {
+          "supertype": "Basic Land",
+          "subtype": "Mountain"
+        },
+        "rarity": "B",
+        "rules": "T: Add R",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "KOKO",
+        "notes": "https://www.pixiv.net/artworks/66301669",
+        "number": "58/61"
+      },
+      {
+        "name": "Forest",
+        "cost": "",
+        "type": {
+          "supertype": "Basic Land",
+          "subtype": "Forest"
+        },
+        "rarity": "B",
+        "rules": "T: Add G",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "KOKO",
+        "notes": "https://www.pixiv.net/artworks/66301669",
+        "number": "59/61"
+      },
+      {
+        "name": "Forest",
+        "cost": "",
+        "type": {
+          "supertype": "Basic Land",
+          "subtype": "Forest"
+        },
+        "rarity": "B",
+        "rules": "T: Add G",
+        "flavor": "",
+        "stats": {
+          "power": "",
+          "toughness": ""
+        },
+        "illustrator": "KOKO",
+        "notes": "https://www.pixiv.net/artworks/66301669",
+        "number": "60/61"
+      },
+      {
+        "name": "Phosphophylite, Broken Pieces",
+        "cost": "G",
+        "type": {
+          "supertype": "Legendary Creature",
+          "subtype": "Gem"
+        },
+        "rarity": "S",
+        "rules": "Reconstruct 3\nPhosphophylite’s power and toughness are equal to its colors.\nWhen Phosphophylite dies, it keeps its colors and transformation.\nYou may use other colored gem creatures to reconstruct Phosphophylite. If you do, it becomes that colors\nin addition to its other colors.",
+        "flavor": "",
+        "stats": {
+          "power": "*",
+          "toughness": "*"
+        },
+        "illustrator": "Syri",
+        "notes": "https://www.pixiv.net/artworks/102911572",
+        "number": "61/61"
+      }
+    ]
+  }
+}
