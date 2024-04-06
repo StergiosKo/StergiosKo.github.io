@@ -1,0 +1,24 @@
+[
+    {
+        "id": 2000,
+        "name": "Ignite",
+        "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
+        "description": "Deal {0} STR damage and apply {1} INT Burn to the enemy",
+        "mana": 2,
+        "card_type": "Force Fire",
+        "rarity": "Epic",
+        "level": 10,
+        "effects": [
+            {
+                "target": 1,
+                "effect": "damage",
+                "scaling": {"STR": {"min": 1.1, "max": 1.7}}
+            },
+            {
+                "target": 1,
+                "effect": "burn",
+                "scaling": {"INT": {"min": 0.2, "max": 0.8}}
+            }
+        ]
+    }
+]

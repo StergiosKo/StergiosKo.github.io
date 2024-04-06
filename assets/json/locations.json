@@ -1,0 +1,42 @@
+[
+    {
+        "id": 0,
+        "name": "Goblin",
+        "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
+        "description": "A cool first enemy",
+        "level": 5,
+        "rewards": [1000, 1001],
+        "time": 5,
+        "attributes": {
+            "STR": 5,
+            "DEX": 3,
+            "INT": 1
+        },
+        "stats":{ 
+            "HP": 60, 
+            "CRIT": 0.1, 
+            "MANA": 1, 
+            "CRIT-D": 1.5
+        },
+        "actions":[1,1,1,1,1],
+        "actionCards": [
+            {
+                "id": 1,
+                "name": "Attack",
+                "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
+                "description": "Deal {0} STR damage to the enemy",
+                "mana": 2,
+                "card_type": "Force",
+                "rarity": "Rare",
+                "level": 5,
+                "effects": [
+                    {
+                        "target": 1,
+                        "effect": "damage",
+                        "scaling": {"STR": 1}
+                    }
+                ]
+            }
+        ]
+    }
+]

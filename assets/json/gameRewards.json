@@ -1,0 +1,16 @@
+[
+    {
+        "id": 1000,
+        "name": "Resource Pitsos",
+        "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
+        "description": "The best resrource IRL",
+        "rarity": "legendary"
+    },
+    {
+        "id": 1001,
+        "name": "Resource Stergios",
+        "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
+        "description": "The best resrource IRL",
+        "rarity": "common"
+    }
+]
