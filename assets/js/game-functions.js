@@ -261,8 +261,8 @@ function generateUniqueShortGUID() {
 
 function saveToLocalStorage(object) {
     const serializedObject = object.serialize();
-    console.log(serializedObject)
-    localStorage.setItem(`guid${object.GUID}`, serializedObject); // Prepending "guid"
+    const key = localStorage.getItem(object.GUID) ? object.GUID : `guid${object.GUID}`;
+    localStorage.setItem(key, serializedObject);
 }
 
 function getAllGUIDs() {
@@ -270,10 +270,21 @@ function getAllGUIDs() {
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key.startsWith("guid")) {
-            guids.push(key.slice(4)); // Remove "guid" prefix to get the actual GUID
+            guids.push(getKeyWithoutPrefix(key)); // Remove "guid" prefix to get the actual GUID
         }
     }
     return guids;
+}
+
+/**
+ * A function that returns the key without the prefix "guid" if it starts with it.
+ *
+ * @param {string} key - The key to process.
+ * @return {string} The key without the "guid" prefix if present.
+ */
+function getKeyWithoutPrefix(key) {
+    if (key.startsWith("guid")) return key.slice(4);
+    else return key;
 }
 
 function deserializeAllGUIDs(actionCardsData, equipmentCardsData, resourceCardsData) {
@@ -320,16 +331,18 @@ function deserializeHero(guid, jsonString, allCards) {
     const data = JSON.parse(jsonString);
     if (data.classType != 'Hero') return null;
 
-    // Filter the allCards array to find action cards that match the GUIDs in data.actions
-    let actionCards = data.actions.map(actionGuid => 
-        allCards.find(card => card.GUID === actionGuid));
+    let actionCards = data.actions.map(actionGuid => {
+        const foundCard = allCards.find(card => card.GUID === actionGuid);
+        return foundCard;
+    });
 
-    // Filter the allCards array to find equipment cards that match the GUIDs in data.equipment
-    let equipmentCards = data.equipment.map(equipmentGuid => 
-        allCards.find(card => card.GUID === equipmentGuid)).filter(card => card != null);
+    let equipmentCards = data.equipment.map(equipmentGuid => {
+        const foundCard = allCards.find(card => card.GUID === equipmentGuid);
+        return foundCard;
+    }).filter(card => card != null);
 
     // Create a new hero with the filtered action and equipment cards
-    let hero = new Hero(data.name, guid, actionCards, equipmentCards);
+    let hero = new Hero(data.name, getKeyWithoutPrefix(guid), actionCards, equipmentCards, data.level, data.exp);
 
     return hero;
 }
@@ -354,7 +367,7 @@ function deserialize(guid, jsonString, actionCardsData, equipmentCardsData, reso
                 effects: updatedEffects
             };
             if (newCardData) {
-                return new CardAction(newCardData, guid);
+                return new CardAction(newCardData, getKeyWithoutPrefix(guid));
             }
             break;
         }
@@ -367,15 +380,16 @@ function deserialize(guid, jsonString, actionCardsData, equipmentCardsData, reso
             };
 
             if (cardData) {
-                return new CardEquipment(newCardData, guid);
+                return new CardEquipment(newCardData, getKeyWithoutPrefix(guid));
             }
             break;
         }
         case 'Card': {
+            if (!data.id) return null;
             const cardData = resourceCardsData.find(card => card.id === data.id);
 
             if (cardData) {
-                return new Card(cardData, guid, data.quantity);
+                return new Card(cardData, getKeyWithoutPrefix(guid), data.quantity);
             }
             break;
         }
@@ -385,7 +399,7 @@ function deserialize(guid, jsonString, actionCardsData, equipmentCardsData, reso
     }
 }
 
-async function createCard(id, quantity, data, classType, effectValuesFunction, randomValues) {
+function createCard(id, quantity, data, classType, effectValuesFunction, randomValues) {
     try {
         // Filter to find the specific card data by ID
         const specificCardData = data.find(cardData => cardData.id == id);
@@ -405,7 +419,9 @@ async function createCard(id, quantity, data, classType, effectValuesFunction, r
         if (classType == CardAction || classType == CardEquipment){
             cards = Array.from({ length: quantity }, () => {
                 let guid = generateGUID();
-                return new classType(specificCardData, guid);
+                let newCard = new classType(specificCardData, guid);
+                saveToLocalStorage(newCard);
+                return newCard;
             });
         }
         else{
@@ -443,3 +459,113 @@ function toggleSection(locationId, section, buttonId) {
 }
 
 
+function checkIfNewUser() {
+    const newUserKey = 'isNewUser';
+
+    // Check if the key exists in localStorage
+    if (localStorage.getItem(newUserKey) === null) {
+        // Key doesn't exist, meaning the user is new to the site
+        console.log('Welcome, new user!');
+
+        // Create the key with an appropriate value
+        localStorage.setItem(newUserKey, 'false'); // 'false' indicates the user is no longer new
+
+        return true; // Return true to indicate this is a new user
+    } else {
+        // Key exists, meaning the user has visited the site before
+        console.log('Welcome back!');
+
+        return false; // Return false to indicate the user is not new
+    }
+}
+
+async function readyGame(heroes, cards){
+    const cardsContainer = document.getElementById('cardsContainer');
+
+    cards.forEach(card => {
+        cardsContainer.innerHTML += card.generateHTML();
+    });
+
+    let locations = await createLocations("assets/json/locations.json", "assets/json/gameRewards.json");
+
+    const locationHTML = locations[0].generateHTML();
+
+    // Find the element with the id 'location-container'
+    const locationContainer = document.getElementById('location-container');
+    locationContainer.innerHTML = locationHTML;
+
+    // locations[0].startQuest(heroesArray[0]);
+    // checkOngoingQuests(locations, heroesArray);
+
+    console.log(heroes)
+
+}
+
+function calculateLocalStorageSizeInKB() {
+    let totalSizeInBytes = 0;
+    
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key);
+
+        totalSizeInBytes += byteCount(key);
+        totalSizeInBytes += byteCount(value);
+        
+        // totalSizeInBytes += key.length * 2; // Each character is approx. 2 bytes
+        // totalSizeInBytes += value.length * 2; // Each character is approx. 2 bytes
+    }
+    
+    const totalSizeInKB = totalSizeInBytes / 1024; // Convert bytes to kilobytes
+    return totalSizeInKB;
+}
+
+function byteCount(s) {
+    return encodeURI(s).split(/%..|./).length - 1;
+}
+
+async function createNewUser() {
+    console.log("New user detected. Creating Cards");
+    const [actionData, equipmentData, basicCardsData] = 
+        await Promise.all([
+            loadJSONFile("assets/json/gameActionCards.json"),
+            loadJSONFile("assets/json/gameEquipmentCards.json"),
+            loadJSONFile("assets/json/gameBasicCards.json")
+        ]);
+
+    const [actionCards, equipmentCards] = [
+        createCard(2000, 1, actionData, CardAction, getEffectValues, true),
+        createCard(3000, 1, equipmentData, CardEquipment, getEquipmentStatsValues, true)
+    ];
+
+    let heroActions = [];
+    for (let i = 0; i < 5; i++) {
+        if (i < actionCards.length) {
+            heroActions.push(actionCards[i]);
+        } else {
+            heroActions.push(null);
+        }
+    }
+    
+    let allCards = [...actionCards, ...equipmentCards];
+
+    const hero = new Hero('Mr Knight', generateGUID(), heroActions, equipmentCards, 1, 0);
+
+    saveToLocalStorage(hero);
+    
+    readyGame([hero], allCards);
+}
+
+async function createExistingUser(){
+    console.log("Existing user detected. Loading Cards");
+    let actionData = await loadJSONFile("assets/json/gameActionCards.json");
+    let equipmentData = await loadJSONFile("assets/json/gameEquipmentCards.json");
+    let basicCardsData = await loadJSONFile("assets/json/gameBasicCards.json");
+
+    let cardsArray = deserializeAllGUIDs(actionData, equipmentData, basicCardsData);
+
+    let heroesArray = deserializeAllHeroes(cardsArray);
+
+    readyGame(heroesArray, cardsArray);
+}
+
+// console.log(1024 * 1024 * 5 - escape(encodeURIComponent(JSON.stringify(localStorage))).length);

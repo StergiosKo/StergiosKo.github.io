@@ -173,4 +173,5 @@ article.o-card.card-short{
 
 .btn.d-none-button{
   background-color: gray;
+  border-color: gray;
 }

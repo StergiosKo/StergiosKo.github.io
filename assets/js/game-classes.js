@@ -1,6 +1,6 @@
 class Entity {
     constructor(name, attributes, maxStats, statusEffects) {
-        this.name = name || "Uknown Hero";
+        this.name = name || "Uknown Entity";
         this.attributes = attributes || { "STR": 1, "DEX": 1, "INT": 20 };
         this.maxStats = maxStats || { "HP": 10, "CRIT": 0.25, "MANA": 1, 'CRIT-D': 1.5};
         this.currentStats = {};
@@ -100,24 +100,95 @@ class Entity {
 }
 
 class Hero extends Entity {
-    constructor(name, guid, actionCards, equipmentCards) {
+    constructor(name, guid, actionCards, equipmentCards, level, exp) {
         super(
             name,
             { "STR": 5, "DEX": 5, "INT": 5 }, 
             { "HP": 10, "CRIT": 0.25, "MANA": 1, 'CRIT-D': 1.5}
         );
+        this.MAX_LEVEL = 20;
+        this.level = level;
+        this.exp = exp;
+        this.updateMaxExp();
+        this.updateStatsPerLevel();
         this.cardsEquipment = { "Head": null, "Body": null, "Weapon": null , "Accessory": null};
         equipmentCards.forEach(card => {
             this.equipEquipment(card);
         })
-        this.cardsActions = actionCards;
+
+        if (actionCards) this.cardsActions = actionCards;
+        else this.actionCards = [null, null, null, null, null];
         this.GUID = guid;
         this.available = true;
+
+        // For null action cards
+        let tempBasicAction = {
+            "id": null,
+            "name": "Punch",
+            "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
+            "description": "Deal {0} STR damage",
+            "mana": 1,
+            "card_type": "Force",
+            "rarity": "Common",
+            "level": 1,
+            "effects": [
+                {
+                    "target": 1,
+                    "effect": "damage",
+                    "scaling": {"STR": 0.5}
+                }
+            ]
+        }
+
+        this.addBasicCards(tempBasicAction);
 
         // Initialize the entity's stats upon creation
         this.updateCurrentStats();
     }
 
+    /**
+     * Increment the level if it is below the maximum level.
+    */
+    levelUP(){
+        if (this.level < this.MAX_LEVEL){
+            this.level += 1;
+            updateStatsPerLevel();
+            updateMaxExp();
+            this.updateCurrentStats();
+        }
+    }
+
+    /**
+     * Add basic cards to the existing cardsActions array.
+     *
+     * @param {Object} basicCard - The basic card object data to add.
+     */
+    addBasicCards(basicCard){
+        for(let i=0; i < this.cardsActions.length; i++){
+            if(!this.cardsActions[i]){
+                this.addActionCard(new CardAction(basicCard, null), i)
+            }
+        }
+    }
+
+    updateStatsPerLevel(){
+        for (let i = 1; i < this.level; i++) {
+            for (const [key, value] of Object.entries(this.attributes)) {
+                this.attributes[key] += 1;
+              }
+        }
+        this.updateCurrentStats();
+    }
+
+    updateMaxExp(){
+        this.maxExp = this.level * this.level/2 * 100;
+    }
+
+    /**
+     * Serialize the object into a JSON string.
+     *
+     * @return {string} The serialized JSON string.
+     */
     serialize() {
         // Extract the GUIDs from the cardsActions array
         let actionGUIDs = this.cardsActions.map(card => card ? card.GUID : null);
@@ -129,7 +200,9 @@ class Hero extends Entity {
             classType: 'Hero',
             name: this.name,
             actions: actionGUIDs,
-            equipment: equipmentGUIDs
+            equipment: equipmentGUIDs,
+            level: this.level,
+            exp: this.exp
         });
     }
 
@@ -152,18 +225,30 @@ class Hero extends Entity {
         this.currentStats = this.deepCopy(this.maxStats);
     }
 
+    /**
+     * Adds a card to the specified index in the cardsActions array.
+     *
+     * @param {CardAction} card - the card to add
+     * @param {number} index - the index where the card should be added
+     */
     addActionCard(card, index) {
         if (index >= 0 && index < this.cardsActions.length) {
             this.cardsActions[index] = card;
         }
     }
 
+    /**
+     * Equip new equipment or replace existing equipment and update stats accordingly.
+     *
+     * @param {CardEquipment} equipment - The equipment to be equipped or replaced
+     * @return {CardEquipment} The previously equipped equipment
+     */
     equipEquipment(equipment) {
         const type = equipment.piece; // "Head", "Body", "Weapon", "Accessory"
         if (!this.cardsEquipment[type]) {
-            console.log(`Equipping new ${type} equipment: ${equipment.name}`);
+            console.log(`${this.name} Equipping new ${type} equipment: ${equipment.name}`);
         } else {
-            console.log(`Replacing ${type} equipment: ${this.cardsEquipment[type].name} with ${equipment.name}`);
+            console.log(`${this.name} Replacing ${type} equipment: ${this.cardsEquipment[type].name} with ${equipment.name}`);
             // Remove the stats of the currently equipped equipment of the same type
             this.updateStats(this.cardsEquipment[type], false);
         }
@@ -250,6 +335,13 @@ class Card {
         quantity ? this.quantity = quantity : this.quantity = 1
     }
 
+    /**
+     * Template string with placeholders replaced by object properties
+     * Process description to include color-coded attributes
+     *
+     * @param {any} short - if parameter, adds short class to card
+     * @return {type} returns html
+     */
     generateHTML(short) {
         const html = `
         <article class="${'o-card' + (short ? ' card-short' : '')}">
@@ -299,6 +391,13 @@ class CardAction extends Card {
         });
     }
     
+    /**
+     * Template string with placeholders replaced by object properties
+     * Process description to include color-coded attributes
+     *
+     * @param {any} short - if parameter, adds short class to card
+     * @return {type} returns html
+     */
     generateHTML(short) {
         // Template string with placeholders replaced by object properties
             // Process description to include color-coded attributes
@@ -378,7 +477,13 @@ class CardEquipment extends Card {
         });
     }
 
-
+    /**
+     * Template string with placeholders replaced by object properties
+     * Process description to include color-coded attributes
+     *
+     * @param {any} short - if parameter, adds short class to card
+     * @return {type} returns html
+     */
     generateHTML(short) {
         let updatedDescription = this.description;
 
@@ -530,7 +635,7 @@ class Location {
                 <h3 class="h5">Monster Stats</h3>
                 <p class="card-text"><small>${JSON.stringify(this.monsterData.stats)}</small></p>
                 <button id="location-button-${this.id}-actions" class="btn btn-primary" onclick="toggleSection('${this.id}', 'actions', 'location-button-${this.id}-')">Show Actions</button>
-                <button id="location-button-${this.id}-rewards" class="btn btn-primary" onclick="toggleSection('${this.id}', 'rewards', 'location-button-${this.id}-')">Show Rewards</button>
+                <button id="location-button-${this.id}-rewards" class="btn btn-primary d-none-button" onclick="toggleSection('${this.id}', 'rewards', 'location-button-${this.id}-')">Show Rewards</button>
             </div>
             <div id="actions-${this.id}" class="actions">
             <h3>Actions</h3>
@@ -554,6 +659,4 @@ class Location {
     testMethod(){
         console.log("test")
     }
-    
-
 }
