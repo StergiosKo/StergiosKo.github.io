@@ -2,7 +2,7 @@ class Entity {
     constructor(name, attributes, maxStats, statusEffects) {
         this.name = name || "Uknown Entity";
         this.attributes = attributes || { "STR": 1, "DEX": 1, "INT": 20 };
-        this.maxStats = maxStats || { "HP": 10, "CRIT": 0.25, "MANA": 1, 'CRIT-D': 1.5};
+        this.maxStats = maxStats || { "HP": 10, "CRIT": 0.5, "MANA": 1, 'CRITD': 1.5};
         this.currentStats = {};
         this.cardsActions = [];
         this.statusEffects = statusEffects || {"burn": 0, "charge": 0, "paralysis": 0, "freeze": 0};
@@ -69,7 +69,7 @@ class Entity {
         if (isCriticalHit) {
             // console.log('Critical hit!');
         }
-        action.doAction(this, opponent, isCriticalHit, this.currentStats['CRIT-D']);
+        action.doAction(this, opponent, isCriticalHit, this.currentStats['CRITD']);
     }
 
     roundStart(){
@@ -96,6 +96,17 @@ class Entity {
     getActions(){
         return this.cardsActions;
     }
+
+    displayActions(div) {
+        // Clear existing content
+        div.innerHTML = '';
+
+        // Iterate through each action and append its HTML to the div
+        this.cardsActions.forEach(action => {
+            const actionHtml = action.generateHTML(); // Assuming generateHTML returns a string of HTML
+            div.innerHTML += actionHtml; // Append the action's HTML to the div
+        });
+    }
     
 }
 
@@ -104,7 +115,7 @@ class Hero extends Entity {
         super(
             name,
             { "STR": 5, "DEX": 5, "INT": 5 }, 
-            { "HP": 10, "CRIT": 0.25, "MANA": 1, 'CRIT-D': 1.5}
+            { "HP": 10, "CRIT": 0.5, "MANA": 1, 'CRITD': 1.5}
         );
         this.MAX_LEVEL = 20;
         this.level = level;
@@ -114,9 +125,15 @@ class Hero extends Entity {
         this.cardsEquipment = { "Head": null, "Body": null, "Weapon": null , "Accessory": null};
         equipmentCards.forEach(card => {
             this.equipEquipment(card);
+            if (card) card.setAvailability(false);
         })
 
-        if (actionCards) this.cardsActions = actionCards;
+        if (actionCards){
+            this.cardsActions = actionCards;
+            this.cardsActions.forEach(action => {
+                if (action) action.setAvailability(false);
+            })
+        } 
         else this.actionCards = [null, null, null, null, null];
         this.GUID = guid;
         this.available = true;
@@ -144,6 +161,57 @@ class Hero extends Entity {
 
         // Initialize the entity's stats upon creation
         this.updateCurrentStats();
+    }
+
+    displayEquipment(div){
+    
+        // Clear existing content
+        div.innerHTML = '';
+    
+        // Iterate through each equipment and append its HTML to the div with labels
+        Object.entries(this.cardsEquipment).forEach(([key, equipment]) => {
+            let currentDiv = document.createElement('div');
+            currentDiv.classList.add('equipment-card');
+            currentDiv.innerHTML += `<p>${key}</p>`; // Add label
+            if (!equipment) currentDiv.innerHTML += '<p>No equipment <br> equipped</p>';
+            else{
+                const equipmentHTML = equipment.generateHTML(); // Assuming generateHTML returns a string of HTML
+                currentDiv.innerHTML += equipmentHTML; // Append the action's HTML to the div
+            }
+
+            div.appendChild(currentDiv);
+        });
+    }
+
+    generateHTML() {
+        return `
+            <div class="hero-container">
+                <h2>${this.name}</h2>
+                <p class="attributes">Attributes: STR: ${this.attributes.STR}, DEX: ${this.attributes.DEX}, INT: ${this.attributes.INT}</p>
+                <p class="max-stats">Max Stats: HP: ${this.maxStats.HP}, CRIT: ${this.maxStats.CRIT}, MANA: ${this.maxStats.MANA}, CRITD: ${this.maxStats['CRITD']}</p>
+                <p class="level-exp">Level: ${this.level} Exp: ${this.exp}/${this.maxExp}</p>
+                <p> Availability: ${this.available ? "Yes" : "No"}</p>
+                <p> Available Mana: ${this.getAvailableMana()}</p>
+                <button class="btn btn-primary" id="hero-button-actions">Actions</button>
+                <button class="btn btn-primary d-none-button" id="hero-button-equipment">Equipment</button>
+                <div>
+                    <div id="cards" class="hero-cards d-flex flex-wrap"></div>
+                </div>
+            </div>
+        `;
+    }
+
+    generateButtonHTML(modalId) {
+        return `
+            <button id="hero-button-${this.GUID}" class="btn btn-primary ${this.available ? '' : 'd-none-button'}" data-toggle="modal" data-target="#${modalId}">
+                <h4>${this.name}</h4>
+                <p>Level: ${this.level}, Exp: ${this.exp}/${this.maxExp}</p>
+            </button>
+        `;
+    }
+
+    testMethod(){
+        console.log("test")
     }
 
     /**
@@ -219,7 +287,8 @@ class Hero extends Entity {
     updateCurrentStats() {
         // Hero-specific logic for updating current stats
         this.maxStats.HP = this.attributes.STR * 3;
-        this.maxStats.CRIT = parseFloat((this.attributes.DEX * 0.2).toFixed(2));
+        this.maxStats.CRIT = 0.5 + parseFloat((this.attributes.DEX * 0.5).toFixed(2));
+        this.maxStats.CRITD = 1.5 + parseFloat((this.attributes.DEX * 0.022).toFixed(2));
         this.maxStats.MANA = this.attributes.INT;
 
         this.currentStats = this.deepCopy(this.maxStats);
@@ -233,7 +302,11 @@ class Hero extends Entity {
      */
     addActionCard(card, index) {
         if (index >= 0 && index < this.cardsActions.length) {
+            let oldCard = this.cardsActions[index];
             this.cardsActions[index] = card;
+            card.setAvailability(false);
+            if (oldCard) oldCard.setAvailability(true);
+            return oldCard
         }
     }
 
@@ -281,6 +354,14 @@ class Hero extends Entity {
         this.updateCurrentStats();
     }
 
+    getAvailableMana(){
+        let usedMana = 0;
+        this.cardsActions.forEach(card => {
+            usedMana += card.mana;
+        })
+        return this.maxStats.MANA - usedMana;
+    }
+
 
 }
 
@@ -302,18 +383,6 @@ class Monster extends Entity {
         }).filter(action => action !== null); // Filter out any actions that weren't found
     }
 
-
-    displayActions(div) {
-        // Clear existing content
-        div.innerHTML = '';
-
-        // Iterate through each action and append its HTML to the div
-        this.cardsActions.forEach(action => {
-            const actionHtml = action.generateHTML(); // Assuming generateHTML returns a string of HTML
-            div.innerHTML += actionHtml; // Append the action's HTML to the div
-        });
-    }
-
     // Override the updateCurrentStats method from Entity
     updateCurrentStats() {
         // For monsters, just directly copy maxStats to currentStats without modifications
@@ -333,6 +402,7 @@ class Card {
         this.GUID = guid;
         this.id = data.id;
         quantity ? this.quantity = quantity : this.quantity = 1
+        this.available = true;
     }
 
     /**
@@ -344,7 +414,7 @@ class Card {
      */
     generateHTML(short) {
         const html = `
-        <article class="${'o-card' + (short ? ' card-short' : '')}">
+        <article class="${'o-card' + (short ? ' card-short' : '')} ${this.available ? '' : 'card-unavailable'}">
             <figure class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
                 <figcaption class="c-bg_img_desc o-flx_el_b u-border_b"><b>${this.name}</b>
                 </figcaption>
@@ -366,6 +436,14 @@ class Card {
 
     getGUID(){
         return this.GUID;
+    }
+
+    getAvailability(){
+        return this.available;
+    }
+
+    setAvailability(bool){
+        this.available = bool;
     }
 
 }
@@ -414,7 +492,7 @@ class CardAction extends Card {
         .replace(/DEX/g, '<span class="attr-dex">DEX</span>')
         .replace(/INT/g, '<span class="attr-int">INT</span>');
         const html = `
-            <article class="${'o-card' + (short ? ' card-short' : '')}">
+            <article class="${'o-card' + (short ? ' card-short' : '')} ${this.available ? '' : 'card-unavailable'}">
                 <figure class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
                     <header class="c-top_icons"><span class="c-icon">${this.mana}</span></header>
                     <figcaption class="c-bg_img_desc o-flx_el_b u-border_b"><b>${this.name}</b>
@@ -500,7 +578,7 @@ class CardEquipment extends Card {
         .replace(/DEX/g, '<span class="attr-dex">DEX</span>')
         .replace(/INT/g, '<span class="attr-int">INT</span>');
         const html = `
-            <article class="${'o-card' + (short ? ' card-short' : '')}">
+            <article class="${'o-card' + (short ? ' card-short' : '')} ${this.available ? '' : 'card-unavailable'}">
                 <figure class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
                     <figcaption class="c-bg_img_desc o-flx_el_b u-border_b"><b>${this.name}</b>
                         <blockquote>${this.card_type}</blockquote>
@@ -658,5 +736,67 @@ class Location {
 
     testMethod(){
         console.log("test")
+    }
+}
+
+class User {
+
+    constructor(heroes, cards){
+        this.heroes = heroes;
+        this.cards = cards;
+    }
+
+    /**
+     * Display cards in the specified HTML element.
+     *
+     * @param {HTMLElement} htmlElement - The HTML element to display the cards in
+     * @param {Class} [cardType] - The type of cards to display
+     */
+    displayCards(htmlElement, cardType = null){
+        htmlElement.innerHTML = this.cards
+            .filter(card => cardType ? card.constructor === cardType : true)
+            .map(card => card.generateHTML())
+            .join('');
+    }
+
+    displayHeroes(htmlElement, heroModal){
+        htmlElement.innerHTML = this.heroes.map(hero => hero.generateButtonHTML(heroModal.id)).join('');
+        this.heroes.forEach(hero => {
+            const button = document.getElementById(`hero-button-${hero.GUID}`);
+            button.addEventListener('click', () => this.displayHeroModal(hero, heroModal))
+        });
+    }
+
+    displayHeroModal(hero, modal){
+        const modalBody = modal.querySelector('.modal-body');
+        modalBody.innerHTML = hero.generateHTML();
+
+        modalBody.innerHTML += '<h4>Your Cards</h4><div id="user-cards" class="d-flex flex-wrap"></div>';
+
+        const userCards = modalBody.querySelector('#user-cards');
+        this.displayCards(userCards, CardAction);
+
+        // Add event listeners to the modal body
+
+        const actionButton = modalBody.querySelector('#hero-button-actions');
+        const equipmentButton = modalBody.querySelector('#hero-button-equipment');
+        const cardElement = modalBody.querySelector('#cards');
+
+        hero.displayActions(cardElement);
+
+        // Add event listeners to the action and equipment buttons
+        actionButton.addEventListener('click', () => {
+            equipmentButton.classList.add('d-none-button');
+            actionButton.classList.remove('d-none-button');
+            this.displayCards(userCards, CardAction);
+            hero.displayActions(cardElement);
+        });
+
+        equipmentButton.addEventListener('click', () => {
+            equipmentButton.classList.remove('d-none-button');
+            actionButton.classList.add('d-none-button');
+            this.displayCards(userCards, CardEquipment);
+            hero.displayEquipment(cardElement);
+        });
     }
 }

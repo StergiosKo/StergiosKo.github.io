@@ -167,41 +167,6 @@ function getRandomNumber(min, max) {
     return Math.random() * (max - min) + min;
 }
 
-async function testCombat(hero, location){
-    let enemy = location.createMonster();
-
-    actionCards = await displayCards(
-        'assets/json/gameActionCards.json',
-        CardAction,
-        getEffectValues // Adjusted for action card specifics
-    );
-    
-    equipmentCards = await displayCards(
-        'assets/json/gameEquipmentCards.json',
-        CardEquipment,
-        getEquipmentStatsValues // Adjusted for action card specifics
-    );
-    // hero.addActionCard(actionCards[0])
-    // hero.addActionCard(actionCards[0])
-    // hero.addActionCard(actionCards[0])
-    // hero.addActionCard(actionCards[0])
-    // hero.addActionCard(actionCards[0])
-
-    // hero.equipEquipment(equipmentCards[0])
-    // updateUI(hero, 'hero-stats');
-    // updateUI(enemy, 'monster-stats');
-
-    // location.startQuest();
-
-    // startCombat(hero, enemy); // Assuming startCombat is defined and ready to be called
-
-    // updateUI(hero, 'hero-stats');
-    // updateUI(enemy, 'monster-stats');
-    // saveToLocalStorage(actionCards[0]);
-    // saveToLocalStorage(equipmentCards[0]);
-    
-}
-
 function checkOngoingQuests(locations, heroList) {
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -227,37 +192,6 @@ function checkOngoingQuests(locations, heroList) {
 function generateGUID(){
     return crypto.randomUUID();
 }
-
-const charactersGUID = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-function generateUniqueShortGUID() {
-    let uniqueGUID = '';
-    let isUnique = false;
-
-    while (!isUnique) {
-        let potentialGUID = '';
-        for (let i = 0; i < 6; i++) {
-            potentialGUID += charactersGUID.charAt(Math.floor(Math.random() * charactersGUID.length));
-        }
-        
-        // Check uniqueness in localStorage keys
-        isUnique = true; // Assume it's unique until found otherwise
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key.includes(potentialGUID)) {
-                isUnique = false;
-                break; // Found the GUID in existing keys, break and generate a new one
-            }
-        }
-
-        if (isUnique) {
-            uniqueGUID = potentialGUID; // A unique GUID has been found
-        }
-    }
-
-    return uniqueGUID;
-}
-
 
 function saveToLocalStorage(object) {
     const serializedObject = object.serialize();
@@ -479,25 +413,36 @@ function checkIfNewUser() {
     }
 }
 
-async function readyGame(heroes, cards){
+async function readyGame(user){
     const cardsContainer = document.getElementById('cardsContainer');
+    const cardsToggleBtn = document.getElementById('toggle-cards-btn');
 
-    cards.forEach(card => {
-        cardsContainer.innerHTML += card.generateHTML();
+    cardsToggleBtn.addEventListener('click', () => {
+        cardsContainer.classList.toggle('d-none');
     });
+
+    const heroContainer = document.getElementById('heroContainer');
+    const heroToggleBtn = document.getElementById('toggle-hero-btn');
+
+    heroToggleBtn.addEventListener('click', () => {
+        heroContainer.classList.toggle('d-none');
+    });
+
+    const heroModal = document.getElementById('heroModal');
+
+    user.displayCards(cardsContainer);
+    user.displayHeroes(heroContainer, heroModal);
 
     let locations = await createLocations("assets/json/locations.json", "assets/json/gameRewards.json");
 
     const locationHTML = locations[0].generateHTML();
 
     // Find the element with the id 'location-container'
-    const locationContainer = document.getElementById('location-container');
+    const locationContainer = document.getElementById('locationContainer');
     locationContainer.innerHTML = locationHTML;
 
     // locations[0].startQuest(heroesArray[0]);
     // checkOngoingQuests(locations, heroesArray);
-
-    console.log(heroes)
 
 }
 
@@ -551,8 +496,12 @@ async function createNewUser() {
     const hero = new Hero('Mr Knight', generateGUID(), heroActions, equipmentCards, 1, 0);
 
     saveToLocalStorage(hero);
+    let newCard = createCard(2000, 1, actionData, CardAction, getEffectValues, true);
+    allCards.push(newCard[0]);
+
+    const user = new User([hero], allCards);
     
-    readyGame([hero], allCards);
+    readyGame(user);
 }
 
 async function createExistingUser(){
@@ -565,7 +514,10 @@ async function createExistingUser(){
 
     let heroesArray = deserializeAllHeroes(cardsArray);
 
-    readyGame(heroesArray, cardsArray);
+    const user = new User(heroesArray, cardsArray);
+    console.log(user);
+
+    readyGame(user);
 }
 
 // console.log(1024 * 1024 * 5 - escape(encodeURIComponent(JSON.stringify(localStorage))).length);

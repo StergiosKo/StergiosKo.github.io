@@ -4,10 +4,19 @@
 
 @media (min-width: 1200px){
   .container {
-    max-width: 1300px;
+    max-width: 1400px;
   }
 }
 
+@media (min-width: 992px){
+  .modal-lg {
+    max-width: 1400px;
+  }
+}
+
+p{
+  margin-bottom: 0.3rem;
+}
 
 .button-main img{
     max-width: 100px;
@@ -26,8 +35,10 @@
 
 article.o-card{
   min-width: 100px;
-  min-height: 380px;
-  width: 285px;
+  /* min-height: 380px;
+  width: 285px; */
+  width: 250px;
+  min-height: 350px;
   /* box-shadow: 0 0 2rem black; */
   border-radius: 1rem;
   background: black;
@@ -168,10 +179,22 @@ article.o-card.card-short{
 
 /* Display when the .d-none class is toggled */
 .d-none {
-  display: none;
+  display: none !important;
 }
 
 .btn.d-none-button{
   background-color: gray;
   border-color: gray;
+}
+
+#user-cards .card-unavailable {
+  opacity: 0.5;
+}
+
+.equipment-card{
+  margin: 10px
+}
+
+.equipment-card > p{
+  text-align: center;
 }
