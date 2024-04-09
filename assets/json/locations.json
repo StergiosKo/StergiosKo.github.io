@@ -19,12 +19,12 @@
             "CRIT-D": 1.5
         },
         "actions":[1,1,1,1,1],
-        "actionCards": [
+        "cardsActions": [
             {
                 "id": 1,
                 "name": "Attack",
                 "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
-                "description": "Deal {0} STR damage to the enemy",
+                "description": "Deal {0} STR damage",
                 "mana": 2,
                 "card_type": "Force",
                 "rarity": "Rare",

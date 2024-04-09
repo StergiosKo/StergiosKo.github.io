@@ -71,6 +71,7 @@ function getEffectValues(card) {
         if (range.min !== undefined && range.max !== undefined) {
             // Assign a random value within the range
             const randomValue = getRandomValue(range.min, range.max);
+            console.log(card.name + " " + effectType + " " + randomValue);
             effect.scaling[effectType] = randomValue;
             magnitudes.push(randomValue);
         }
@@ -79,20 +80,38 @@ function getEffectValues(card) {
     return card;
 }
 
+function getEffectValues(card) {
+    const updatedCard = JSON.parse(JSON.stringify(card)); // Create a deep copy of the card object
+    updatedCard.effects.forEach(effect => {
+        const effectType = Object.keys(effect.scaling)[0]; // e.g., "STR"
+        const range = effect.scaling[effectType];
+        if (range.min !== undefined && range.max !== undefined) {
+            // Assign a random value within the range
+            const randomValue = getRandomValue(range.min, range.max);
+            console.log(updatedCard.name + " " + effectType + " " + randomValue);
+            effect.scaling[effectType] = randomValue;
+        }
+    });
+
+    return updatedCard;
+}
+
 function getEquipmentStatsValues(card) {
+    const updatedCard = JSON.parse(JSON.stringify(card)); // Create a deep copy of the card object
     const statsUpdates = []; // To store the random stat values for use in the description
 
-    Object.keys(card.stats).forEach(statType => {
-        const range = card.stats[statType];
+    Object.keys(updatedCard.stats).forEach(statType => {
+        const range = updatedCard.stats[statType];
         if (range.min !== undefined && range.max !== undefined) {
             // Assign a random value within the range
             const randomValue = Math.floor(getRandomValue(range.min, range.max));
-            card.stats[statType] = randomValue;
+            console.log(updatedCard.name + " " + statType + " " + randomValue);
+            updatedCard.stats[statType] = randomValue;
             statsUpdates.push(randomValue);
         }
     });
 
-    return card;
+    return updatedCard;
 }
 
 async function displayCards(jsonPath, cardClass, effectValuesFunction) {
@@ -333,7 +352,7 @@ function deserialize(guid, jsonString, actionCardsData, equipmentCardsData, reso
     }
 }
 
-function createCard(id, quantity, data, classType, effectValuesFunction, randomValues) {
+function createCard(id, quantity, data, classType, effectValuesFunction, randomValues, saveToStorage = true) {
     try {
         // Filter to find the specific card data by ID
         const specificCardData = data.find(cardData => cardData.id == id);
@@ -343,9 +362,12 @@ function createCard(id, quantity, data, classType, effectValuesFunction, randomV
             return [];
         }
 
+        let coolData = specificCardData
         if (randomValues){
+            console.log("Applying effectValuesFunction for classType:", specificCardData);
             // Apply the specific getEffectValues function for this card type
-            effectValuesFunction(specificCardData);
+            coolData = effectValuesFunction(specificCardData);
+            console.log(coolData);
         }
 
         let cards = []
@@ -353,18 +375,22 @@ function createCard(id, quantity, data, classType, effectValuesFunction, randomV
         if (classType == CardAction || classType == CardEquipment){
             cards = Array.from({ length: quantity }, () => {
                 let guid = generateGUID();
-                let newCard = new classType(specificCardData, guid);
-                saveToLocalStorage(newCard);
+                let newCard = new classType(coolData, guid);
+                if (saveToStorage) {
+                    saveToLocalStorage(newCard);
+                }
                 return newCard;
             });
-        }
+       }
         else{
-            cards.push(new Card(specificCardData, generateGUID(), quantity))
+            cards.push(new Card(coolData, generateGUID(), quantity))
         }
 
+        console.log("Created cards:", cards);
         return cards;
     } catch (error) {
         console.error("Failed to load JSON data from", data, ":", error);
+        console.log("Stack trace:", error.stack);
         return [];
     }
 }
@@ -415,18 +441,18 @@ function checkIfNewUser() {
 
 async function readyGame(user){
     const cardsContainer = document.getElementById('cardsContainer');
-    const cardsToggleBtn = document.getElementById('toggle-cards-btn');
+    // const cardsToggleBtn = document.getElementById('toggle-cards-btn');
 
-    cardsToggleBtn.addEventListener('click', () => {
-        cardsContainer.classList.toggle('d-none');
-    });
+    // cardsToggleBtn.addEventListener('click', () => {
+    //     cardsContainer.classList.toggle('d-none');
+    // });
 
     const heroContainer = document.getElementById('heroContainer');
-    const heroToggleBtn = document.getElementById('toggle-hero-btn');
+    // const heroToggleBtn = document.getElementById('toggle-hero-btn');
 
-    heroToggleBtn.addEventListener('click', () => {
-        heroContainer.classList.toggle('d-none');
-    });
+    // heroToggleBtn.addEventListener('click', () => {
+    //     heroContainer.classList.toggle('d-none');
+    // });
 
     const heroModal = document.getElementById('heroModal');
 
@@ -440,6 +466,9 @@ async function readyGame(user){
     // Find the element with the id 'location-container'
     const locationContainer = document.getElementById('locationContainer');
     locationContainer.innerHTML = locationHTML;
+
+    const heroesQuestContainer = document.getElementById('heroesQuestContainer');
+    user.displayHeroesQuest(heroesQuestContainer);
 
     // locations[0].startQuest(heroesArray[0]);
     // checkOngoingQuests(locations, heroesArray);
@@ -477,6 +506,7 @@ async function createNewUser() {
             loadJSONFile("assets/json/gameBasicCards.json")
         ]);
 
+    console.log("starting")
     const [actionCards, equipmentCards] = [
         createCard(2000, 1, actionData, CardAction, getEffectValues, true),
         createCard(3000, 1, equipmentData, CardEquipment, getEquipmentStatsValues, true)
@@ -495,11 +525,19 @@ async function createNewUser() {
 
     const hero = new Hero('Mr Knight', generateGUID(), heroActions, equipmentCards, 1, 0);
 
+    console.log("ending")
+    let extraActions = createCard(2000, 1, actionData, CardAction, getEffectValues, true);
+    let extraEquipment = createCard(3000, 1, equipmentData, CardEquipment, getEquipmentStatsValues, true);
+    allCards.push(...extraActions);
+    allCards.push(...extraEquipment);
+
     saveToLocalStorage(hero);
     let newCard = createCard(2000, 1, actionData, CardAction, getEffectValues, true);
     allCards.push(newCard[0]);
 
     const user = new User([hero], allCards);
+
+    console.log(user);
     
     readyGame(user);
 }
@@ -518,6 +556,9 @@ async function createExistingUser(){
     console.log(user);
 
     readyGame(user);
+    saveToLocalStorage(user.heroes[0]);
+    // let actionGUIDs = user.heroes[0].cardsActions.map(card => card.saved ? "test" : null);
+    // console.log(actionGUIDs)
 }
 
 // console.log(1024 * 1024 * 5 - escape(encodeURIComponent(JSON.stringify(localStorage))).length);

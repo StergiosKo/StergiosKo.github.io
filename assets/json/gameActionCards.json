@@ -3,7 +3,7 @@
         "id": 2000,
         "name": "Ignite",
         "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
-        "description": "Deal {0} STR damage and apply {1} INT Burn to the enemy",
+        "description": "Deal {0} STR damage and apply {1} INT Burn",
         "mana": 2,
         "card_type": "Force Fire",
         "rarity": "Epic",

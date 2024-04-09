@@ -111,7 +111,7 @@ class Entity {
 }
 
 class Hero extends Entity {
-    constructor(name, guid, actionCards, equipmentCards, level, exp) {
+    constructor(name, guid, cardsActions, equipmentCards, level, exp) {
         super(
             name,
             { "STR": 5, "DEX": 5, "INT": 5 }, 
@@ -128,36 +128,18 @@ class Hero extends Entity {
             if (card) card.setAvailability(false);
         })
 
-        if (actionCards){
-            this.cardsActions = actionCards;
+        if (cardsActions){
+            this.cardsActions = cardsActions;
             this.cardsActions.forEach(action => {
                 if (action) action.setAvailability(false);
             })
         } 
-        else this.actionCards = [null, null, null, null, null];
+        else this.cardsActions = [null, null, null, null, null];
         this.GUID = guid;
         this.available = true;
 
-        // For null action cards
-        let tempBasicAction = {
-            "id": null,
-            "name": "Punch",
-            "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
-            "description": "Deal {0} STR damage",
-            "mana": 1,
-            "card_type": "Force",
-            "rarity": "Common",
-            "level": 1,
-            "effects": [
-                {
-                    "target": 1,
-                    "effect": "damage",
-                    "scaling": {"STR": 0.5}
-                }
-            ]
-        }
-
-        this.addBasicCards(tempBasicAction);
+        this.addBasicCards();
+        this.addBasicEquipment();
 
         // Initialize the entity's stats upon creation
         this.updateCurrentStats();
@@ -185,25 +167,32 @@ class Hero extends Entity {
 
     generateHTML() {
         return `
-            <div class="hero-container">
+            <div class="hero-container d-flex flex-wrap">
                 <h2>${this.name}</h2>
+                <div class="row ms-2">
                 <p class="attributes">Attributes: STR: ${this.attributes.STR}, DEX: ${this.attributes.DEX}, INT: ${this.attributes.INT}</p>
                 <p class="max-stats">Max Stats: HP: ${this.maxStats.HP}, CRIT: ${this.maxStats.CRIT}, MANA: ${this.maxStats.MANA}, CRITD: ${this.maxStats['CRITD']}</p>
+                </div>
+                <div class="row">
                 <p class="level-exp">Level: ${this.level} Exp: ${this.exp}/${this.maxExp}</p>
                 <p> Availability: ${this.available ? "Yes" : "No"}</p>
                 <p> Available Mana: ${this.getAvailableMana()}</p>
+                </div>
+                <div>
                 <button class="btn btn-primary" id="hero-button-actions">Actions</button>
                 <button class="btn btn-primary d-none-button" id="hero-button-equipment">Equipment</button>
+                </div>
+                <div class="w-100"></div>
                 <div>
-                    <div id="cards" class="hero-cards d-flex flex-wrap"></div>
+                    <div id="cards" class="hero-cards d-flex flex-wrap mt-1"></div>
                 </div>
             </div>
         `;
     }
 
-    generateButtonHTML(modalId) {
+    generateButtonHTML(idname, modalId) {
         return `
-            <button id="hero-button-${this.GUID}" class="btn btn-primary ${this.available ? '' : 'd-none-button'}" data-toggle="modal" data-target="#${modalId}">
+            <button id="${idname}-hero-button-${this.GUID}" class="hero-button btn btn-primary ${this.available ? '' : 'd-none-button'}" ${modalId ? 'data-toggle="modal"' : ''}  data-target="#${modalId}">
                 <h4>${this.name}</h4>
                 <p>Level: ${this.level}, Exp: ${this.exp}/${this.maxExp}</p>
             </button>
@@ -231,12 +220,79 @@ class Hero extends Entity {
      *
      * @param {Object} basicCard - The basic card object data to add.
      */
-    addBasicCards(basicCard){
+    addBasicCards(){
+        // For null action cards
+        let basicCard = {
+            "id": null,
+            "name": "Punch",
+            "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
+            "description": "Deal {0} STR damage",
+            "mana": 1,
+            "card_type": "Force",
+            "rarity": "Common",
+            "level": 1,
+            "effects": [
+                {
+                    "target": 1,
+                    "effect": "damage",
+                    "scaling": {"STR": 0.5}
+                }
+            ]
+        }
         for(let i=0; i < this.cardsActions.length; i++){
             if(!this.cardsActions[i]){
-                this.addActionCard(new CardAction(basicCard, null), i)
+                this.addActionCard(new CardAction(basicCard, generateGUID(), false), i)
             }
         }
+    }
+
+    addBasicEquipment(){
+        // For null equipment cards
+        const basicEquipmentData = [
+            {
+                "name": "Basic Helmet",
+                "card_type": "Head",
+                "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
+                "description": "Gain {0} STR | {1} DEX | {2} INT",
+                "rarity": "Common",
+                "level": 1,
+                "stats": {"STR": 0, "DEX": 0, "INT": 0}
+            },
+            {
+                "name": "Basic Armor",
+                "card_type": "Body",
+                "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
+                "description": "Gain {0} STR | {1} DEX | {2} INT",
+                "rarity": "Common",
+                "level": 1,
+                "stats": {"STR": 0, "DEX": 0, "INT": 0}
+            },
+            {
+                "name": "Basic Sword",
+                "card_type": "Weapon",
+                "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
+                "description": "Gain {0} STR | {1} DEX | {2} INT",
+                "rarity": "Common",
+                "level": 1,
+                "stats": {"STR": 0, "DEX": 0, "INT": 0}
+            },
+            {
+                "name": "Basic Ring",
+                "card_type": "Accessory",
+                "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
+                "description": "Gain {0} STR | {1} DEX | {2} INT",
+                "rarity": "Common",
+                "level": 1,
+                "stats": {"STR": 0, "DEX": 0, "INT": 0}
+            }
+        ];
+
+        basicEquipmentData.forEach(basicEquipment => {
+            if (!this.cardsEquipment[basicEquipment.card_type]) {
+                this.equipEquipment(new CardEquipment(basicEquipment, generateGUID(), false));
+            }
+        });
+    
     }
 
     updateStatsPerLevel(){
@@ -259,10 +315,10 @@ class Hero extends Entity {
      */
     serialize() {
         // Extract the GUIDs from the cardsActions array
-        let actionGUIDs = this.cardsActions.map(card => card ? card.GUID : null);
+        let actionGUIDs = this.cardsActions.map(card => card.saved ? card.GUID : null);
 
         // Extract the GUIDs from the cardsEquipment map
-        let equipmentGUIDs = Object.values(this.cardsEquipment).map(equipment => equipment ? equipment.GUID : null);
+        let equipmentGUIDs = Object.values(this.cardsEquipment).map(equipment => equipment.saved ? equipment.GUID : null);
 
         return JSON.stringify({
             classType: 'Hero',
@@ -328,6 +384,8 @@ class Hero extends Entity {
 
         // Equip the new equipment and add its stats
         let oldEquipment = this.cardsEquipment[type]
+        if (oldEquipment) oldEquipment.setAvailability(true);
+        equipment.setAvailability(false);
         this.cardsEquipment[type] = equipment;
         this.updateStats(equipment, true);
 
@@ -362,6 +420,21 @@ class Hero extends Entity {
         return this.maxStats.MANA - usedMana;
     }
 
+    getAction(guid){
+        return this.cardsActions.find(card => card.GUID === guid);
+    }
+
+    getEquipment(guid){
+        return Object.values(this.cardsEquipment).find(card => card.GUID === guid);
+    }
+
+    replaceAction(cardLeave, cardEnter){
+        const index = this.cardsActions.indexOf(cardLeave);
+        if (index !== -1) {
+            this.addActionCard(cardEnter, index);
+        }
+    }
+
 
 }
 
@@ -369,12 +442,12 @@ class Monster extends Entity {
     constructor(name, data) {
         super(name, data.attributes, data.stats);
         
-        // Prepare the actionCards map for quick lookup by ID
-        const actionCardsById = new Map(data.actionCards.map(card => [card.id, card]));
+        // Prepare the cardActions map for quick lookup by ID
+        const cardActionById = new Map(data.cardsActions.map(card => [card.id, card]));
         
         // Map the action IDs to their corresponding CardAction objects
         this.cardsActions = data.actions.map(actionId => {
-            const actionCardData = actionCardsById.get(actionId);
+            const actionCardData = cardActionById.get(actionId);
             if (!actionCardData) {
                 console.error(`Action card with ID ${actionId} not found.`);
                 return null; // Or handle this case as appropriate
@@ -393,7 +466,7 @@ class Monster extends Entity {
 }
 
 class Card {
-    constructor(data, guid, quantity) {
+    constructor(data, guid, quantity, saved = true) {
         this.name = data.name;
         this.artwork = data.artwork;
         this.description = data.description;
@@ -403,6 +476,7 @@ class Card {
         this.id = data.id;
         quantity ? this.quantity = quantity : this.quantity = 1
         this.available = true;
+        this.saved = saved;
     }
 
     /**
@@ -449,8 +523,8 @@ class Card {
 }
 
 class CardAction extends Card {
-    constructor(data, guid) {
-        super(data, guid);
+    constructor(data, guid, saved = true) {
+        super(data, guid, 1, saved);
         this.effects = data.effects;
         this.card_type = "Action - " + data.card_type;
         this.mana = data.mana;
@@ -492,7 +566,7 @@ class CardAction extends Card {
         .replace(/DEX/g, '<span class="attr-dex">DEX</span>')
         .replace(/INT/g, '<span class="attr-int">INT</span>');
         const html = `
-            <article class="${'o-card' + (short ? ' card-short' : '')} ${this.available ? '' : 'card-unavailable'}">
+            <article class="${'o-card' + (short ? ' card-short' : '')} ${this.available ? '' : 'card-unavailable'}" data-card-id="${this.GUID}">
                 <figure class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
                     <header class="c-top_icons"><span class="c-icon">${this.mana}</span></header>
                     <figcaption class="c-bg_img_desc o-flx_el_b u-border_b"><b>${this.name}</b>
@@ -540,8 +614,8 @@ class CardAction extends Card {
 }
 
 class CardEquipment extends Card {
-    constructor(data, guid) {
-        super(data, guid);
+    constructor(data, guid, saved = true) {
+        super(data, guid, 1, saved);
         this.stats = data.stats;
         this.card_type = "Equipment - " + data.card_type; // Note the change here for consistency
         this.piece = data.card_type;
@@ -578,7 +652,7 @@ class CardEquipment extends Card {
         .replace(/DEX/g, '<span class="attr-dex">DEX</span>')
         .replace(/INT/g, '<span class="attr-int">INT</span>');
         const html = `
-            <article class="${'o-card' + (short ? ' card-short' : '')} ${this.available ? '' : 'card-unavailable'}">
+            <article class="${'o-card' + (short ? ' card-short' : '')} ${this.available ? '' : 'card-unavailable'}" data-card-id="${this.GUID}">
                 <figure class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
                     <figcaption class="c-bg_img_desc o-flx_el_b u-border_b"><b>${this.name}</b>
                         <blockquote>${this.card_type}</blockquote>
@@ -603,7 +677,7 @@ class Location {
             attributes: locationData.attributes,
             stats: locationData.stats,
             actions: locationData.actions,
-            actionCards: locationData.actionCards
+            cardsActions: locationData.cardsActions
         };
         this.rewards = [];
         this.currentMonster = new Monster(this.name, this.monsterData)
@@ -701,6 +775,10 @@ class Location {
         });
     }
 
+    generateButtonHTML(){
+        
+    }
+
     generateHTML() {
         let html = `
         <div class="location card mb-3" data-location-id="${this.id}>
@@ -708,6 +786,7 @@ class Location {
                 <h2 class="card-title text-center">${this.name}</h2>
                 <p class="card-text text-center">${this.description}</p>
             </div>
+            <button class="btn btn-primary">Fight</button>
             <img src="${this.artwork}" class="card-img-top loc-image" alt="${this.name}">
             <div class="card-body">
                 <h3 class="h5">Monster Stats</h3>
@@ -719,14 +798,14 @@ class Location {
             <h3>Actions</h3>
             <div class="d-flex flex-wrap">`;
         this.currentMonster.getActions().forEach(card => {
-            html += card.generateHTML(true);
+            html += card.generateHTML();
         });
         html += `</div></div>
         <div id="rewards-${this.id}" class="rewards d-none">
                     <h3>Rewards</h3>
                     <div class="d-flex flex-wrap">`;
         this.rewards.forEach(card => {
-            html += card.generateHTML(true);
+            html += card.generateHTML();
         });
         html += `</div></div>
         </div>`;
@@ -744,6 +823,7 @@ class User {
     constructor(heroes, cards){
         this.heroes = heroes;
         this.cards = cards;
+        this.chosenHero = null;
     }
 
     /**
@@ -752,26 +832,69 @@ class User {
      * @param {HTMLElement} htmlElement - The HTML element to display the cards in
      * @param {Class} [cardType] - The type of cards to display
      */
+   
+
     displayCards(htmlElement, cardType = null){
         htmlElement.innerHTML = this.cards
-            .filter(card => cardType ? card.constructor === cardType : true)
-            .map(card => card.generateHTML())
-            .join('');
+        .filter(card => cardType ? card.constructor === cardType : true)
+        .map(card => {
+            const cardHtml = card.generateHTML();
+            const draggable = card.getAvailability() ? 'draggable-card' : '';
+            return `<div class="${draggable}" draggable="${card.getAvailability()}" data-card-id="${card.GUID}">${cardHtml}</div>`;
+        })
+        .join('');
+    
+        // Add event listeners for dragstart
+        htmlElement.querySelectorAll('.draggable-card').forEach(cardElement => {
+            cardElement.addEventListener('dragstart', (event) => {
+                event.dataTransfer.setData('text/plain', event.target.dataset.cardId);
+            });
+        });
     }
 
     displayHeroes(htmlElement, heroModal){
-        htmlElement.innerHTML = this.heroes.map(hero => hero.generateButtonHTML(heroModal.id)).join('');
+        htmlElement.innerHTML = this.heroes.map(hero => hero.generateButtonHTML("preview", heroModal.id)).join('');
         this.heroes.forEach(hero => {
-            const button = document.getElementById(`hero-button-${hero.GUID}`);
+            const button = document.getElementById(`preview-hero-button-${hero.GUID}`);
             button.addEventListener('click', () => this.displayHeroModal(hero, heroModal))
         });
     }
 
-    displayHeroModal(hero, modal){
+    displayHeroesQuest(htmlElement){
+        htmlElement.innerHTML = this.heroes.map(hero => hero.generateButtonHTML("hero-quest")).join('');
+        this.heroes.forEach(hero => {
+            const button = document.getElementById(`hero-quest-hero-button-${hero.GUID}`);
+            button.addEventListener('click',  () => {
+                this.selectHeroQuest(hero);
+            });
+        });
+    }
+
+    selectHeroQuest(hero){
+       const buttons =
+            [...document.querySelectorAll('[id^="hero-quest-hero-button"]')]
+          ;
+        const heroButton = document.getElementById(`hero-quest-hero-button-${hero.GUID}`);
+        buttons.forEach(button => {
+            console.log(button)
+            button.classList.remove('active');
+        })
+        heroButton.classList.add('active');
+        this.chosenHero = hero;
+    }
+
+    /**
+     * A description of the entire function.
+     *
+     * @param {type} hero - the hero to display
+     * @param {type} modal - the modal element that will be displayed
+     * @param {type} classType - action or equipment
+     */
+    displayHeroModal(hero, modal, classType = CardAction){
         const modalBody = modal.querySelector('.modal-body');
         modalBody.innerHTML = hero.generateHTML();
 
-        modalBody.innerHTML += '<h4>Your Cards</h4><div id="user-cards" class="d-flex flex-wrap"></div>';
+        modalBody.innerHTML += '<h4>Your Cards</h4><div class="scrollable-container user-cards-scrollable"><div id="user-cards" class="d-flex flex-wrap scrollable-content"></div></div>';
 
         const userCards = modalBody.querySelector('#user-cards');
         this.displayCards(userCards, CardAction);
@@ -782,21 +905,72 @@ class User {
         const equipmentButton = modalBody.querySelector('#hero-button-equipment');
         const cardElement = modalBody.querySelector('#cards');
 
-        hero.displayActions(cardElement);
+        this.modalDisplayByCardtype(hero, modal, cardElement, actionButton, equipmentButton, userCards, classType);
+        
+        // this.allowHeroCardDrop(hero, cardElement, classType, modal);
 
         // Add event listeners to the action and equipment buttons
-        actionButton.addEventListener('click', () => {
-            equipmentButton.classList.add('d-none-button');
+        actionButton.addEventListener('click', () => this.modalDisplayByCardtype(hero, modal, cardElement, actionButton, equipmentButton, userCards, CardAction));
+
+        equipmentButton.addEventListener('click', () => this.modalDisplayByCardtype(hero, modal, cardElement, actionButton, equipmentButton, userCards, CardEquipment));
+        
+    }
+
+    modalDisplayByCardtype(hero, modal, cardElement, actionButton, equipmentButton, userCards, classType = CardAction){
+        if (classType === CardAction) {
             actionButton.classList.remove('d-none-button');
+            equipmentButton.classList.add('d-none-button');
             this.displayCards(userCards, CardAction);
             hero.displayActions(cardElement);
-        });
-
-        equipmentButton.addEventListener('click', () => {
-            equipmentButton.classList.remove('d-none-button');
+        } else if (classType === CardEquipment) {
             actionButton.classList.add('d-none-button');
+            equipmentButton.classList.remove('d-none-button');
             this.displayCards(userCards, CardEquipment);
             hero.displayEquipment(cardElement);
+        }
+        this.allowHeroCardDrop(hero, cardElement, classType, modal);
+    }
+
+    allowHeroCardDrop(hero, htmlElement, classType, heroModal){
+        // Add drop event listeners for hero cards
+        htmlElement.querySelectorAll('.o-card').forEach(heroCardElement => {
+            heroCardElement.addEventListener('dragover', (event) => {
+                event.preventDefault(); // Necessary to allow dropping
+            });
+    
+            heroCardElement.addEventListener('drop', (event) => {
+                event.preventDefault();
+                const userCardId = event.dataTransfer.getData('text/plain');
+                const userCard = this.cards.find(card => card.GUID === userCardId);
+                const heroCardId = heroCardElement.dataset.cardId;
+                let heroCard;
+                if (classType == CardAction) heroCard = hero.getAction(heroCardId);
+                else if (classType == CardEquipment){
+                    heroCard = hero.getEquipment(heroCardId);
+                    if (heroCard.card_type != userCard.card_type){
+                        heroCard = null;
+                        console.log("Card types don't match");
+                    }
+                    
+                } 
+                
+                if (userCard && heroCard) {
+                    // Replace hero card with user card logic here...
+                    console.log(`The hero card ${heroCard.name} was replaced with ${userCard.name}`);
+                    if (classType == CardAction){
+                        hero.replaceAction(heroCard, userCard);
+                        console.log(hero);
+                        this.displayHeroModal(hero, heroModal, CardAction);
+                    }
+                    else if(classType == CardEquipment){
+                        hero.equipEquipment(userCard);
+                        console.log(hero);
+                        this.displayHeroModal(hero, heroModal, CardEquipment);
+                    }
+                    saveToLocalStorage(hero);
+                    
+                }
+            });
         });
     }
 }

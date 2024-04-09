@@ -12,6 +12,7 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Battambang:wght@100;300;400;700;900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css"/>
     </head>
 <body class="homepage">
     <header class="  py-3 mb-4 border-bottom">
@@ -30,26 +31,51 @@
 
     </header>
     <div id="main" class="container">
-        <button id="test-button">Test Button</button>
 
-        <button id="toggle-cards-btn">Show owned Cards</button>
-        <div id="cardsContainer" style="margin-top: 1rem;" class="d-flex flex-wrap d-none">
-            <!-- Content of cardsContainer -->
-        </div>
+          <!-- Slider main container -->
+          <div class="swiper-container">
+            <!-- Additional required wrapper -->
+            <div class="swiper-wrapper">
+              <!-- Slides -->
+              <div class="swiper-slide text-center" id="crafting">
+                <h2>Crafting</h2>
+              </div>
+              <div class="swiper-slide text-center" id="heroes">
+                <h2>Heroes</h2>
+                <!-- <button id="toggle-hero-btn">Show Heroes</button> -->
+                <div id="heroContainer" style="margin-top: 1rem;" class="d-flex flex-wrap">
+                    <!-- Content of heroContainer -->
+                </div>
+              </div>
+              <div class="swiper-slide text-center" id="cards">
+                <h2>Cards</h2>
+                <!-- <button id="toggle-cards-btn">Show owned Cards</button> -->
+                <div id="cardsContainer" style="margin-top: 1rem;" class="d-flex flex-wrap">
+                    <!-- Content of cardsContainer -->
+                </div>
+              </div>
+              <div class="swiper-slide text-center" id="quests">
+                <h2>Quests</h2>
+                <div>
+                  <h3>Choose Hero</h3>
+                  <div id="heroesQuestContainer" class="d-flex flex-wrap">
+                    <!-- Content of heroesQuestContainer -->
+                  </div>
+                </div>
+                <div id="locationContainer" style="margin-top: 5rem;">
+
+                </div>
+              </div>
+            </div>
+            <!-- If we need navigation buttons -->
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
+          </div>
         
-        <button id="toggle-hero-btn">Show Heroes</button>
-        <div id="heroContainer" style="margin-top: 1rem;" class="d-flex flex-wrap d-none">
-            <!-- Content of heroContainer -->
-        </div>
-        <div id="locationContainer" style="margin-top: 5rem;">
-
-        </div>
-
         <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" id="heroModal">
             <div class="modal-dialog modal-lg" role="document">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h5 class="modal-title">Modal title</h5>
                   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                   </button>
@@ -57,19 +83,26 @@
                 <div class="modal-body">
                   <p>Modal body text goes here.</p>
                 </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-primary">Save changes</button>
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
               </div>
             </div>
-          </div>
+        </div>   
 
     </div>
+
+    <!-- Footer with navigation buttons -->
+    <footer>
+      <button class="footer-btn btn btn-secondary" data-slide="0">Crafting</button>
+      <button class="footer-btn btn btn-secondary" data-slide="1">Heroes</button>
+      <button class="footer-btn btn btn-secondary" data-slide="2">Cards</button>
+      <button class="footer-btn btn btn-secondary" data-slide="3">Quests</button>
+    </footer>
+
+
     <script src="assets/js/jquery-3.7.1.min.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>
     <script src="assets/js/game-functions.js"></script>
     <script src="assets/js/game-classes.js"></script>
     <script src="assets/js/game-custom.js"></script>
+  <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 </body>
 </html>

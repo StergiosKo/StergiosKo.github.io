@@ -2,6 +2,10 @@
     font-family: "Battambang", system-ui;
 }
 
+body{
+  overflow-x: hidden;
+}
+
 @media (min-width: 1200px){
   .container {
     max-width: 1400px;
@@ -37,8 +41,8 @@ article.o-card{
   min-width: 100px;
   /* min-height: 380px;
   width: 285px; */
-  width: 250px;
-  min-height: 350px;
+  width: 230px;
+  min-height: 330px;
   /* box-shadow: 0 0 2rem black; */
   border-radius: 1rem;
   background: black;
@@ -50,7 +54,7 @@ article.o-card{
   .o-card_b{
     flex: 1 ;
     background-color: black;
-    padding: 0.5rem 1rem;
+    padding: 0.3rem 0.8rem;
     text-align: vertical;
     font-family: sans-serif;
     font-size: 14px;
@@ -191,10 +195,56 @@ article.o-card.card-short{
   opacity: 0.5;
 }
 
-.equipment-card{
-  margin: 10px
-}
-
 .equipment-card > p{
   text-align: center;
+}
+
+.scrollable-container{
+  overflow-y: auto;
+}
+
+.user-cards-scrollable{
+  height: 325px;
+}
+
+.modal-header{
+  padding: 0.1rem 0.1rem 0 0;
+  border-bottom: none;
+}
+
+.modal-body .hero-container{
+  margin-top: -10px;
+}
+
+.swiper-button-prev, .swiper-button-next {
+  color: white;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #333;
+  padding: 10px 0;
+  text-align: center;
+  z-index: 1000;
+}
+
+.footer-btn {
+  padding: 5px 10px;
+  margin: 0 5px;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  color: black;
+}
+
+.swiper-slide{
+  margin-bottom: 50px;
+}
+
+.hero-button.active{
+  border-color: red !important;
+  background-color: red !important;
 }
