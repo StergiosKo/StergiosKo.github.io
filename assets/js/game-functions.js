@@ -21,6 +21,8 @@ function startCombat(entity1, entity2) {
     entity1.updateCurrentStats();
     entity2.updateCurrentStats();
 
+    let score = 0;
+
     while(entity1.currentStats.HP > 0 && entity2.currentStats.HP > 0) {
         console.log(`Turn ${turn + 1}`);
 
@@ -28,26 +30,30 @@ function startCombat(entity1, entity2) {
         entity1.roundStart();
         if (entity1.currentStats.HP <= 0) {
             console.log(`${entity2.name} wins!`);
-            return -1;
+            score = -1;
+            break;
         }
         entity1.executeAction(entity2, turn % maxTurns);
         // Check if entity2 is defeated
         if (entity2.currentStats.HP <= 0) {
             console.log(`${entity1.name} wins!`);
-            return 5;
+            score = 2;
+            break;
         }
 
         // Entity 2 plays a card
         entity2.roundStart();
         if (entity2.currentStats.HP <= 0) {
             console.log(`${entity1.name} wins!`);
-            return 5;
+            score = 2;
+            break;
         }
         entity2.executeAction(entity1, turn % maxTurns);
         // Check if entity1 is defeated
         if (entity1.currentStats.HP <= 0) {
             console.log(`${entity2.name} wins!`);
-            return -1;
+            score = -1;
+            break;
         }
 
         turn++;
@@ -57,6 +63,10 @@ function startCombat(entity1, entity2) {
         }
         if (loop >= 5) break;
     }
+    if (score != -1){
+        score = calculateQuestScore(entity1.maxStats.HP, entity1.currentStats.HP, loop * 5 + turn);
+    }
+    return score;
 }
 
 function getRandomValue(min, max) {
@@ -419,6 +429,25 @@ function toggleSection(locationId, section, buttonId) {
 }
 
 
+function calculateLocalStorageSizeInKB() {
+    let totalSizeInBytes = 0;
+    
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key);
+
+        totalSizeInBytes += byteCount(key);
+        totalSizeInBytes += byteCount(value);
+        
+        // totalSizeInBytes += key.length * 2; // Each character is approx. 2 bytes
+        // totalSizeInBytes += value.length * 2; // Each character is approx. 2 bytes
+    }
+    
+    const totalSizeInKB = totalSizeInBytes / 1024; // Convert bytes to kilobytes
+    return totalSizeInKB;
+}
+
+
 function checkIfNewUser() {
     const newUserKey = 'isNewUser';
 
@@ -441,56 +470,48 @@ function checkIfNewUser() {
 
 async function readyGame(user){
     const cardsContainer = document.getElementById('cardsContainer');
-    // const cardsToggleBtn = document.getElementById('toggle-cards-btn');
-
-    // cardsToggleBtn.addEventListener('click', () => {
-    //     cardsContainer.classList.toggle('d-none');
-    // });
 
     const heroContainer = document.getElementById('heroContainer');
-    // const heroToggleBtn = document.getElementById('toggle-hero-btn');
-
-    // heroToggleBtn.addEventListener('click', () => {
-    //     heroContainer.classList.toggle('d-none');
-    // });
 
     const heroModal = document.getElementById('heroModal');
 
-    user.displayCards(cardsContainer);
-    user.displayHeroes(heroContainer, heroModal);
-
     let locations = await createLocations("assets/json/locations.json", "assets/json/gameRewards.json");
-
-    const locationHTML = locations[0].generateHTML();
+    const locModal = document.getElementById('locationModal');
 
     // Find the element with the id 'location-container'
     const locationContainer = document.getElementById('locationContainer');
-    locationContainer.innerHTML = locationHTML;
 
     const heroesQuestContainer = document.getElementById('heroesQuestContainer');
+
+    const crafterContainer = document.getElementById('crafterContainer');
+    
+    user.saveUIElement(cardsContainer, 'cardsEl');
+    user.saveUIElement(heroContainer, 'heroesEl');
+    user.saveUIElement(heroModal, 'heroModalEl');
+    user.saveUIElement(heroesQuestContainer, 'heroQuestEl');
+    user.saveUIElement(crafterContainer, 'crafterEl');
+    
+
+    user.displayCards(cardsContainer);
+    user.displayHeroes(heroContainer, heroModal);
+    user.displayCrafters();
+
+    const locationHTML = locations[0].generateMiniHTML();
+    locationContainer.innerHTML = locationHTML;
+
+
+    locations.forEach(location => {
+        location.addMiniButtonFunctionality(locModal);
+        // const fightButton = document.getElementById('fight-button-0');
+        // fightButton.addEventListener('click', () => user.startQuest(location));
+    })
+
     user.displayHeroesQuest(heroesQuestContainer);
 
     // locations[0].startQuest(heroesArray[0]);
-    // checkOngoingQuests(locations, heroesArray);
-
-}
-
-function calculateLocalStorageSizeInKB() {
-    let totalSizeInBytes = 0;
-    
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        const value = localStorage.getItem(key);
-
-        totalSizeInBytes += byteCount(key);
-        totalSizeInBytes += byteCount(value);
-        
-        // totalSizeInBytes += key.length * 2; // Each character is approx. 2 bytes
-        // totalSizeInBytes += value.length * 2; // Each character is approx. 2 bytes
-    }
-    
-    const totalSizeInKB = totalSizeInBytes / 1024; // Convert bytes to kilobytes
-    return totalSizeInKB;
+    checkOngoingQuests(locations, user.heroes);
+    console.log(user)
+    // user.heroes[0].receiveEXPAll(1000);
 }
 
 function byteCount(s) {
@@ -506,7 +527,6 @@ async function createNewUser() {
             loadJSONFile("assets/json/gameBasicCards.json")
         ]);
 
-    console.log("starting")
     const [actionCards, equipmentCards] = [
         createCard(2000, 1, actionData, CardAction, getEffectValues, true),
         createCard(3000, 1, equipmentData, CardEquipment, getEquipmentStatsValues, true)
@@ -525,7 +545,6 @@ async function createNewUser() {
 
     const hero = new Hero('Mr Knight', generateGUID(), heroActions, equipmentCards, 1, 0);
 
-    console.log("ending")
     let extraActions = createCard(2000, 1, actionData, CardAction, getEffectValues, true);
     let extraEquipment = createCard(3000, 1, equipmentData, CardEquipment, getEquipmentStatsValues, true);
     allCards.push(...extraActions);
@@ -535,7 +554,10 @@ async function createNewUser() {
     let newCard = createCard(2000, 1, actionData, CardAction, getEffectValues, true);
     allCards.push(newCard[0]);
 
-    const user = new User([hero], allCards);
+    let actionCrafter = new Crafter("Action Crafter", CardAction, actionData, 1, 0);
+    let equipmentCrafter = new Crafter("Equipment Crafter",CardEquipment, equipmentData, 1, 0);
+
+    user = new User(heroesArray, cardsArray, [actionCrafter, equipmentCrafter]);
 
     console.log(user);
     
@@ -546,19 +568,59 @@ async function createExistingUser(){
     console.log("Existing user detected. Loading Cards");
     let actionData = await loadJSONFile("assets/json/gameActionCards.json");
     let equipmentData = await loadJSONFile("assets/json/gameEquipmentCards.json");
-    let basicCardsData = await loadJSONFile("assets/json/gameBasicCards.json");
+    let basicCardsData = await loadJSONFile("assets/json/gameRewards.json");
 
     let cardsArray = deserializeAllGUIDs(actionData, equipmentData, basicCardsData);
 
     let heroesArray = deserializeAllHeroes(cardsArray);
 
-    const user = new User(heroesArray, cardsArray);
-    console.log(user);
+    let actionCrafter = new Crafter("Action Crafter", CardAction, actionData, 1, 0);
+    let equipmentCrafter = new Crafter("Equipment Crafter",CardEquipment, equipmentData, 1, 0);
+
+    user = new User(heroesArray, cardsArray, [actionCrafter, equipmentCrafter]);
 
     readyGame(user);
     saveToLocalStorage(user.heroes[0]);
-    // let actionGUIDs = user.heroes[0].cardsActions.map(card => card.saved ? "test" : null);
-    // console.log(actionGUIDs)
+    
+    actionCrafter.craftCard(2000);
+    equipmentCrafter.craftCard(3000);
+
+    actionCrafter.matchMaterialsToCard([1001, 1001])
+
 }
 
-// console.log(1024 * 1024 * 5 - escape(encodeURIComponent(JSON.stringify(localStorage))).length);
+function capitalizeWord(string){
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function calculateWidth(value, max) {
+    return (value / max) * 100;
+}
+
+function calculateQuestScore(maxhealth, healthLeft, numTurns) {
+    const healthScore = (Math.pow(healthLeft / maxhealth, 2)) * 2.5;
+    const turnsScore = (1 - 1 / (1 + Math.sqrt(numTurns + 1))) * 2.5;
+    let totalScore = healthScore + turnsScore;
+    
+    // Ensure the score is between 0 and 5
+    totalScore = Math.max(0, Math.min(5, totalScore));
+    
+    return totalScore;
+}
+
+
+function rarityToNumber(rarity) {
+    const rarityValues = {
+        "common": 5,
+        "uncommon": 4,
+        "rare": 3,
+        "epic": 2,
+        "legendary": 1
+    };
+
+    // Convert the rarity string to lowercase to ensure case-insensitive matching
+    rarity = rarity.toLowerCase();
+
+    // Return the numerical value for the given rarity, or a default value if the rarity is not recognized
+    return rarityValues[rarity] || 0; // Assuming 0 as a default value for unknown rarities
+}

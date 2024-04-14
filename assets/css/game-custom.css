@@ -248,3 +248,36 @@ footer {
   border-color: red !important;
   background-color: red !important;
 }
+
+.location-mini button{
+  padding: 0;
+}
+
+.location-mini img{
+  max-height: 300px;
+}
+
+.location .fight-button{
+  max-width: 100px;
+  margin: 20px auto;
+}
+
+.location-mini .location-status{
+  border-bottom: 1px solid gray;
+}
+
+.location-mini .location-status.available{
+  color: green;
+}
+
+.location-mini .location-status.quest{
+  color: red;
+}
+
+.location-mini .location-status.reward{
+  color: cyan;
+}
+
+.reward-exp .progress{
+  background-color: gray;
+}

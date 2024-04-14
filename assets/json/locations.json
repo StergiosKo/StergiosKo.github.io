@@ -6,7 +6,8 @@
         "description": "A cool first enemy",
         "level": 5,
         "rewards": [1000, 1001],
-        "time": 5,
+        "exp": 20,
+        "time": 3,
         "attributes": {
             "STR": 5,
             "DEX": 3,

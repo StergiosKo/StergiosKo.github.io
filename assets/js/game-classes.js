@@ -193,14 +193,14 @@ class Hero extends Entity {
     generateButtonHTML(idname, modalId) {
         return `
             <button id="${idname}-hero-button-${this.GUID}" class="hero-button btn btn-primary ${this.available ? '' : 'd-none-button'}" ${modalId ? 'data-toggle="modal"' : ''}  data-target="#${modalId}">
-                <h4>${this.name}</h4>
-                <p>Level: ${this.level}, Exp: ${this.exp}/${this.maxExp}</p>
+                ${this.generateBasicHTML()}
             </button>
         `;
     }
 
-    testMethod(){
-        console.log("test")
+    generateBasicHTML(){
+        return `<h4>${this.name}</h4>
+        <p>Level: ${this.level}, Exp: ${this.exp}/${this.maxExp}</p>`
     }
 
     /**
@@ -209,10 +209,41 @@ class Hero extends Entity {
     levelUP(){
         if (this.level < this.MAX_LEVEL){
             this.level += 1;
-            updateStatsPerLevel();
-            updateMaxExp();
+            this.exp = 0;
+            this.updateStatsPerLevel();
+            this.updateMaxExp();
             this.updateCurrentStats();
+            console.log("Level up!");
+            console.log(this);
         }
+    }
+
+    receiveEXP(exp){
+        if (this.exp + exp >= this.maxExp){
+            console.log(this.exp + " " + exp + " " + this.maxExp);
+            let remainingExp = this.maxExp - this.exp;
+            this.levelUP();
+            return remainingExp;
+        }
+        else{
+            this.exp += exp;
+        }
+        
+        return this.exp;
+    }
+
+    receiveEXPAll(exp){
+        let count = 0;
+        while(exp > 0){
+            exp = exp - this.receiveEXP(exp);
+            if (count > 100 || this.level == this.MAX_LEVEL) break;
+        }
+        // Return final exp
+        return this.exp;
+    }
+
+    getMaxEXP(){
+        return this.maxExp;
     }
 
     /**
@@ -227,7 +258,7 @@ class Hero extends Entity {
             "name": "Punch",
             "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
             "description": "Deal {0} STR damage",
-            "mana": 1,
+            "mana": 0,
             "card_type": "Force",
             "rarity": "Common",
             "level": 1,
@@ -338,6 +369,10 @@ class Hero extends Entity {
         return this.available;
     }
 
+    getEXP(){
+        return this.exp;
+    }
+
 
     // Hero-specific methods or overrides of Entity methods
     updateCurrentStats() {
@@ -375,9 +410,7 @@ class Hero extends Entity {
     equipEquipment(equipment) {
         const type = equipment.piece; // "Head", "Body", "Weapon", "Accessory"
         if (!this.cardsEquipment[type]) {
-            console.log(`${this.name} Equipping new ${type} equipment: ${equipment.name}`);
         } else {
-            console.log(`${this.name} Replacing ${type} equipment: ${this.cardsEquipment[type].name} with ${equipment.name}`);
             // Remove the stats of the currently equipped equipment of the same type
             this.updateStats(this.cardsEquipment[type], false);
         }
@@ -518,6 +551,14 @@ class Card {
 
     setAvailability(bool){
         this.available = bool;
+    }
+
+    addQuantity(quantity){
+        this.quantity += quantity;
+    }
+
+    removeQuantity(quantity){
+        this.quantity -= quantity;
     }
 
 }
@@ -673,6 +714,7 @@ class Location {
         this.description = locationData.description;
         this.level = locationData.level;
         this.time = locationData.time; // Quest duration in some unit of time
+        this.exp = locationData.exp;
         this.monsterData = {
             attributes: locationData.attributes,
             stats: locationData.stats,
@@ -693,6 +735,17 @@ class Location {
             }
         });
         this.currentOpenSection = 'actions';  // Actions are open by default
+        this.available = 'available';
+        this.currentHero;
+        this.currentScore;
+
+        // UI
+        this.availabilityUI;
+    }
+    
+    setAvailability(availability){
+        this.available = availability;
+        this.updateAvailabilityUI();
     }
 
     createMonster() {
@@ -714,25 +767,27 @@ class Location {
         const endTime = new Date().getTime() + this.time * 1000; // Convert seconds to milliseconds
         const questData = { endTime: endTime, heroGUID: hero.GUID, score: score };
         localStorage.setItem(`questData-${this.id}`, JSON.stringify(questData));
+        this.setAvailability('quest');
         
         this.checkQuestEnd(hero, score); // Pass the hero and score to checkQuestEnd
     }
 
     checkQuestEnd(hero, score) {
         const questData = JSON.parse(localStorage.getItem(`questData-${this.id}`));
+        this.currentHero = hero;
         if (questData) {
             const { endTime, heroGUID } = questData;
             const currentTime = new Date().getTime();
     
             if (currentTime >= endTime) {
+                this.setAvailability('reward');
                 hero.setAvailability(true);
+                this.currentScore = score;
                 console.log(`The quest in ${this.name} who the hero ${hero.name} took has ended with a score of ${score}.`);
-                // console.log(`The hero: ${heroGUID} is now free`);
-                // Perform any actions needed after quest end, e.g., reward the hero
-                // this.receiveRewards(heroGUID); // Pass the hero's GUID to the receiveRewards method
-                localStorage.removeItem(`questData-${this.id}`);
+
             } else {
                 // If the quest is not yet finished, set a timeout to check again at the estimated end time
+                this.setAvailability('quest');
                 setTimeout(() => {
                     this.checkQuestEnd(hero, score);
                 }, endTime - currentTime);
@@ -743,57 +798,178 @@ class Location {
     // Formula for reward quantity
     getQuantity(rarity, score){
         let randomVal = getRandomNumber(0, 5 - score);
-        return Math.round(this.rarityToNumber(rarity) - randomVal)
+        return Math.round(rarityToNumber(rarity) - randomVal)
     }
 
-    rarityToNumber(rarity) {
-        const rarityValues = {
-            "common": 5,
-            "uncommon": 4,
-            "rare": 3,
-            "epic": 2,
-            "legendary": 1
-        };
-    
-        // Convert the rarity string to lowercase to ensure case-insensitive matching
-        rarity = rarity.toLowerCase();
-    
-        // Return the numerical value for the given rarity, or a default value if the rarity is not recognized
-        return rarityValues[rarity] || 0; // Assuming 0 as a default value for unknown rarities
-    }
 
-    receiveRewards() {
-        const score = 5; // Given score value
+    receiveCards() {
+        const cards = [];
         this.rewards.forEach(reward => {
-            console.log(reward.name)
-            const quantity = this.getQuantity(reward.rarity, score);
-    
-            for (let i = 0; i < quantity; i++) {
-                const card = new Card(reward); // Assuming reward includes all necessary data for creating a Card
-                console.log(card);
-            }
+            const quantity = this.getQuantity(reward.rarity, this.currentScore);
+            const card = user.receiveResourceCard(reward, quantity);
+            cards.push(card);
         });
+        return cards;
     }
 
-    generateButtonHTML(){
+    giveRewards(htmlElement){
+        localStorage.removeItem(`questData-${this.id}`);
         
+        if (this.currentScore < 0){
+            let html = `<div>
+            <h3>Quest Failed</h3>
+            </div>`;
+            htmlElement.innerHTML = html;
+            return;
+        }
+
+        const cards = this.receiveCards(this.currentScore);
+        const prevLevel = this.currentHero.level;
+        const prevExp = this.currentHero.getEXP();
+        const exp = this.currentHero.receiveEXPAll(this.exp);
+        const level = this.currentHero.level;
+        saveToLocalStorage(this.currentHero);
+
+        const maxExp = this.currentHero.getMaxEXP();
+
+        // Create a dynamic progress bar
+        let html = `
+        <div class="rewards">
+            <h3>Quest Victory</h3>
+            <p>The quest in ${this.name} who the hero ${this.currentHero.name} took has ended with a score of ${Math.round(this.currentScore)}.</p>
+            <div class="reward-cards d-flex flex-wrap">
+                ${cards.map(card => card.generateHTML()).join('')}
+            </div>
+            <div class="reward-exp">
+            <h4>${this.currentHero.name} Level = <span id="hero-level">${prevLevel < level ? ` ${prevLevel} -> ` : ''}${level}</span></h4>
+                <div>
+                    <div class="row">
+                    <p class="col-1">EXP Bar</p>
+                    <p class="col-10 text-center">${prevExp} + ${this.exp} = ${exp} / ${this.currentHero.getMaxEXP()}</p>
+                    </div>
+                    <div class="progress">
+                        <div id="prev-exp-bar" class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: ${calculateWidth(prevExp, maxExp)}%" aria-valuenow="${prevExp}" aria-valuemin="0" aria-valuemax="${maxExp}"></div>
+                        <div id="new-exp-bar" class="progress-bar progress-bar-striped bg-warning" role="progressbar" style="width: 0%" aria-valuenow="${prevExp}" aria-valuemin="${prevExp}" aria-valuemax="${maxExp}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+        htmlElement.innerHTML = html;
+
+        // Check if the hero has leveled up
+        if (prevLevel == level) {
+            // Hero did not level up, just visualize the current EXP gain
+            this.visualizeBar(exp, prevExp, maxExp, 1000);
+        } else {
+            // Hero has leveled up at least once
+            this.visualizeBar(exp, 0, maxExp, 1000);
+        }
+
+    }
+
+    visualizeBar(gained, start, end, speed){
+        let current = start;
+
+        const intervalTime = 30; // Time in milliseconds
+        const updateAmount = (gained - start) / (speed / intervalTime); // Adjust the 1000 to control the duration of the animation
+        const prevExpBar = document.getElementById('prev-exp-bar');
+        const newExpBar = document.getElementById('new-exp-bar');
+
+        // Set the initial width of the prevExpBar
+        prevExpBar.style.width = calculateWidth(start, end) + '%';
+
+        // Update the newExpBar over time
+        const interval = setInterval(() => {
+            current += updateAmount; // Increment the currentExp towards the target exp
+
+            if (current >= gained) {
+                current = gained; // Ensure we don't go over the target exp
+                clearInterval(interval); // Stop the interval when we reach the target exp
+            }
+
+            const newExpWidth = calculateWidth(current - start, end);
+            newExpBar.style.width = newExpWidth + '%';
+            newExpBar.setAttribute('aria-valuenow', current);
+        }, intervalTime);
+    }
+
+    generateMiniHTML(){
+        let html = `
+        <div class="location-mini">
+        <button id="location-mini-${this.id}">
+            <p class="location-status w100 ${this.available}">${capitalizeWord(this.available)}</p>
+            <h3>${this.name}</h3>
+            <img src="${this.artwork}" alt="${this.name}">
+        </button>
+        </div>`
+        
+        return html;
+    }
+
+    addMiniButtonFunctionality(modal){
+        let button = document.getElementById(`location-mini-${this.id}`);
+        button.addEventListener('click', () => this.displayLocModal(modal));
+        this.availabilityUI = button.querySelector('.location-status');
+    }
+
+    updateAvailabilityUI(){
+        this.availabilityUI.innerHTML = capitalizeWord(this.available);
+        this.availabilityUI.classList.remove('available', 'quest', 'reward');
+        this.availabilityUI.classList.add(this.available);
+    }
+
+    displayLocModal(modal){
+        const modalBody = modal.querySelector('.modal-body');
+        let modalJqueryId = "#" + $(modal).attr('id');
+        if (this.available === 'reward'){
+            this.giveRewards(modalBody);
+            this.setAvailability('available');
+            user.displayHeroesQuest();
+        }
+        else if (!user.chosenHero || this.available !== 'available'){
+            console.log("Hero not selected or unavailable");
+            return
+        }
+        else {
+            modalBody.innerHTML = this.generateHTML();
+            const fightButton = modal.querySelector(`#fight-button-${this.id}`);
+            fightButton.addEventListener('click', () => {
+                this.startQuest(user.chosenHero);
+                this.available = 'quest';
+
+                // get miniHTML element and change availability
+
+                $(modalJqueryId).modal('hide');
+        });
+        }
+        // Code to open the modal (e.g., using jQuery's modal method)
+        $(modalJqueryId).modal('show');
     }
 
     generateHTML() {
         let html = `
-        <div class="location card mb-3" data-location-id="${this.id}>
-            <div class="card-header">
-                <h2 class="card-title text-center">${this.name}</h2>
-                <p class="card-text text-center">${this.description}</p>
-            </div>
-            <button class="btn btn-primary">Fight</button>
-            <img src="${this.artwork}" class="card-img-top loc-image" alt="${this.name}">
-            <div class="card-body">
-                <h3 class="h5">Monster Stats</h3>
-                <p class="card-text"><small>${JSON.stringify(this.monsterData.stats)}</small></p>
-                <button id="location-button-${this.id}-actions" class="btn btn-primary" onclick="toggleSection('${this.id}', 'actions', 'location-button-${this.id}-')">Show Actions</button>
-                <button id="location-button-${this.id}-rewards" class="btn btn-primary d-none-button" onclick="toggleSection('${this.id}', 'rewards', 'location-button-${this.id}-')">Show Rewards</button>
-            </div>
+        <div class="location card mb-3" data-location-id="${this.id}">
+            <div class="row">
+                <div class="col-4">
+                    <h2 class="card-title text-center">${this.name}</h2>
+                    <p class="card-text text-center">${this.description}</p>
+                    <img src="${this.artwork}" class="card-img-top loc-image" alt="${this.name}">
+                </div>  
+                <div class="card-body col-4">
+                    <h3 class="h5">Monster Stats</h3>
+                    <p class="card-text"><small>${JSON.stringify(this.monsterData.stats)}</small></p>
+                    <button id="location-button-${this.id}-actions" class="btn btn-primary" onclick="toggleSection('${this.id}', 'actions', 'location-button-${this.id}-')">Show Actions</button>
+                    <button id="location-button-${this.id}-rewards" class="btn btn-primary d-none-button" onclick="toggleSection('${this.id}', 'rewards', 'location-button-${this.id}-')">Show Rewards</button>
+                </div>
+                <div class="col-4">
+                    <h3>Selected Hero</h3>
+                    <div class="selected-hero">
+                        ${user.displayChosenHero()}
+                    </div>
+                    ${this.available === 'available' ? `<button id="fight-button-${this.id}" class="btn btn-primary fight-button">Fight</button>` : ''}
+                </div>
+            </div>         
             <div id="actions-${this.id}" class="actions">
             <h3>Actions</h3>
             <div class="d-flex flex-wrap">`;
@@ -813,17 +989,22 @@ class Location {
         return html;
     }
 
-    testMethod(){
-        console.log("test")
-    }
 }
 
 class User {
 
-    constructor(heroes, cards){
+    constructor(heroes, cards, crafters){
         this.heroes = heroes;
         this.cards = cards;
+        this.crafters = crafters;
         this.chosenHero = null;
+
+        // UI
+        this.heroQuestEl = null;
+        this.cardsEl = null;
+        this.heroesEl = null;
+        this.heroModalEl = null;
+        this.crafterEl = null;
     }
 
     /**
@@ -832,10 +1013,49 @@ class User {
      * @param {HTMLElement} htmlElement - The HTML element to display the cards in
      * @param {Class} [cardType] - The type of cards to display
      */
+
+    saveData(){
+        this.heroes.forEach(hero => saveToLocalStorage(hero));
+        this.cards.forEach(card => saveToLocalStorage(card));
+    }
+
+    displayCrafters(){
+        this.crafterEl.innerHTML = '';
+        this.crafters.forEach(crafter => {
+            this.crafterEl.innerHTML += crafter.generateHTML();
+        });
+    }
+
+    receiveCraftedCard(card){
+        this.cards.push(card);
+        // saveToLocalStorage(card);
+    }
    
+    receiveResourceCard(cardInfo, quantity){
+        let card = this.cards.find(card => card.id === cardInfo.id);
+        let testCard = new Card(cardInfo, null, quantity, false)
+        if (card){
+            card.addQuantity(quantity);
+
+        }
+        else{
+            card = new Card(cardInfo, generateGUID(), quantity, true)
+            this.cards.push(card);
+        }
+        saveToLocalStorage(card);
+        return testCard;
+    }
+
+    saveUIElement(element, name){
+        this[name] = element
+    }
 
     displayCards(htmlElement, cardType = null){
-        htmlElement.innerHTML = this.cards
+
+        let tempEl = htmlElement;
+        if(!htmlElement) tempEl = this.cardsEl;
+
+        tempEl.innerHTML = this.cards
         .filter(card => cardType ? card.constructor === cardType : true)
         .map(card => {
             const cardHtml = card.generateHTML();
@@ -845,7 +1065,7 @@ class User {
         .join('');
     
         // Add event listeners for dragstart
-        htmlElement.querySelectorAll('.draggable-card').forEach(cardElement => {
+        tempEl.querySelectorAll('.draggable-card').forEach(cardElement => {
             cardElement.addEventListener('dragstart', (event) => {
                 event.dataTransfer.setData('text/plain', event.target.dataset.cardId);
             });
@@ -853,15 +1073,22 @@ class User {
     }
 
     displayHeroes(htmlElement, heroModal){
-        htmlElement.innerHTML = this.heroes.map(hero => hero.generateButtonHTML("preview", heroModal.id)).join('');
+        let tempEl = htmlElement;
+        if(!htmlElement) tempEl = this.heroesEl;
+        let modalEl = heroModal;
+        if(!heroModal) modalEl = this.heroModalEl;
+
+        tempEl.innerHTML = this.heroes.map(hero => hero.generateButtonHTML("preview", modalEl.id)).join('');
         this.heroes.forEach(hero => {
             const button = document.getElementById(`preview-hero-button-${hero.GUID}`);
-            button.addEventListener('click', () => this.displayHeroModal(hero, heroModal))
+            button.addEventListener('click', () => this.displayHeroModal(hero, modalEl))
         });
     }
 
     displayHeroesQuest(htmlElement){
-        htmlElement.innerHTML = this.heroes.map(hero => hero.generateButtonHTML("hero-quest")).join('');
+        let tempEl = htmlElement;
+        if(!htmlElement) tempEl = this.heroQuestEl;
+        tempEl.innerHTML = this.heroes.map(hero => hero.generateButtonHTML("hero-quest")).join('');
         this.heroes.forEach(hero => {
             const button = document.getElementById(`hero-quest-hero-button-${hero.GUID}`);
             button.addEventListener('click',  () => {
@@ -876,11 +1103,23 @@ class User {
           ;
         const heroButton = document.getElementById(`hero-quest-hero-button-${hero.GUID}`);
         buttons.forEach(button => {
-            console.log(button)
             button.classList.remove('active');
         })
         heroButton.classList.add('active');
         this.chosenHero = hero;
+    }
+
+    startQuest(location){
+        if (!this.chosenHero) {
+            console.log("Please select a hero");
+            return;
+        }
+        console.log(this.chosenHero.name + " takes a quest to " + location.name);
+    }
+
+
+    displayChosenHero(){
+        return this.chosenHero.generateBasicHTML();
     }
 
     /**
@@ -959,18 +1198,205 @@ class User {
                     console.log(`The hero card ${heroCard.name} was replaced with ${userCard.name}`);
                     if (classType == CardAction){
                         hero.replaceAction(heroCard, userCard);
-                        console.log(hero);
                         this.displayHeroModal(hero, heroModal, CardAction);
                     }
                     else if(classType == CardEquipment){
                         hero.equipEquipment(userCard);
-                        console.log(hero);
                         this.displayHeroModal(hero, heroModal, CardEquipment);
                     }
+                    this.displayHeroes();
                     saveToLocalStorage(hero);
                     
                 }
             });
         });
     }
+}
+
+class Crafter{
+
+    constructor(name, cardType, cardsData, level, exp, knownCards = {}){
+        this.name = name;
+        this.cardType = cardType;
+        this.cardsData = cardsData;
+        this.level = level;
+        this.exp = exp;
+        this.maxExp = level * level/2 * 100;
+        this.knownCards = knownCards;
+        this.updateMaxExp();
+        this.MAX_LEVEL = 50;
+    }
+
+    serialize(){
+        return JSON.stringify({
+            classType: 'Crafter',
+            level: this.level,
+            exp: this.exp,
+            knownCards: this.knownCards
+        });
+    }
+
+    craftCard(cardId){
+        const card = this.cardsData.find(card => card.id === cardId);
+        const craftingCount = this.updateCardMastery(card);
+        let quality = this.calculateQuality(card, craftingCount);
+        let scaledData = this.getScaling(card, quality);
+        let craftedCard = new this.cardType(scaledData, generateGUID(), 1, false);
+        user.receiveCraftedCard(craftedCard);
+        console.log(craftedCard)
+        this.receiveEXPAll(this.getCardExp(card, quality))
+    }
+
+    getScaling(card, quality){
+        const updatedCard = JSON.parse(JSON.stringify(card)); // Create a deep copy of the card object
+
+        if (updatedCard.effects){
+            updatedCard.effects.forEach(effect => {
+                const effectType = Object.keys(effect.scaling)[0]; // e.g., "STR"
+                const range = effect.scaling[effectType];
+                if (range.min !== undefined && range.max !== undefined) {
+                    let scalingValue = range.min + (quality / 100) * (range.max - range.min);
+                    effect.scaling[effectType] = parseFloat(scalingValue.toFixed(2));
+                }
+            });
+        }
+        if (updatedCard.stats){
+            Object.keys(updatedCard.stats).forEach(statType => {
+                const range = updatedCard.stats[statType];
+                if (range.min !== undefined && range.max !== undefined) {
+                    let scalingValue = range.min + (quality / 100) * (range.max - range.min);
+                    updatedCard.stats[statType] = Math.round(scalingValue);
+                }
+            });
+        }
+        return updatedCard;
+    }
+
+
+    calculateQuality(card, craftingCount) {
+        let levelDifference = Math.max(-10, Math.min(10, this.level - card.level));
+        let mastery = Math.min(10, craftingCount);
+        
+        // Assuming rarityToNumber is a function that converts the rarity to a numerical value.
+        let rarityValue = rarityToNumber(card.rarity);
+        
+        // Calculate a scaling factor based on stats.
+        // You can adjust the weights of each component according to your game's balance requirements.
+        let scalingFactor = (levelDifference / 20 + rarityValue / 5 + mastery / 10) / 3; // Normalized to [0,1]
+        
+        // Generate a random number between 0 and scalingFactor. This means better stats (higher scalingFactor) 
+        // have a higher chance to get closer to the maximum scaling increase.
+        let randomIncrease = Math.random() * scalingFactor;
+        
+        // Calculate the percentage increase based on the randomIncrease, scaling from 1% to 30%.
+        let scalingPercentageIncrease = 0.01 + (0.29 * randomIncrease);
+        
+        // Calculate the base scaling.
+        let scaling = (0.4 * (levelDifference + 4) + 0.4 * rarityValue + 0.2 * mastery) * 10;
+        
+        // Apply the percentage increase to the scaling.
+        scaling *= (1 + scalingPercentageIncrease);
+        
+        // Ensure the total does not exceed 100.
+        return Math.max(1, Math.min(scaling, 100));
+    }
+
+    updateCardMastery(card) {
+        if (this.knownCards.hasOwnProperty(card.id)) {
+            this.knownCards[card.id]++;
+            return this.knownCards[card.id] - 1;
+        } else {
+            this.knownCards[card.id] = 1;
+            return 0;
+        }
+    }
+
+    getCardMastery(cardId) {
+        if (this.knownCards.hasOwnProperty(cardId)) {
+            return this.knownCards[cardId] - 1;
+        } else {
+            return 0;
+        }      
+    }
+
+    levelUP(){
+        if (this.level < this.MAX_LEVEL){
+            this.level += 1;
+            this.exp = 0;
+            this.updateMaxExp();
+        }
+    }
+
+    updateMaxExp(){      
+        this.maxExp = this.level * this.level/2 * 100;
+    }
+
+    receiveEXP(exp){
+        if (this.exp + exp >= this.maxExp){
+            let remainingExp = this.maxExp - this.exp;
+            this.levelUP();
+            return remainingExp;
+        }
+        else{
+            this.exp += exp;
+        }
+        
+        return this.exp;
+    }
+
+    receiveEXPAll(exp){
+        let count = 0;
+        while(exp > 0){
+            exp = exp - this.receiveEXP(exp);
+            if (count > 100 || this.level == this.MAX_LEVEL) break;
+        }
+        // Return final exp
+        return this.exp;
+    }
+
+    getCardExp(card, scaling){
+        let exp = Math.round(card.level * Math.max(scaling/100, 0.1) * (card.level / rarityToNumber(card.rarity)) * 100)
+        return exp
+    }
+
+    matchMaterialsToCard(materials) {
+        materials.sort();
+        // Assuming each card has a materials field that is an array of material ids
+        const matchedCard = this.cardsData.find(card => {
+            // Sort the card's materials array for consistent comparison
+            const sortedCardMaterials = [...card.materials].sort();
+            // Check if the card's materials match the materials provided exactly
+            // (same elements and same length)
+            return (
+                sortedCardMaterials.length === materials.length &&
+                sortedCardMaterials.every((material, index) => material === materials[index])
+            );
+        });
+    
+        if (matchedCard) {
+            console.log(matchedCard); // Print the matched card's id
+            // Print the number of times the card was crafted
+            console.log(this.getCardMastery(matchedCard.id));
+        } else {
+            console.log(null); // No card found
+        }
+    }
+
+    generateHTML(){
+        let html = `
+        <div class="col-12 row">
+            <div class="card crafter m-3">
+            <h3>${this.name}</h3>
+            <div class="text">
+                <p>Level: ${this.level}, Exp: ${this.exp}/${this.maxExp}</p>
+            </div>
+            <div class="slots">
+                <button>Craft</button>
+            </div>
+            </div>
+        </div>
+        `;
+        return html;
+    }
+
 }
