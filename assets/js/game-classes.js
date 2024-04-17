@@ -755,6 +755,7 @@ class Location {
         this.available = 'available';
         this.currentHero;
         this.currentScore;
+        this.endTime;
 
         // UI
         this.availabilityUI;
@@ -762,7 +763,22 @@ class Location {
     
     setAvailability(availability){
         this.available = availability;
-        this.updateAvailabilityUI();
+        let text = this.available;
+        if(this.available === 'quest'){
+            // Set interval function that displays time left to craft
+            let secondsLeft = (this.endTime - Date.now()) / 1000;
+            let interval = setInterval(() => {
+                secondsLeft = (this.endTime - Date.now()) / 1000;
+                const minutes = Math.floor(secondsLeft / 60);
+                const seconds = Math.ceil(secondsLeft % 60);
+                let currentText =  `${minutes}m ${seconds}s`;
+                this.updateAvailabilityUI(this.available, currentText);
+            }, 1000);
+            setTimeout(() => {
+                clearInterval(interval);
+            }, (this.endTime - Date.now()));
+        }
+        this.updateAvailabilityUI(this.available, text);
     }
 
     createMonster() {
@@ -794,6 +810,7 @@ class Location {
         this.currentHero = hero;
         if (questData) {
             const { endTime, heroGUID } = questData;
+            this.endTime = endTime;
             const currentTime = new Date().getTime();
     
             if (currentTime >= endTime) {
@@ -905,10 +922,10 @@ class Location {
         this.availabilityUI = button.querySelector('.location-status');
     }
 
-    updateAvailabilityUI(){
-        this.availabilityUI.innerHTML = capitalizeWord(this.available);
+    updateAvailabilityUI(availability, text){
+        this.availabilityUI.innerHTML = capitalizeWord(text);
         this.availabilityUI.classList.remove('available', 'quest', 'reward');
-        this.availabilityUI.classList.add(this.available);
+        this.availabilityUI.classList.add(availability);
     }
 
     displayLocModal(modal){
@@ -1010,6 +1027,7 @@ class User {
     saveData(){
         this.heroes.forEach(hero => saveToLocalStorage(hero));
         this.cards.forEach(card => saveToLocalStorage(card));
+        this.saveCrafters();
     }
 
     displayCrafters(){
@@ -1243,32 +1261,57 @@ class User {
         }
     }
 
-    generateSortButtons(element){
+    generateSortButtons(buttonContainer, cardContainer, classType = null) {
 
-        // Need to reactivate displayCards method
+        // Sort by class if classType is not provided
+        if(!classType){
+            const classSortButton = document.createElement('button');
+            classSortButton.classList.add('btn', 'btn-primary', 'm-1');
+            classSortButton.textContent = 'Sort by Class';
+            classSortButton.addEventListener('click', () => {
+                this.sortCards((a, b) => a.constructor.name.localeCompare(b.constructor.name))
+                this.displayCards(cardContainer, classType);
+            });
+            buttonContainer.appendChild(classSortButton);
+        }
 
-        // Create button container
-        const elementContainer = document.createElement('div');
-        elementContainer.className = 'btn-group';
-        element.appendChild(elementContainer);
-
-        // Sort by class
-        const classSortButton = document.createElement('button');
-        classSortButton.textContent = 'Sort by Class';
-        classSortButton.addEventListener('click', () => this.sortCards((a, b) => a.constructor.name.localeCompare(b.constructor.name)));
-        elementContainer.appendChild(classSortButton);
 
         // Sorty by level
         const levelSortButton = document.createElement('button');
+        levelSortButton.classList.add('btn', 'btn-primary', 'm-1');
         levelSortButton.textContent = 'Sort by Level';
-        levelSortButton.addEventListener('click', () => this.sortCards('level'));
-        elementContainer.appendChild(levelSortButton);
+        levelSortButton.addEventListener('click', () => {
+            this.sortCards('level');
+            this.displayCards(cardContainer, classType);
+        });
+        buttonContainer.appendChild(levelSortButton);
 
         // Sort by mana
         const manaSortButton = document.createElement('button');
+        manaSortButton.classList.add('btn', 'btn-primary', 'm-1');
         manaSortButton.textContent = 'Sort by Mana';
-        manaSortButton.addEventListener('click', () => this.sortCards('mana'));
-        elementContainer.appendChild(manaSortButton);
+        manaSortButton.addEventListener('click', () => {
+            this.sortCards('mana');
+            this.displayCards(cardContainer, classType);
+        });
+        buttonContainer.appendChild(manaSortButton);
+
+        // Sort by rarity
+        const raritySortButton = document.createElement('button');
+        raritySortButton.classList.add('btn', 'btn-primary', 'm-1');
+        raritySortButton.textContent = 'Sort by Rarity';
+        raritySortButton.addEventListener('click', () => {
+            this.sortCards((a, b) => {
+                // Assuming you have a rarityToNumber function defined somewhere that converts
+                // the rarity string to a number where a higher number means a rarer card
+                const rarityA = rarityToNumber(a.rarity);
+                const rarityB = rarityToNumber(b.rarity);
+                // For descending order, compare b with a instead of a with b
+                return rarityB - rarityA;
+            });
+            this.displayCards(cardContainer, classType);
+        });
+        buttonContainer.appendChild(raritySortButton);
         
     }
 
@@ -1502,12 +1545,10 @@ class Crafter{
     }
 
     deserializeCraft(data){
-        console.log("Ended item craft: ");
         const card = this.cardsData.find(card => card.id === data.cardId);
         let scaledData = this.getScaling(card, data.quality);
         let craftedCard = new this.cardType(scaledData, generateGUID(), 1, true);
         user.receiveCraftedCard(craftedCard);
-        console.log(craftedCard)
         this.receiveEXPAll(this.getCardExp(card, data.quality))
         user.saveData();
         user.saveCrafters();
@@ -1518,6 +1559,7 @@ class Crafter{
         const currentTime = new Date().getTime();
         const dataParse = JSON.parse(data);
         if (currentTime < dataParse.endTime){
+            slot.getCraftingCard(data)
             slot.changeStatus('crafting');
             setTimeout(() => {
                 this.checkCraftEnd(data, slot);
@@ -1527,7 +1569,6 @@ class Crafter{
             // this.deserializeCraft(dataParse);
             slot.changeStatus('rewards');
             slot.getCraftingCard(data)
-            console.log(slot)
         }
     }
 
@@ -1585,16 +1626,6 @@ class CraftSlot{
     }
 
 
-    serialize(){
-        return JSON.stringify({
-            classType: 'CraftSlot',
-            id: this.id,
-            craftingItemId: this.craftingItemId,
-            timeFinished: this.timeFinished,
-            craftingScore: this.craftingScore
-        });
-    }
-
     openModal(modal){
         const modalJqueryId = "#" + $(modal).attr('id');
         if (this.status == 'rewards'){
@@ -1626,7 +1657,21 @@ class CraftSlot{
                 this.showModalButton.classList.add('available-button');
                 break;
             case 'crafting':
-                this.showModalButton.innerHTML = 'Crafting';
+                console.log(this.data)
+                if(this.data){
+                    // Set interval function that displays time left to craft
+                    let secondsLeft = (this.data.endTime - Date.now()) / 1000;
+                    let interval = setInterval(() => {
+                        secondsLeft = (this.data.endTime - Date.now()) / 1000;
+                        const minutes = Math.floor(secondsLeft / 60);
+                        const seconds = Math.ceil(secondsLeft % 60);
+                        this.showModalButton.innerHTML = `${minutes}m ${seconds}s`;
+                    }, 1000);
+                    setTimeout(() => {
+                        clearInterval(interval);
+                    }, (this.data.endTime - Date.now()));
+                    }
+                // this.showModalButton.innerHTML = 'Crafting';
                 this.cleanseButtonCSS();
                 this.showModalButton.classList.add('crafting-button');
                 break;
@@ -1679,7 +1724,6 @@ class CraftSlot{
         `;
 
         modalBody.innerHTML = html;
-        console.log(modalBody)
         this.emptyData();
 
         // Check if the hero has leveled up

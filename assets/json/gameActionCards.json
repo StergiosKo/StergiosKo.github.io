@@ -6,7 +6,7 @@
         "description": "Deal {0} STR damage and apply {1} INT Burn",
         "mana": 2,
         "card_type": "Force Fire",
-        "rarity": "Common",
+        "rarity": "Epic",
         "level": 4,
         "effects": [
             {

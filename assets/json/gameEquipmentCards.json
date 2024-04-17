@@ -5,7 +5,7 @@
         "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
         "description": "Gain {0} STR | {1} DEX | {2} INT",
         "card_type": "Weapon",
-        "rarity": "Common",
+        "rarity": "Rare",
         "level": 2,
         "stats": {
             "STR": {"min": 10, "max": 20},

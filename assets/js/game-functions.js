@@ -469,7 +469,6 @@ function checkIfNewUser() {
 }
 
 async function readyGame(user){
-    const cardsContainer = document.getElementById('cardsContainer');
 
     const heroContainer = document.getElementById('heroContainer');
 
@@ -486,6 +485,9 @@ async function readyGame(user){
     const crafterContainer = document.getElementById('crafterContainer');
     
     const crafterModal = document.getElementById('crafterModal');
+
+    const cardsContainer = document.getElementById('all-cardsContainer');
+    const cardsSortButtonContainer = document.getElementById('button-sorting-container');
     
     user.saveUIElement(cardsContainer, 'cardsEl');
     user.saveUIElement(heroContainer, 'heroesEl');
@@ -501,6 +503,7 @@ async function readyGame(user){
     // user.sortCards('mana');
     console.log(user)
 
+    user.generateSortButtons(cardsSortButtonContainer, cardsContainer);
     user.displayCards(cardsContainer);
     user.displayHeroes(heroContainer, heroModal);
     user.displayCrafters();

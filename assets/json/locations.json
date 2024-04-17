@@ -7,7 +7,7 @@
         "level": 5,
         "rewards": [1000, 1001],
         "exp": 20,
-        "time": 3,
+        "time": 8,
         "attributes": {
             "STR": 5,
             "DEX": 3,
