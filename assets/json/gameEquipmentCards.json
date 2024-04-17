@@ -6,7 +6,7 @@
         "description": "Gain {0} STR | {1} DEX | {2} INT",
         "card_type": "Weapon",
         "rarity": "Common",
-        "level": 1,
+        "level": 2,
         "stats": {
             "STR": {"min": 10, "max": 20},
             "DEX": {"min": 1, "max": 5},

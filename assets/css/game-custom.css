@@ -281,3 +281,33 @@ footer {
 .reward-exp .progress{
   background-color: gray;
 }
+
+.crafting-card{
+  width: 250px;
+  height: 350px;
+  margin: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: gray;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+.crafting-card.unused{
+  opacity: 0.6;
+}
+
+.crafting-slot .o-card .card-number-box{
+  display:none
+}
+
+.crafter-slot.available-button{
+  background-color: green;
+}
+
+.crafter-slot.crafting-button{
+  background-color: orange;
+}
+
+.crafter-slot.rewards-button{
+  background-color: blue;
+}

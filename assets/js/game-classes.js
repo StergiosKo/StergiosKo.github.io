@@ -504,7 +504,9 @@ class Card {
         this.artwork = data.artwork;
         this.description = data.description;
         this.rarity = data.rarity;
-        this.level = data.level;
+        if(data.level) this.level = data.level;
+        else this.level = 1;
+        this.mana = 0;
         this.GUID = guid;
         this.id = data.id;
         quantity ? this.quantity = quantity : this.quantity = 1
@@ -521,7 +523,7 @@ class Card {
      */
     generateHTML(short) {
         const html = `
-        <article class="${'o-card' + (short ? ' card-short' : '')} ${this.available ? '' : 'card-unavailable'}">
+        <article id="cardId-${this.id}" class="${'o-card' + (short ? ' card-short' : '')} ${this.available ? '' : 'card-unavailable'}">
             <figure class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
                 <figcaption class="c-bg_img_desc o-flx_el_b u-border_b"><b>${this.name}</b>
                 </figcaption>
@@ -598,7 +600,15 @@ class CardAction extends Card {
             // Assumes the description has placeholders like "Deal {0} STR damage and apply {1} INT Burn to the enemy"
         let updatedDescription = this.description;
         this.effects.forEach((effect, index) => {
-            updatedDescription = updatedDescription.replace(`{${index}}`, Object.values(effect.scaling)[0]);
+            let minValue = Object.values(effect.scaling)[0].min;
+            let maxValue = Object.values(effect.scaling)[0].max;
+            if (minValue && maxValue) {
+                // If the scaling has min and max values, replace with "minValue - maxValue"
+                updatedDescription = updatedDescription.replace(`{${index}}`, `${minValue} - ${maxValue}`);
+            } else {
+                // Otherwise, replace with the current scaling value
+                updatedDescription = updatedDescription.replace(`{${index}}`, Object.values(effect.scaling)[0]);
+            }
         });
         this.description = updatedDescription;
         
@@ -679,8 +689,15 @@ class CardEquipment extends Card {
      */
     generateHTML(short) {
         let updatedDescription = this.description;
-
+        
         Object.entries(this.stats).forEach(([key, value], index) => {
+            if (value.min && value.max) {
+                // If the scaling has min and max values, replace with "minValue - maxValue"
+                updatedDescription = updatedDescription.replace(`{${index}}`, `${value.min} - ${value.max}`);
+            } else {
+                // Otherwise, replace with the current scaling value
+                updatedDescription = updatedDescription.replace(`{${index}}`, value);
+            }
             // Assuming you want to replace placeholders in the description with the stat values
             updatedDescription = updatedDescription.replace(`{${index}}`, value);
         });
@@ -856,42 +873,17 @@ class Location {
         </div>`;
 
         htmlElement.innerHTML = html;
+        console.log(htmlElement)
 
         // Check if the hero has leveled up
         if (prevLevel == level) {
             // Hero did not level up, just visualize the current EXP gain
-            this.visualizeBar(exp, prevExp, maxExp, 1000);
+            visualizeBar(exp, prevExp, maxExp, 1000, htmlElement);
         } else {
             // Hero has leveled up at least once
-            this.visualizeBar(exp, 0, maxExp, 1000);
+            visualizeBar(exp, 0, maxExp, 1000, htmlElement);
         }
 
-    }
-
-    visualizeBar(gained, start, end, speed){
-        let current = start;
-
-        const intervalTime = 30; // Time in milliseconds
-        const updateAmount = (gained - start) / (speed / intervalTime); // Adjust the 1000 to control the duration of the animation
-        const prevExpBar = document.getElementById('prev-exp-bar');
-        const newExpBar = document.getElementById('new-exp-bar');
-
-        // Set the initial width of the prevExpBar
-        prevExpBar.style.width = calculateWidth(start, end) + '%';
-
-        // Update the newExpBar over time
-        const interval = setInterval(() => {
-            current += updateAmount; // Increment the currentExp towards the target exp
-
-            if (current >= gained) {
-                current = gained; // Ensure we don't go over the target exp
-                clearInterval(interval); // Stop the interval when we reach the target exp
-            }
-
-            const newExpWidth = calculateWidth(current - start, end);
-            newExpBar.style.width = newExpWidth + '%';
-            newExpBar.setAttribute('aria-valuenow', current);
-        }, intervalTime);
     }
 
     generateMiniHTML(){
@@ -993,7 +985,7 @@ class Location {
 
 class User {
 
-    constructor(heroes, cards, crafters){
+    constructor(heroes, cards, crafters, slotNumber){
         this.heroes = heroes;
         this.cards = cards;
         this.crafters = crafters;
@@ -1005,6 +997,7 @@ class User {
         this.heroesEl = null;
         this.heroModalEl = null;
         this.crafterEl = null;
+        this.crafterModalEl = null;
     }
 
     /**
@@ -1024,6 +1017,8 @@ class User {
         this.crafters.forEach(crafter => {
             this.crafterEl.innerHTML += crafter.generateHTML();
         });
+
+        this.crafters.forEach(crafter => crafter.assignCrafterButtonFunctionality(this.crafterModalEl));
     }
 
     receiveCraftedCard(card){
@@ -1031,7 +1026,7 @@ class User {
         // saveToLocalStorage(card);
     }
    
-    receiveResourceCard(cardInfo, quantity){
+    receiveResourceCard(cardInfo, quantity, save=true){
         let card = this.cards.find(card => card.id === cardInfo.id);
         let testCard = new Card(cardInfo, null, quantity, false)
         if (card){
@@ -1042,8 +1037,16 @@ class User {
             card = new Card(cardInfo, generateGUID(), quantity, true)
             this.cards.push(card);
         }
-        saveToLocalStorage(card);
+        if (save) saveToLocalStorage(card);
         return testCard;
+    }
+
+    removeCard(card){
+        card.quantity -= 1;
+        if (card.quantity <= 0){
+            this.cards.splice(this.cards.indexOf(card), 1);
+        }
+        // saveToLocalStorage(card);
     }
 
     saveUIElement(element, name){
@@ -1211,29 +1214,111 @@ class User {
             });
         });
     }
+
+    checkCrafting(){
+        this.crafters.forEach(crafter => crafter.checkCrafting());
+    }
+
+    saveCrafters(){
+        this.crafters.forEach(crafter => {
+            localStorage.setItem(`crafter-${crafter.id}`, crafter.serialize());
+        });
+    }
+
+    sortCards(sortBy) {
+        // Check if sortBy is a function for special cases such as sorting by class
+        if (typeof sortBy === 'function') {
+            this.cards.sort(sortBy);
+        } else {
+            // Sort by general properties (id, level, mana)
+            this.cards.sort((a, b) => {
+                if (a[sortBy] < b[sortBy]) {
+                    return -1;
+                }
+                if (a[sortBy] > b[sortBy]) {
+                    return 1;
+                }
+                return 0;
+            });
+        }
+    }
+
+    generateSortButtons(element){
+
+        // Need to reactivate displayCards method
+
+        // Create button container
+        const elementContainer = document.createElement('div');
+        elementContainer.className = 'btn-group';
+        element.appendChild(elementContainer);
+
+        // Sort by class
+        const classSortButton = document.createElement('button');
+        classSortButton.textContent = 'Sort by Class';
+        classSortButton.addEventListener('click', () => this.sortCards((a, b) => a.constructor.name.localeCompare(b.constructor.name)));
+        elementContainer.appendChild(classSortButton);
+
+        // Sorty by level
+        const levelSortButton = document.createElement('button');
+        levelSortButton.textContent = 'Sort by Level';
+        levelSortButton.addEventListener('click', () => this.sortCards('level'));
+        elementContainer.appendChild(levelSortButton);
+
+        // Sort by mana
+        const manaSortButton = document.createElement('button');
+        manaSortButton.textContent = 'Sort by Mana';
+        manaSortButton.addEventListener('click', () => this.sortCards('mana'));
+        elementContainer.appendChild(manaSortButton);
+        
+    }
+
 }
 
 class Crafter{
 
-    constructor(name, cardType, cardsData, level, exp, knownCards = {}){
-        this.name = name;
+    constructor(id, data, cardType, cardsData, slotNumber){
+        this.name = data.name;
+        this.id = id;
         this.cardType = cardType;
         this.cardsData = cardsData;
-        this.level = level;
-        this.exp = exp;
-        this.maxExp = level * level/2 * 100;
-        this.knownCards = knownCards;
+        this.level = data.level;
+        this.exp = data.exp;
+        this.maxExp = this.level * this.level/2 * 100;
+        this.knownCards = data.knownCards;
         this.updateMaxExp();
         this.MAX_LEVEL = 50;
+        this.craftSlots = []
+
+        for(let i = 0; i < slotNumber; i++){
+            this.craftSlots.push(new CraftSlot(this, i));
+        }
+
     }
 
     serialize(){
+        let stringCardType;
+        switch (this.cardType){
+            case CardAction:
+                stringCardType = 'CardAction';
+                break;
+            case CardEquipment:
+                stringCardType = 'CardEquipment';
+                break;
+        }
+
         return JSON.stringify({
-            classType: 'Crafter',
+            name: this.name,
+            cardType: stringCardType,
             level: this.level,
             exp: this.exp,
             knownCards: this.knownCards
         });
+    }
+
+    addCraftSlots(slots){
+        this.craftSlots = slots;
+        const crafter = this;
+        this.craftSlots.forEach(slot => slot.assignCrafter(crafter));
     }
 
     craftCard(cardId){
@@ -1241,10 +1326,11 @@ class Crafter{
         const craftingCount = this.updateCardMastery(card);
         let quality = this.calculateQuality(card, craftingCount);
         let scaledData = this.getScaling(card, quality);
+        console.log(quality.toFixed(2));
         let craftedCard = new this.cardType(scaledData, generateGUID(), 1, false);
         user.receiveCraftedCard(craftedCard);
-        console.log(craftedCard)
-        this.receiveEXPAll(this.getCardExp(card, quality))
+        // this.receiveEXPAll(this.getCardExp(card, quality))
+        return craftedCard;
     }
 
     getScaling(card, quality){
@@ -1374,29 +1460,436 @@ class Crafter{
         });
     
         if (matchedCard) {
-            console.log(matchedCard); // Print the matched card's id
             // Print the number of times the card was crafted
-            console.log(this.getCardMastery(matchedCard.id));
+            return matchedCard;
         } else {
-            console.log(null); // No card found
+            return null; // No card found
         }
     }
 
     generateHTML(){
         let html = `
         <div class="col-12 row">
-            <div class="card crafter m-3">
-            <h3>${this.name}</h3>
-            <div class="text">
-                <p>Level: ${this.level}, Exp: ${this.exp}/${this.maxExp}</p>
-            </div>
-            <div class="slots">
-                <button>Craft</button>
-            </div>
+            <div id="crafter-${this.id}" class="crafter m-3">
+                <h3>${this.name}</h3>
+                <div class="text">
+                    <p>Level: ${this.level}, Exp: ${this.exp}/${this.maxExp}</p>
+                </div>
+                <div class="slots">
+                    ${this.craftSlots.map(slot => slot.generateButtonHTML()).join('')}
+                </div>
             </div>
         </div>
         `;
         return html;
+    }
+
+    assignCrafterButtonFunctionality(modalBody){
+        let crafterElement = document.querySelector(`#crafter-${this.id}`);
+        this.craftSlots.forEach(slot => slot.assignCrafterButtonFunctionality(modalBody, crafterElement));
+    }
+
+    startCraftCard(slot, cardId){
+        const card = this.cardsData.find(card => card.id === cardId);
+        const craftingCount = this.updateCardMastery(card);
+        let quality = this.calculateQuality(card, craftingCount);
+
+        console.log("Start crafting item: ", card.id);
+        const serializedData = this.serializeCraft(slot.id, cardId, quality.toFixed(2), 15);
+        // this.checkCrafting()
+
+        this.checkCraftEnd(serializedData, slot)
+    }
+
+    deserializeCraft(data){
+        console.log("Ended item craft: ");
+        const card = this.cardsData.find(card => card.id === data.cardId);
+        let scaledData = this.getScaling(card, data.quality);
+        let craftedCard = new this.cardType(scaledData, generateGUID(), 1, true);
+        user.receiveCraftedCard(craftedCard);
+        console.log(craftedCard)
+        this.receiveEXPAll(this.getCardExp(card, data.quality))
+        user.saveData();
+        user.saveCrafters();
+        return craftedCard;
+    }
+
+    checkCraftEnd(data, slot){
+        const currentTime = new Date().getTime();
+        const dataParse = JSON.parse(data);
+        if (currentTime < dataParse.endTime){
+            slot.changeStatus('crafting');
+            setTimeout(() => {
+                this.checkCraftEnd(data, slot);
+            }, dataParse.endTime - currentTime);
+        }
+        else{
+            // this.deserializeCraft(dataParse);
+            slot.changeStatus('rewards');
+            slot.getCraftingCard(data)
+            console.log(slot)
+        }
+    }
+
+    serializeCraft(slotId, cardId, quality, time){
+
+        const jsonString = JSON.stringify({
+            slotId: slotId,
+            cardId: cardId,
+            quality: quality,
+            endTime: new Date().getTime() + time * 500
+        });
+
+        localStorage.setItem(`craftCard-${this.id}-${slotId}`, jsonString);
+        return jsonString;
+
+    }
+
+    checkCrafting(){
+        this.craftSlots.forEach(slot => {
+            let data = localStorage.getItem(`craftCard-${this.id}-${slot.id}`);
+            if (!data) return;
+            this.checkCraftEnd(data, slot)
+        });
+    }
+
+}
+
+class CraftSlot{
+    constructor(crafter, id, data=null){
+        this.id = id;
+        this.materials = [];
+        this.cardToCraft;
+        this.crafter = crafter;
+        this.status = 'available';
+
+        this.data = data;
+
+        this.craftSlots = {};
+
+        // UI
+        this.showModalButton;
+        this.craftResultElement;
+        this.craftButton;
+
+    }
+
+    deserialize(data){
+        this.cardId = data.cardId;
+        this.quality = data.quality;
+        this.endTime = data.endTime;  
+    }
+
+    emptyData(){
+        this.data = null;
+    }
+
+
+    serialize(){
+        return JSON.stringify({
+            classType: 'CraftSlot',
+            id: this.id,
+            craftingItemId: this.craftingItemId,
+            timeFinished: this.timeFinished,
+            craftingScore: this.craftingScore
+        });
+    }
+
+    openModal(modal){
+        const modalJqueryId = "#" + $(modal).attr('id');
+        if (this.status == 'rewards'){
+            this.changeStatus('available');
+            localStorage.removeItem(`craftCard-${this.crafter.id}-${this.id}`);
+            const craftedCard = this.crafter.deserializeCraft(this.data);
+            this.generateRewardHTML(modal, craftedCard);
+            $(modalJqueryId).modal('show');
+            user.displayCrafters();
+            return;
+        }
+
+        if(this.status == 'available'){
+            this.generateModal(modal);
+            $(modalJqueryId).modal('show');
+            return;
+        } 
+        else if (this.status == 'crafting') return;
+        
+        
+    }
+
+    changeStatus(status){
+        this.status = status;
+        switch (status){
+            case 'available':
+                this.showModalButton.innerHTML = 'Craft';
+                this.cleanseButtonCSS();
+                this.showModalButton.classList.add('available-button');
+                break;
+            case 'crafting':
+                this.showModalButton.innerHTML = 'Crafting';
+                this.cleanseButtonCSS();
+                this.showModalButton.classList.add('crafting-button');
+                break;
+            case 'rewards':
+                this.showModalButton.innerHTML = 'Get Rewards';
+                this.cleanseButtonCSS();
+                this.showModalButton.classList.add('rewards-button');
+                break;
+        }
+    }
+
+    cleanseButtonCSS(){
+        this.showModalButton.classList.remove('available-button');
+        this.showModalButton.classList.remove('crafting-button');
+        this.showModalButton.classList.remove('rewards-button'); 
+    }
+
+    generateRewardHTML(modal, card){
+        
+        const prevLevel = this.crafter.level;
+        const prevExp = this.crafter.exp;
+        const exp = this.crafter.receiveEXPAll(this.crafter.getCardExp(card, this.data.quality))
+        const level = this.crafter.level;
+
+        const maxExp = this.crafter.maxExp;
+
+        const modalBody = modal.querySelector('.modal-body');
+
+        let html = `
+        <div class="rewards">
+            <h3>${card.name}</h3>
+            <p>Crafted the following card with a score of ${this.data.quality} </p>
+            <div class="rewards-card">
+                ${card.generateHTML()}
+            </div>
+            <div class="reward-exp">
+            <h4>Level = <span id="hero-level">${prevLevel < level ? ` ${prevLevel} -> ` : ''}${level}</span></h4>
+                <div>
+                    <div class="row">
+                    <p class="col-1">EXP Bar</p>
+                    <p class="col-10 text-center">${prevExp} + ${this.crafter.exp} = ${exp} / ${maxExp}</p>
+                    </div>
+                    <div class="progress">
+                        <div id="prev-exp-bar" class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: ${calculateWidth(prevExp, maxExp)}%" aria-valuenow="${prevExp}" aria-valuemin="0" aria-valuemax="${maxExp}"></div>
+                        <div id="new-exp-bar" class="progress-bar progress-bar-striped bg-warning" role="progressbar" style="width: 0%" aria-valuenow="${prevExp}" aria-valuemin="${prevExp}" aria-valuemax="${maxExp}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+
+        modalBody.innerHTML = html;
+        console.log(modalBody)
+        this.emptyData();
+
+        // Check if the hero has leveled up
+        if (prevLevel == level) {
+            // Hero did not level up, just visualize the current EXP gain
+            visualizeBar(exp, prevExp, maxExp, 1000, modalBody);
+        } else {
+            // Hero has leveled up at least once
+            visualizeBar(exp, 0, maxExp, 1000, modalBody);
+        }
+
+    }
+
+
+    returnUserMaterials(){
+        this.materials.forEach(material => {
+            user.receiveResourceCard(material, 1);
+        });
+        this.materials = []
+    }
+
+    getCraftingCard(data){
+        this.data = JSON.parse(data);
+    }
+
+    generateButtonHTML(){
+        return `<button id="crafter${this.crafter.id}-slot${this.id}" class="btn btn-primary available-button crafter-slot crafter-slot-${this.id} m-2" data-slotnumber="${this.id}">Craft</button>`
+    }
+
+    generateModal(modal){
+        let html = `
+        <div class="">
+            <h3>${this.crafter.name}: Crafting Slot ${this.id}</h3>
+            <div class="text">
+                <p>Level: ${this.crafter.level}, Exp: ${this.crafter.exp}/${this.crafter.maxExp}</p>
+            </div>
+            <div class="crafting row mt-3">
+                <div class="crafting-slots d-flex flex-wrap justify-content-center col-8">
+                    <div class="text-center">
+                        <h4>Slot 1</h4>
+                        <div id="crafting-slot1" class="slot crafting-card crafting-slot unused">
+                            <div class="card-used"></div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <h4>Slot 2</h4>
+                        <div id="crafting-slot2" class="slot crafting-card crafting-slot unused">
+                            <div class="card-used"></div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <h4>Slot 3</h4>
+                        <div id="crafting-slot3" class="slot crafting-card crafting-slot unused">
+                            <div class="card-used"></div>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="col-1 d-flex align-items-center">
+                    <button id="craft-card-button" class="btn btn-primary">Craft</button>
+                </div>
+                <div class="col-3 d-flex">
+                    <div class="text-center">
+                        <h4>Result</h4>
+                        <div id="result" class="crafting-card unused"> </div>
+                    </div>
+                    
+                </div>
+                <div>
+                    <h3>User Cards</h3>
+                    <div id="user-cards" class="user-cards d-flex flex-wrap"></div>
+                </div>
+                
+            </div>
+        </div>
+        `;
+
+        
+        let modalBody = modal.querySelector('.modal-body');
+        modalBody.innerHTML = html;
+
+        let userBody = modalBody.querySelector('#user-cards');
+        user.displayCards(userBody, Card);
+
+
+        this.allowCraftCardDrop(modalBody, modal);
+
+        this.craftResultElement = modal.querySelector('#result');
+        this.craftButton = modal.querySelector('#craft-card-button');
+
+        this.craftButton.addEventListener('click', () => {
+            this.craftCurrentCard(modal);
+        });
+
+        // Define a named function to handle the modal close event
+        const handleModalClose = () => {
+            this.onCraftingClose();
+            $(modal).off('hidden.bs.modal', handleModalClose); // Detach the event listener
+        };
+
+        // Attach the event listener using the named function
+        $(modal).on('hidden.bs.modal', handleModalClose);
+
+        // console.log(modalBody.innerHTML)
+
+    }
+
+    onCraftingClose() {
+        this.returnUserMaterials();
+    }
+
+    addMaterial(material){
+        this.materials.push(material);
+        this.checkCraftRecipe();
+        this.updateCraftingUI();
+    }
+
+    removeMaterial(material){
+        this.materials.splice(this.materials.indexOf(material), 1);
+        this.checkCraftRecipe();
+        this.updateCraftingUI();
+    }
+
+    updateCraftingUI(){
+        if(this.cardToCraft){
+            const card = new this.crafter.cardType(this.cardToCraft, null, false)
+            this.craftResultElement.innerHTML = card.generateHTML();
+        }
+        else{
+            this.craftResultElement.innerHTML = 'Nothing to craft';
+        }
+    }
+
+    checkCraftRecipe(){
+        const matIds = this.materials.map(material => material.id);
+        let card = this.crafter.matchMaterialsToCard(matIds);
+        // console.log(this.materials)
+        this.cardToCraft = card;
+    }
+
+    assignCrafterButtonFunctionality(modal, crafterElement){
+        this.showModalButton = crafterElement.querySelector(`.crafter-slot-${this.id}`)
+        // this.showModalButton.addEventListener('click', () => this.generateModal(modalBody));
+        this.showModalButton.addEventListener('click', () => this.openModal(modal));
+    }
+
+    allowCraftCardDrop(htmlElement, heroModal){
+        // Add drop event listeners for hero cards
+        const userCardsElement = heroModal.querySelector('#user-cards');
+        htmlElement.querySelectorAll('.crafting-slot').forEach(heroCardElement => {
+            this.craftSlots[heroCardElement.id] = null;
+            heroCardElement.addEventListener('dragover', (event) => {
+                event.preventDefault(); // Necessary to allow dropping
+            });
+    
+            heroCardElement.addEventListener('drop', (event) => {
+                event.preventDefault();
+                const userCardId = event.dataTransfer.getData('text/plain');
+                const userCard = user.cards.find(card => card.GUID === userCardId);
+                const slotClasses = heroCardElement.classList;
+                let craftingSlot = slotClasses.contains('crafting-slot');
+                                
+                if (userCard && craftingSlot) {
+                    this.addCardToSlot(heroCardElement.id, userCard);
+                    let cardElement = heroCardElement.querySelector('.card-used');
+                    cardElement.innerHTML = userCard.generateHTML();
+                    let cardSlot = this;
+                    cardElement.addEventListener('click', function clickHandler() {
+                        cardElement.innerHTML = '';
+                        slotClasses.add('unused');
+                        cardSlot.removeCardFromSlot(heroCardElement.id);
+                        user.displayCards(userCardsElement, Card);
+                        cardElement.removeEventListener('click', clickHandler);
+                    });
+                    slotClasses.remove('unused');
+                    user.displayCards(userCardsElement, Card);
+                }
+            });
+        });
+    }
+
+    addCardToSlot(slot, card){
+        this.removeCardFromSlot(slot);
+        this.addMaterial(card);
+        user.removeCard(card);
+        this.craftSlots[slot] = card;
+    }
+
+    removeCardFromSlot(slot, save = true){
+        let oldCard = this.craftSlots[slot];
+        if(!oldCard) return;
+
+        this.removeMaterial(oldCard);
+        if (save)user.receiveResourceCard(oldCard, 1, false);
+        this.craftSlots[slot] = null;
+    }
+
+    craftCurrentCard(modal){
+        let card = this.cardToCraft;
+        if(!card) return;
+        user.saveData();
+        this.materials = [];
+        this.crafter.startCraftCard(this, card.id);
+        this.changeStatus('crafting');
+        this.closeModal(modal);
+    }
+
+    closeModal(modal){
+        let modalJqueryId = "#" + $(modal).attr('id');
+        $(modalJqueryId).modal('hide');
     }
 
 }

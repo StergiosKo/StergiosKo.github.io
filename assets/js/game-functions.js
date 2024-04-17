@@ -485,12 +485,21 @@ async function readyGame(user){
 
     const crafterContainer = document.getElementById('crafterContainer');
     
+    const crafterModal = document.getElementById('crafterModal');
+    
     user.saveUIElement(cardsContainer, 'cardsEl');
     user.saveUIElement(heroContainer, 'heroesEl');
     user.saveUIElement(heroModal, 'heroModalEl');
     user.saveUIElement(heroesQuestContainer, 'heroQuestEl');
     user.saveUIElement(crafterContainer, 'crafterEl');
-    
+    user.saveUIElement(crafterModal,'crafterModalEl');
+
+    // Sort by class
+    // user.sortCards((a, b) => a.constructor.name.localeCompare(b.constructor.name));
+
+    // Sort by level
+    // user.sortCards('mana');
+    console.log(user)
 
     user.displayCards(cardsContainer);
     user.displayHeroes(heroContainer, heroModal);
@@ -502,16 +511,16 @@ async function readyGame(user){
 
     locations.forEach(location => {
         location.addMiniButtonFunctionality(locModal);
-        // const fightButton = document.getElementById('fight-button-0');
-        // fightButton.addEventListener('click', () => user.startQuest(location));
     })
 
     user.displayHeroesQuest(heroesQuestContainer);
 
-    // locations[0].startQuest(heroesArray[0]);
     checkOngoingQuests(locations, user.heroes);
-    console.log(user)
-    // user.heroes[0].receiveEXPAll(1000);
+
+    user.checkCrafting();
+    // console.log(user)
+    // user.saveCrafters();
+
 }
 
 function byteCount(s) {
@@ -524,7 +533,7 @@ async function createNewUser() {
         await Promise.all([
             loadJSONFile("assets/json/gameActionCards.json"),
             loadJSONFile("assets/json/gameEquipmentCards.json"),
-            loadJSONFile("assets/json/gameBasicCards.json")
+            loadJSONFile("assets/json/gameRewards.json")
         ]);
 
     const [actionCards, equipmentCards] = [
@@ -544,6 +553,7 @@ async function createNewUser() {
     let allCards = [...actionCards, ...equipmentCards];
 
     const hero = new Hero('Mr Knight', generateGUID(), heroActions, equipmentCards, 1, 0);
+    const heroesArray = [hero];
 
     let extraActions = createCard(2000, 1, actionData, CardAction, getEffectValues, true);
     let extraEquipment = createCard(3000, 1, equipmentData, CardEquipment, getEquipmentStatsValues, true);
@@ -554,10 +564,28 @@ async function createNewUser() {
     let newCard = createCard(2000, 1, actionData, CardAction, getEffectValues, true);
     allCards.push(newCard[0]);
 
-    let actionCrafter = new Crafter("Action Crafter", CardAction, actionData, 1, 0);
-    let equipmentCrafter = new Crafter("Equipment Crafter",CardEquipment, equipmentData, 1, 0);
+    const jsonActionCrafter = {
+        id: 0,
+        name: "Action Crafter",
+        level: 1,
+        exp: 0,
+        knownCards: []
+    }
 
-    user = new User(heroesArray, cardsArray, [actionCrafter, equipmentCrafter]);
+    const jsonEquipmentCrafter = {
+        id: 1,
+        name: "Equipment Crafter",
+        level: 1,
+        exp: 0,
+        knownCards: []
+    }
+
+    let actionCrafter = new Crafter(0, jsonActionCrafter, CardAction, actionData, 2);
+    let equipmentCrafter = new Crafter(1, jsonEquipmentCrafter, CardEquipment, equipmentData, 2);
+
+    user = new User(heroesArray, allCards, [actionCrafter, equipmentCrafter]);
+    user.saveData();
+    user.saveCrafters();
 
     console.log(user);
     
@@ -570,22 +598,22 @@ async function createExistingUser(){
     let equipmentData = await loadJSONFile("assets/json/gameEquipmentCards.json");
     let basicCardsData = await loadJSONFile("assets/json/gameRewards.json");
 
+    let crafters = deserializeCrafters(actionData, equipmentData);
+    
+    // let actionCraftSlots = [new CraftSlot(1), new CraftSlot(2)];
+    // let equipmentCraftSlots = [new CraftSlot(1), new CraftSlot(2)];
+    // crafters[0].addCraftSlots(actionCraftSlots);
+    // crafters[1].addCraftSlots(equipmentCraftSlots);
+    console.log(crafters)
+
     let cardsArray = deserializeAllGUIDs(actionData, equipmentData, basicCardsData);
 
     let heroesArray = deserializeAllHeroes(cardsArray);
 
-    let actionCrafter = new Crafter("Action Crafter", CardAction, actionData, 1, 0);
-    let equipmentCrafter = new Crafter("Equipment Crafter",CardEquipment, equipmentData, 1, 0);
 
-    user = new User(heroesArray, cardsArray, [actionCrafter, equipmentCrafter]);
+    user = new User(heroesArray, cardsArray, crafters);
 
     readyGame(user);
-    saveToLocalStorage(user.heroes[0]);
-    
-    actionCrafter.craftCard(2000);
-    equipmentCrafter.craftCard(3000);
-
-    actionCrafter.matchMaterialsToCard([1001, 1001])
 
 }
 
@@ -623,4 +651,64 @@ function rarityToNumber(rarity) {
 
     // Return the numerical value for the given rarity, or a default value if the rarity is not recognized
     return rarityValues[rarity] || 0; // Assuming 0 as a default value for unknown rarities
+}
+
+
+function deserializeCrafters(actionData, equipmentData){
+    let deserializedObjects = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith("crafter")) {
+            const itemJSON = JSON.parse(localStorage.getItem(key));
+            const id = key.split("-")[1];
+
+            let classType;
+            let cardsData;
+            
+
+            switch (itemJSON.cardType){
+                case "CardAction":
+                    classType = CardAction;
+                    cardsData = actionData;
+                    break;
+                case "CardEquipment":
+                    classType = CardEquipment;
+                    cardsData = equipmentData;
+                    break;
+                default:
+                    break;
+            }
+
+            const deserializedObject = new Crafter(id, itemJSON, classType, cardsData, 2);
+
+            if (deserializedObject) deserializedObjects.push(deserializedObject);
+        }
+    }
+    return deserializedObjects;
+}
+
+function visualizeBar(gained, start, end, speed, element){
+    let current = start;
+
+    const intervalTime = 30; // Time in milliseconds
+    const updateAmount = (gained - start) / (speed / intervalTime); // Adjust the 1000 to control the duration of the animation
+    const prevExpBar = element.querySelector('#prev-exp-bar');
+    const newExpBar = element.querySelector('#new-exp-bar');
+
+    // Set the initial width of the prevExpBar
+    prevExpBar.style.width = calculateWidth(start, end) + '%';
+
+    // Update the newExpBar over time
+    const interval = setInterval(() => {
+        current += updateAmount; // Increment the currentExp towards the target exp
+
+        if (current >= gained) {
+            current = gained; // Ensure we don't go over the target exp
+            clearInterval(interval); // Stop the interval when we reach the target exp
+        }
+
+        const newExpWidth = calculateWidth(current - start, end);
+        newExpBar.style.width = newExpWidth + '%';
+        newExpBar.setAttribute('aria-valuenow', current);
+    }, intervalTime);
 }
