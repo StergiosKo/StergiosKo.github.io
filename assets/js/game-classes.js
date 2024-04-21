@@ -568,6 +568,7 @@ class Card {
 class CardAction extends Card {
     constructor(data, guid, saved = true) {
         super(data, guid, 1, saved);
+        this.quality = data.quality;
         this.effects = data.effects;
         this.card_type = "Action - " + data.card_type;
         this.mana = data.mana;
@@ -582,8 +583,16 @@ class CardAction extends Card {
         return JSON.stringify({
             classType: 'CardAction',
             id: this.id,
-            effects: scalingOnlyEffects
+            quality: this.quality
         });
+    }
+
+    serializeTest(){
+        return JSON.stringify({
+            classType: 'CardAction',
+            id: this.id,
+            quality: this.quality
+        })
     }
     
     /**
@@ -667,6 +676,7 @@ class CardAction extends Card {
 class CardEquipment extends Card {
     constructor(data, guid, saved = true) {
         super(data, guid, 1, saved);
+        this.quality = data.quality;
         this.stats = data.stats;
         this.card_type = "Equipment - " + data.card_type; // Note the change here for consistency
         this.piece = data.card_type;
@@ -676,8 +686,16 @@ class CardEquipment extends Card {
         return JSON.stringify({
             classType: 'CardEquipment',
             id: this.id,
-            stats: this.stats
+            quality: this.quality
         });
+    }
+
+    serializeTest(){
+        return JSON.stringify({
+            classType: 'CardEquipment',
+            id: this.id,
+            quality: this.quality
+        })
     }
 
     /**
@@ -1030,6 +1048,14 @@ class User {
         this.saveCrafters();
     }
 
+    testSave(){
+        this.cards.forEach(card => {
+            const serializedObject = card.serializeTest();
+            const key = localStorage.getItem(card.GUID) ? card.GUID : `guid-test${card.GUID}`;
+            localStorage.setItem(key, serializedObject);
+        });
+    }
+
     displayCrafters(){
         this.crafterEl.innerHTML = '';
         this.crafters.forEach(crafter => {
@@ -1364,43 +1390,6 @@ class Crafter{
         this.craftSlots.forEach(slot => slot.assignCrafter(crafter));
     }
 
-    craftCard(cardId){
-        const card = this.cardsData.find(card => card.id === cardId);
-        const craftingCount = this.updateCardMastery(card);
-        let quality = this.calculateQuality(card, craftingCount);
-        let scaledData = this.getScaling(card, quality);
-        console.log(quality.toFixed(2));
-        let craftedCard = new this.cardType(scaledData, generateGUID(), 1, false);
-        user.receiveCraftedCard(craftedCard);
-        // this.receiveEXPAll(this.getCardExp(card, quality))
-        return craftedCard;
-    }
-
-    getScaling(card, quality){
-        const updatedCard = JSON.parse(JSON.stringify(card)); // Create a deep copy of the card object
-
-        if (updatedCard.effects){
-            updatedCard.effects.forEach(effect => {
-                const effectType = Object.keys(effect.scaling)[0]; // e.g., "STR"
-                const range = effect.scaling[effectType];
-                if (range.min !== undefined && range.max !== undefined) {
-                    let scalingValue = range.min + (quality / 100) * (range.max - range.min);
-                    effect.scaling[effectType] = parseFloat(scalingValue.toFixed(2));
-                }
-            });
-        }
-        if (updatedCard.stats){
-            Object.keys(updatedCard.stats).forEach(statType => {
-                const range = updatedCard.stats[statType];
-                if (range.min !== undefined && range.max !== undefined) {
-                    let scalingValue = range.min + (quality / 100) * (range.max - range.min);
-                    updatedCard.stats[statType] = Math.round(scalingValue);
-                }
-            });
-        }
-        return updatedCard;
-    }
-
 
     calculateQuality(card, craftingCount) {
         let levelDifference = Math.max(-10, Math.min(10, this.level - card.level));
@@ -1431,13 +1420,22 @@ class Crafter{
     }
 
     updateCardMastery(card) {
+        console.log(card)
+        console.log(card.id)
         if (this.knownCards.hasOwnProperty(card.id)) {
             this.knownCards[card.id]++;
-            return this.knownCards[card.id] - 1;
         } else {
-            this.knownCards[card.id] = 1;
             return 0;
         }
+        console.log(this);
+    }
+
+    getCraftingCount(card){
+        if (this.knownCards.hasOwnProperty(card.id)) {
+            return this.knownCards[card.id];
+        } else {
+            return 0;
+        } 
     }
 
     getCardMastery(cardId) {
@@ -1534,10 +1532,8 @@ class Crafter{
 
     startCraftCard(slot, cardId){
         const card = this.cardsData.find(card => card.id === cardId);
-        const craftingCount = this.updateCardMastery(card);
+        const craftingCount = this.getCraftingCount(card);
         let quality = this.calculateQuality(card, craftingCount);
-
-        console.log("Start crafting item: ", card.id);
         const serializedData = this.serializeCraft(slot.id, cardId, quality.toFixed(2), 15);
         // this.checkCrafting()
 
@@ -1546,10 +1542,10 @@ class Crafter{
 
     deserializeCraft(data){
         const card = this.cardsData.find(card => card.id === data.cardId);
-        let scaledData = this.getScaling(card, data.quality);
+        let scaledData = getScaling(card, data.quality);
         let craftedCard = new this.cardType(scaledData, generateGUID(), 1, true);
+        this.updateCardMastery(card);
         user.receiveCraftedCard(craftedCard);
-        this.receiveEXPAll(this.getCardExp(card, data.quality))
         user.saveData();
         user.saveCrafters();
         return craftedCard;
@@ -1573,11 +1569,17 @@ class Crafter{
     }
 
     serializeCraft(slotId, cardId, quality, time){
-
+        // const jsonString = JSON.stringify({
+        //     slotId: slotId,
+        //     cardId: cardId,
+        //     quality: parseFloat(quality).toFixed(2), // Convert string to float and format to 2 decimal places
+        //     endTime: new Date().getTime() + time * 500
+        // });
+        let qualityFlaot = parseFloat(quality)
         const jsonString = JSON.stringify({
             slotId: slotId,
             cardId: cardId,
-            quality: quality,
+            quality: qualityFlaot,
             endTime: new Date().getTime() + time * 500
         });
 
@@ -1657,7 +1659,6 @@ class CraftSlot{
                 this.showModalButton.classList.add('available-button');
                 break;
             case 'crafting':
-                console.log(this.data)
                 if(this.data){
                     // Set interval function that displays time left to craft
                     let secondsLeft = (this.data.endTime - Date.now()) / 1000;
@@ -1725,6 +1726,8 @@ class CraftSlot{
 
         modalBody.innerHTML = html;
         this.emptyData();
+
+        user.saveData();
 
         // Check if the hero has leveled up
         if (prevLevel == level) {

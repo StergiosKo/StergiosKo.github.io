@@ -73,56 +73,6 @@ function getRandomValue(min, max) {
     return parseFloat((Math.random() * (max - min) + min).toFixed(2));
 }
 
-function getEffectValues(card) {
-    const magnitudes = []; // To store the random magnitudes for use in the description
-    card.effects.forEach(effect => {
-        const effectType = Object.keys(effect.scaling)[0]; // e.g., "STR"
-        const range = effect.scaling[effectType];
-        if (range.min !== undefined && range.max !== undefined) {
-            // Assign a random value within the range
-            const randomValue = getRandomValue(range.min, range.max);
-            console.log(card.name + " " + effectType + " " + randomValue);
-            effect.scaling[effectType] = randomValue;
-            magnitudes.push(randomValue);
-        }
-    });
-
-    return card;
-}
-
-function getEffectValues(card) {
-    const updatedCard = JSON.parse(JSON.stringify(card)); // Create a deep copy of the card object
-    updatedCard.effects.forEach(effect => {
-        const effectType = Object.keys(effect.scaling)[0]; // e.g., "STR"
-        const range = effect.scaling[effectType];
-        if (range.min !== undefined && range.max !== undefined) {
-            // Assign a random value within the range
-            const randomValue = getRandomValue(range.min, range.max);
-            console.log(updatedCard.name + " " + effectType + " " + randomValue);
-            effect.scaling[effectType] = randomValue;
-        }
-    });
-
-    return updatedCard;
-}
-
-function getEquipmentStatsValues(card) {
-    const updatedCard = JSON.parse(JSON.stringify(card)); // Create a deep copy of the card object
-    const statsUpdates = []; // To store the random stat values for use in the description
-
-    Object.keys(updatedCard.stats).forEach(statType => {
-        const range = updatedCard.stats[statType];
-        if (range.min !== undefined && range.max !== undefined) {
-            // Assign a random value within the range
-            const randomValue = Math.floor(getRandomValue(range.min, range.max));
-            console.log(updatedCard.name + " " + statType + " " + randomValue);
-            updatedCard.stats[statType] = randomValue;
-            statsUpdates.push(randomValue);
-        }
-    });
-
-    return updatedCard;
-}
 
 async function displayCards(jsonPath, cardClass, effectValuesFunction) {
     try {
@@ -316,34 +266,37 @@ function deserialize(guid, jsonString, actionCardsData, equipmentCardsData, reso
 
     switch (data.classType) {
         case 'CardAction': {
-            const cardData = actionCardsData.find(card => card.id === data.id);
+            let cardData = actionCardsData.find(card => card.id === data.id);
+            if(data.quality) cardData = getScaling(cardData, data.quality);
+            // console.log(cardData)
             
             // Update the scaling part for each effect in cardData.effects
-            const updatedEffects = cardData.effects.map((effect, index) => ({
-                ...effect,
-                scaling: data.effects[index].scaling
-            }));
+            // const updatedEffects = cardData.effects.map((effect, index) => ({
+            //     ...effect,
+            //     scaling: data.effects[index].scaling
+            // }));
 
             // Create a new cardData object with the same data as the original but with the new effects
-            const newCardData = {
-                ...cardData,
-                effects: updatedEffects
-            };
-            if (newCardData) {
-                return new CardAction(newCardData, getKeyWithoutPrefix(guid));
+            // const newCardData = {
+            //     ...cardData,
+            //     effects: updatedEffects
+            // };
+            if (cardData) {
+                return new CardAction(cardData, getKeyWithoutPrefix(guid));
             }
             break;
         }
         case 'CardEquipment': {
-            const cardData = equipmentCardsData.find(card => card.id === data.id);
+            let cardData = equipmentCardsData.find(card => card.id === data.id);
+            if(data.quality) cardData = getScaling(cardData, data.quality);
 
-            const newCardData = {
-                ...cardData,
-                stats: data.stats
-            };
+            // const newCardData = {
+            //     ...cardData,
+            //     stats: data.stats
+            // };
 
             if (cardData) {
-                return new CardEquipment(newCardData, getKeyWithoutPrefix(guid));
+                return new CardEquipment(cardData, getKeyWithoutPrefix(guid));
             }
             break;
         }
@@ -362,30 +315,24 @@ function deserialize(guid, jsonString, actionCardsData, equipmentCardsData, reso
     }
 }
 
-function createCard(id, quantity, data, classType, effectValuesFunction, randomValues, saveToStorage = true) {
+function createCard(id, quantity, data, classType, quality, saveToStorage = true) {
     try {
         // Filter to find the specific card data by ID
-        const specificCardData = data.find(cardData => cardData.id == id);
+        let specificCardData = data.find(cardData => cardData.id == id);
 
         if (!specificCardData) {
             console.error("Card with specified ID not found in the data.");
             return [];
         }
 
-        let coolData = specificCardData
-        if (randomValues){
-            console.log("Applying effectValuesFunction for classType:", specificCardData);
-            // Apply the specific getEffectValues function for this card type
-            coolData = effectValuesFunction(specificCardData);
-            console.log(coolData);
-        }
+        specificCardData = getScaling(specificCardData, quality);
 
         let cards = []
         // Create the specified number of cards
         if (classType == CardAction || classType == CardEquipment){
             cards = Array.from({ length: quantity }, () => {
                 let guid = generateGUID();
-                let newCard = new classType(coolData, guid);
+                let newCard = new classType(specificCardData, guid);
                 if (saveToStorage) {
                     saveToLocalStorage(newCard);
                 }
@@ -496,11 +443,6 @@ async function readyGame(user){
     user.saveUIElement(crafterContainer, 'crafterEl');
     user.saveUIElement(crafterModal,'crafterModalEl');
 
-    // Sort by class
-    // user.sortCards((a, b) => a.constructor.name.localeCompare(b.constructor.name));
-
-    // Sort by level
-    // user.sortCards('mana');
     console.log(user)
 
     user.generateSortButtons(cardsSortButtonContainer, cardsContainer);
@@ -521,6 +463,7 @@ async function readyGame(user){
     checkOngoingQuests(locations, user.heroes);
 
     user.checkCrafting();
+    user.saveData();
     // console.log(user)
     // user.saveCrafters();
 
@@ -540,8 +483,8 @@ async function createNewUser() {
         ]);
 
     const [actionCards, equipmentCards] = [
-        createCard(2000, 1, actionData, CardAction, getEffectValues, true),
-        createCard(3000, 1, equipmentData, CardEquipment, getEquipmentStatsValues, true)
+        createCard(2000, 1, actionData, CardAction, 50),
+        createCard(3000, 1, equipmentData, CardEquipment, 50)
     ];
 
     let heroActions = [];
@@ -558,13 +501,13 @@ async function createNewUser() {
     const hero = new Hero('Mr Knight', generateGUID(), heroActions, equipmentCards, 1, 0);
     const heroesArray = [hero];
 
-    let extraActions = createCard(2000, 1, actionData, CardAction, getEffectValues, true);
-    let extraEquipment = createCard(3000, 1, equipmentData, CardEquipment, getEquipmentStatsValues, true);
+    let extraActions = createCard(2000, 1, actionData, CardAction, 50);
+    let extraEquipment = createCard(3000, 1, equipmentData, CardEquipment, 50);
     allCards.push(...extraActions);
     allCards.push(...extraEquipment);
 
     saveToLocalStorage(hero);
-    let newCard = createCard(2000, 1, actionData, CardAction, getEffectValues, true);
+    let newCard = createCard(2000, 1, actionData, CardAction, 50);
     allCards.push(newCard[0]);
 
     const jsonActionCrafter = {
@@ -602,12 +545,6 @@ async function createExistingUser(){
     let basicCardsData = await loadJSONFile("assets/json/gameRewards.json");
 
     let crafters = deserializeCrafters(actionData, equipmentData);
-    
-    // let actionCraftSlots = [new CraftSlot(1), new CraftSlot(2)];
-    // let equipmentCraftSlots = [new CraftSlot(1), new CraftSlot(2)];
-    // crafters[0].addCraftSlots(actionCraftSlots);
-    // crafters[1].addCraftSlots(equipmentCraftSlots);
-    console.log(crafters)
 
     let cardsArray = deserializeAllGUIDs(actionData, equipmentData, basicCardsData);
 
@@ -714,4 +651,31 @@ function visualizeBar(gained, start, end, speed, element){
         newExpBar.style.width = newExpWidth + '%';
         newExpBar.setAttribute('aria-valuenow', current);
     }, intervalTime);
+}
+
+function getScaling(card, quality){
+    const updatedCard = JSON.parse(JSON.stringify(card)); // Create a deep copy of the card object
+
+    if (updatedCard.effects){
+        updatedCard.effects.forEach(effect => {
+            const effectType = Object.keys(effect.scaling)[0]; // e.g., "STR"
+            const range = effect.scaling[effectType];
+            if (range.min !== undefined && range.max !== undefined) {
+                let scalingValue = range.min + (quality / 100) * (range.max - range.min);
+                effect.scaling[effectType] = parseFloat(scalingValue.toFixed(2));
+            }
+        });
+    }
+    if (updatedCard.stats){
+        Object.keys(updatedCard.stats).forEach(statType => {
+            const range = updatedCard.stats[statType];
+            if (range.min !== undefined && range.max !== undefined) {
+                let scalingValue = range.min + (quality / 100) * (range.max - range.min);
+                updatedCard.stats[statType] = Math.round(scalingValue);
+            }
+        });
+    }
+    updatedCard['quality'] = quality;
+
+    return updatedCard;
 }
