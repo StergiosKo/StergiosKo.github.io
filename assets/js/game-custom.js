@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
       user.displayHeroes();
     }
     else if (swiper.realIndex === 2) {
-      user.displayCards();
+      user.displayCardsMain();
     }
     else if (swiper.realIndex === 3) {
       user.displayHeroesQuest();

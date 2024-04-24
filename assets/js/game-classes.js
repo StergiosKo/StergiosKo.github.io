@@ -168,7 +168,9 @@ class Hero extends Entity {
     generateHTML() {
         return `
             <div class="hero-container d-flex flex-wrap">
-                <h2>${this.name}</h2>
+                <h2 id="model-hero-name">${this.name}</h2>
+                <span><button class="btn hero-name-edit" id="hero-name-edit"><i class="bi bi-pencil"></i></button></span>
+                <span><button class="btn hero-name-save d-none" id="hero-name-save"><i class="bi bi-check-lg"></i></button></span>  
                 <div class="row ms-2">
                 <p class="attributes">Attributes: STR: ${this.attributes.STR}, DEX: ${this.attributes.DEX}, INT: ${this.attributes.INT}</p>
                 <p class="max-stats">Max Stats: HP: ${this.maxStats.HP}, CRIT: ${this.maxStats.CRIT}, MANA: ${this.maxStats.MANA}, CRITD: ${this.maxStats['CRITD']}</p>
@@ -253,6 +255,16 @@ class Hero extends Entity {
      */
     addBasicCards(){
         // For null action cards
+        let basicCard = this.getBasicActionCard();
+        
+        for(let i=0; i < this.cardsActions.length; i++){
+            if(!this.cardsActions[i]){
+                this.addActionCard(new CardAction(basicCard, generateGUID(), false), i)
+            }
+        }
+    }
+
+    getBasicActionCard(){
         let basicCard = {
             "id": null,
             "name": "Punch",
@@ -270,11 +282,7 @@ class Hero extends Entity {
                 }
             ]
         }
-        for(let i=0; i < this.cardsActions.length; i++){
-            if(!this.cardsActions[i]){
-                this.addActionCard(new CardAction(basicCard, generateGUID(), false), i)
-            }
-        }
+        return basicCard
     }
 
     addBasicEquipment(){
@@ -421,6 +429,7 @@ class Hero extends Entity {
         equipment.setAvailability(false);
         this.cardsEquipment[type] = equipment;
         this.updateStats(equipment, true);
+        this.adjustActiontoMana();
 
         return oldEquipment;
     }
@@ -463,10 +472,53 @@ class Hero extends Entity {
 
     replaceAction(cardLeave, cardEnter){
         const index = this.cardsActions.indexOf(cardLeave);
-        if (index !== -1) {
+        if (index !== -1 && cardEnter.mana - cardLeave.mana <= this.getAvailableMana()) {
             this.addActionCard(cardEnter, index);
         }
     }
+
+    removeCard(index){
+        if (index >= 0 && index < this.cardsActions.length) {
+            let oldCard = this.cardsActions[index];
+            this.cardsActions[index] = new CardAction(this.getBasicActionCard(), generateGUID(), false);
+            if (oldCard) oldCard.setAvailability(true);
+            return oldCard
+        }
+    }
+
+    adjustActiontoMana() {
+        if (this.getAvailableMana() < 0) {
+            // Loop through the action cards in reverse order
+            for (let i = this.cardsActions.length - 1; i >= 0; i--) {
+                this.removeCard(i);
+                // Check if removing the card at index i brings available mana to a non-negative value
+                if (this.getAvailableMana() >= 0) break;
+            }
+        }
+    }
+
+    editName(nameElement, buttonEdit, buttonSave){
+        nameElement.contentEditable = true;
+
+        // UI
+        nameElement.focus();
+        buttonEdit.classList.add('d-none');
+        buttonSave.classList.remove('d-none');     
+        
+    }
+
+    saveName(nameElement, buttonEdit, buttonSave){
+        this.name = nameElement.innerText;
+        user.saveData();
+        nameElement.contentEditable = false;
+
+        // UI
+        nameElement.blur();
+        buttonEdit.classList.remove('d-none');
+        buttonSave.classList.add('d-none');
+    }
+
+    
 
 
 }
@@ -512,6 +564,7 @@ class Card {
         quantity ? this.quantity = quantity : this.quantity = 1
         this.available = true;
         this.saved = saved;
+        this.gold = 1;
     }
 
     /**
@@ -523,7 +576,7 @@ class Card {
      */
     generateHTML(short) {
         const html = `
-        <article id="cardId-${this.id}" class="${'o-card' + (short ? ' card-short' : '')} ${this.available ? '' : 'card-unavailable'}">
+        <article id="cardId-${this.id}" class="${'o-card' + (short ? 'card-short' : '')} ${this.available ? '' : 'card-unavailable'}">
             <figure class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
                 <figcaption class="c-bg_img_desc o-flx_el_b u-border_b"><b>${this.name}</b>
                 </figcaption>
@@ -563,6 +616,10 @@ class Card {
         this.quantity -= quantity;
     }
 
+    calculateGold(level, rarity, quality){
+        return Math.floor(level * rarityToNumber(rarity) * quality/10);
+    }
+
 }
 
 class CardAction extends Card {
@@ -572,6 +629,7 @@ class CardAction extends Card {
         this.effects = data.effects;
         this.card_type = "Action - " + data.card_type;
         this.mana = data.mana;
+        this.gold = this.calculateGold(data.level, data.rarity, data.quality);
     }
 
     serialize(){
@@ -628,6 +686,7 @@ class CardAction extends Card {
         const html = `
             <article class="${'o-card' + (short ? ' card-short' : '')} ${this.available ? '' : 'card-unavailable'}" data-card-id="${this.GUID}">
                 <figure class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
+                ${this.available ? '' : '<i class="bi bi-file-lock2 card-equipped"></i>'}
                     <header class="c-top_icons"><span class="c-icon">${this.mana}</span></header>
                     <figcaption class="c-bg_img_desc o-flx_el_b u-border_b"><b>${this.name}</b>
                         <blockquote>${this.card_type}</blockquote>
@@ -680,6 +739,7 @@ class CardEquipment extends Card {
         this.stats = data.stats;
         this.card_type = "Equipment - " + data.card_type; // Note the change here for consistency
         this.piece = data.card_type;
+        this.gold = this.calculateGold(data.level, data.rarity, data.quality);
     }
 
     serialize(){
@@ -730,6 +790,7 @@ class CardEquipment extends Card {
         const html = `
             <article class="${'o-card' + (short ? ' card-short' : '')} ${this.available ? '' : 'card-unavailable'}" data-card-id="${this.GUID}">
                 <figure class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
+                    ${this.available ? '' : '<i class="bi bi-file-lock2 card-equipped"></i>'}
                     <figcaption class="c-bg_img_desc o-flx_el_b u-border_b"><b>${this.name}</b>
                         <blockquote>${this.card_type}</blockquote>
                     </figcaption>
@@ -1020,11 +1081,13 @@ class Location {
 
 class User {
 
-    constructor(heroes, cards, crafters, slotNumber){
+    constructor(heroes, cards, crafters, gold){
         this.heroes = heroes;
         this.cards = cards;
         this.crafters = crafters;
         this.chosenHero = null;
+        this.gold = gold
+        this.hireHeroCost = 10;
 
         // UI
         this.heroQuestEl = null;
@@ -1033,6 +1096,11 @@ class User {
         this.heroModalEl = null;
         this.crafterEl = null;
         this.crafterModalEl = null;
+        this.goldEl= null;
+        this.heroCostEl = null;
+
+        this.currentHoveredSellCard = null;
+        
     }
 
     /**
@@ -1046,6 +1114,14 @@ class User {
         this.heroes.forEach(hero => saveToLocalStorage(hero));
         this.cards.forEach(card => saveToLocalStorage(card));
         this.saveCrafters();
+    }
+
+    addGold(amount){
+        if (this.gold + amount < 0) return;
+        this.gold += amount;
+        localStorage.setItem("gold", this.gold);
+
+        this.goldEl.innerHTML = this.gold;
     }
 
     testSave(){
@@ -1119,6 +1195,72 @@ class User {
         });
     }
 
+    displayCardsMain(htmlElement) {
+        this.displayCards(htmlElement);
+    
+        this.cardsEl.querySelectorAll('.o-card').forEach(cardElement => {
+            let cardId = cardElement.dataset.cardId;
+            let card = this.cards.find(c => c.GUID === cardId);
+            if(!card) return;
+            if (!card.getAvailability()) return;
+            this.sellCard(card, cardElement); // Pass cardElement as the second argument
+        });
+    }
+
+    sellCard(card, cardElement) {
+        // Function to remove the temporary element
+        const removeTempElement = () => {
+            if (this.currentHoveredSellCard && this.currentHoveredSellCard.parentNode) {
+                this.currentHoveredSellCard.parentNode.removeChild(this.currentHoveredSellCard);
+                this.currentHoveredSellCard = null;
+            }
+        };
+
+        // Append the temporary element to the card element on mouse enter
+        const onMouseEnter = () => {
+            // Remove the currentHoveredSellCard if it exists before creating a new one
+            removeTempElement();
+
+            // Create the temporary element
+            this.currentHoveredSellCard = document.createElement('div');
+            this.currentHoveredSellCard.className = 'card-sell-container';
+
+            // Add a paragraph
+            const infoParagraph = document.createElement('span');
+            infoParagraph.textContent = `Sell for ${card.gold}?`;
+            this.currentHoveredSellCard.appendChild(infoParagraph);
+
+            // Add the confirm button
+            const confirmButton = document.createElement('button');
+            confirmButton.classList.add('btn', 'btn-primary', 'bootstrap-icon');
+            confirmButton.textContent = '\uF26E';
+            confirmButton.addEventListener('click', () => {
+                // Handle confirm action
+                console.log("Selling card")
+                user.addGold(card.gold);
+                user.removeCard(card);
+                user.displayCardsMain();
+                // ...
+                removeTempElement(); // Call this to remove the element after confirming
+            });
+            this.currentHoveredSellCard.appendChild(confirmButton);
+
+            // Append the temporary element to the card element
+            cardElement.appendChild(this.currentHoveredSellCard);
+        };
+
+        // Event listener for mouse leave to remove the temporary element
+        const onMouseLeave = () => {
+            removeTempElement();
+        };
+
+        // Set up the event listeners for the card element
+        cardElement.addEventListener('mouseenter', onMouseEnter);
+        cardElement.addEventListener('mouseleave', onMouseLeave);
+    }
+
+    
+
     displayHeroes(htmlElement, heroModal){
         let tempEl = htmlElement;
         if(!htmlElement) tempEl = this.heroesEl;
@@ -1130,6 +1272,7 @@ class User {
             const button = document.getElementById(`preview-hero-button-${hero.GUID}`);
             button.addEventListener('click', () => this.displayHeroModal(hero, modalEl))
         });
+        this.setHeroCost();
     }
 
     displayHeroesQuest(htmlElement){
@@ -1192,6 +1335,19 @@ class User {
         const cardElement = modalBody.querySelector('#cards');
 
         this.modalDisplayByCardtype(hero, modal, cardElement, actionButton, equipmentButton, userCards, classType);
+
+        // Add event listener to name buttons
+        const heroName = modalBody.querySelector('#model-hero-name');
+        const editNameButton = modalBody.querySelector('#hero-name-edit');
+        const saveNameButton = modalBody.querySelector('#hero-name-save');
+
+        editNameButton.addEventListener('click', () => hero.editName(heroName, editNameButton, saveNameButton));
+
+        saveNameButton.addEventListener('click', () => {
+            hero.saveName(heroName, editNameButton, saveNameButton)
+            this.displayHeroes();
+        });
+
         
         // this.allowHeroCardDrop(hero, cardElement, classType, modal);
 
@@ -1296,7 +1452,7 @@ class User {
             classSortButton.textContent = 'Sort by Class';
             classSortButton.addEventListener('click', () => {
                 this.sortCards((a, b) => a.constructor.name.localeCompare(b.constructor.name))
-                this.displayCards(cardContainer, classType);
+                this.displayCardsMain(cardContainer, classType);
             });
             buttonContainer.appendChild(classSortButton);
         }
@@ -1308,7 +1464,7 @@ class User {
         levelSortButton.textContent = 'Sort by Level';
         levelSortButton.addEventListener('click', () => {
             this.sortCards('level');
-            this.displayCards(cardContainer, classType);
+            this.displayCardsMain(cardContainer, classType);
         });
         buttonContainer.appendChild(levelSortButton);
 
@@ -1318,9 +1474,24 @@ class User {
         manaSortButton.textContent = 'Sort by Mana';
         manaSortButton.addEventListener('click', () => {
             this.sortCards('mana');
-            this.displayCards(cardContainer, classType);
+            this.displayCardsMain(cardContainer, classType);
         });
         buttonContainer.appendChild(manaSortButton);
+
+        // Sort by availability
+        const availabilitySortButton = document.createElement('button');
+        availabilitySortButton.classList.add('btn', 'btn-primary', 'm-1');
+        availabilitySortButton.textContent = 'Sort by Availability';
+        availabilitySortButton.addEventListener('click', () => {
+            this.sortCards((a, b) => {
+                // true values first
+                return (a.getAvailability() === b.getAvailability())? 0 : a.getAvailability()? -1 : 1;
+                // false values first
+                // return (a.getAvailability() === b.getAvailability())? 0 : a.getAvailability()? 1 : -1;
+            });
+            this.displayCardsMain(cardContainer, classType);
+        });
+        buttonContainer.appendChild(availabilitySortButton);
 
         // Sort by rarity
         const raritySortButton = document.createElement('button');
@@ -1335,10 +1506,25 @@ class User {
                 // For descending order, compare b with a instead of a with b
                 return rarityB - rarityA;
             });
-            this.displayCards(cardContainer, classType);
+            this.displayCardsMain(cardContainer, classType);
         });
         buttonContainer.appendChild(raritySortButton);
         
+    }
+
+    hireHero(){
+        if (this.gold < this.hireHeroCost) return;
+        this.addGold(- this.hireHeroCost);
+        const newHero = new Hero('New Hero', generateGUID(), [null, null, null, null, null], [], 1, 0);
+        this.heroes.push(newHero);
+        this.setHeroCost();
+        this.saveData();
+        this.displayHeroes();
+    }
+
+    setHeroCost(){
+        this.hireHeroCost = (this.heroes.length * 5) ** 2 + 10;
+        this.heroCostEl.textContent = this.hireHeroCost
     }
 
 }

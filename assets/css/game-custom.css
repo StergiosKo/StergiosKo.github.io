@@ -49,7 +49,7 @@ article.o-card{
   display: flex;
   flex-direction: column;
   color: white;
-  margin: 10px;
+  /* margin: 10px; */
   position: relative;
   .o-card_b{
     flex: 1 ;
@@ -310,4 +310,33 @@ footer {
 
 .crafter-slot.rewards-button{
   background-color: blue;
+}
+
+div:has(> .o-card){
+  margin: 10px;
+}
+
+.bootstrap-icon{
+  font-family:'Bootstrap-icons';
+}
+
+.card-sell-container .bootstrap-icon{
+  font-size: 1.5rem;
+  margin: 10px 5px;
+  padding: 1px 7px;
+  border-radius: 50px
+}
+
+.hero-container .o-card{
+  margin: 10px
+}
+
+.o-card .card-equipped{
+  font-size: 35px;
+  color: yellow;
+  position: absolute;
+}
+
+.hero-button{
+  margin: 10px
 }

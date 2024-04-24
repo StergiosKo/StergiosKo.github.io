@@ -435,6 +435,10 @@ async function readyGame(user){
 
     const cardsContainer = document.getElementById('all-cardsContainer');
     const cardsSortButtonContainer = document.getElementById('button-sorting-container');
+
+    const goldElement = document.getElementById('gold');
+
+    const heroCostElement = document.getElementById('hero-cost');
     
     user.saveUIElement(cardsContainer, 'cardsEl');
     user.saveUIElement(heroContainer, 'heroesEl');
@@ -442,11 +446,14 @@ async function readyGame(user){
     user.saveUIElement(heroesQuestContainer, 'heroQuestEl');
     user.saveUIElement(crafterContainer, 'crafterEl');
     user.saveUIElement(crafterModal,'crafterModalEl');
+    user.saveUIElement(goldElement, 'goldEl');
+    user.saveUIElement(heroCostElement, 'heroCostEl');
 
     console.log(user)
+    user.addGold(0); // Display user gold
 
     user.generateSortButtons(cardsSortButtonContainer, cardsContainer);
-    user.displayCards(cardsContainer);
+    user.displayCardsMain(cardsContainer);
     user.displayHeroes(heroContainer, heroModal);
     user.displayCrafters();
 
@@ -461,6 +468,11 @@ async function readyGame(user){
     user.displayHeroesQuest(heroesQuestContainer);
 
     checkOngoingQuests(locations, user.heroes);
+
+    const heroHireElement = document.getElementById('hero-hire');
+    heroHireElement.addEventListener('click', () => {
+        user.hireHero();
+    })
 
     user.checkCrafting();
     user.saveData();
@@ -529,7 +541,10 @@ async function createNewUser() {
     let actionCrafter = new Crafter(0, jsonActionCrafter, CardAction, actionData, 2);
     let equipmentCrafter = new Crafter(1, jsonEquipmentCrafter, CardEquipment, equipmentData, 2);
 
-    user = new User(heroesArray, allCards, [actionCrafter, equipmentCrafter]);
+    let gold = 50
+    localStorage.setItem("gold", gold);
+
+    user = new User(heroesArray, allCards, [actionCrafter, equipmentCrafter], gold);
     user.saveData();
     user.saveCrafters();
 
@@ -550,8 +565,9 @@ async function createExistingUser(){
 
     let heroesArray = deserializeAllHeroes(cardsArray);
 
+    let gold = parseInt(localStorage.getItem("gold"));
 
-    user = new User(heroesArray, cardsArray, crafters);
+    user = new User(heroesArray, cardsArray, crafters, gold);
 
     readyGame(user);
 
