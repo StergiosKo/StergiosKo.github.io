@@ -153,7 +153,7 @@ class Hero extends Entity {
         // Iterate through each equipment and append its HTML to the div with labels
         Object.entries(this.cardsEquipment).forEach(([key, equipment]) => {
             let currentDiv = document.createElement('div');
-            currentDiv.classList.add('equipment-card');
+            currentDiv.classList.add('equipment-card', 'col-6', 'col-md-3');
             currentDiv.innerHTML += `<p>${key}</p>`; // Add label
             if (!equipment) currentDiv.innerHTML += '<p>No equipment <br> equipped</p>';
             else{
@@ -186,7 +186,7 @@ class Hero extends Entity {
                 </div>
                 <div class="w-100"></div>
                 <div>
-                    <div id="cards" class="hero-cards d-flex flex-wrap mt-1"></div>
+                    <div id="cards" class="hero-cards row mt-1"></div>
                 </div>
             </div>
         `;
@@ -215,14 +215,12 @@ class Hero extends Entity {
             this.updateStatsPerLevel();
             this.updateMaxExp();
             this.updateCurrentStats();
-            console.log("Level up!");
             console.log(this);
         }
     }
 
     receiveEXP(exp){
         if (this.exp + exp >= this.maxExp){
-            console.log(this.exp + " " + exp + " " + this.maxExp);
             let remainingExp = this.maxExp - this.exp;
             this.levelUP();
             return remainingExp;
@@ -574,18 +572,25 @@ class Card {
      * @param {any} short - if parameter, adds short class to card
      * @return {type} returns html
      */
-    generateHTML(short) {
+    generateHTML(drag = false) {
         const html = `
-        <article id="cardId-${this.id}" class="${'o-card' + (short ? 'card-short' : '')} ${this.available ? '' : 'card-unavailable'}">
-            <figure class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
-                <figcaption class="c-bg_img_desc o-flx_el_b u-border_b"><b>${this.name}</b>
+        <article id="cardId-${this.id}" ${drag && this.available?'draggable="true"':''} class="col-6 col-md-3 o-card ${this.available ? '' : 'card-unavailable'}" data-cardid="${this.GUID}">
+            <figure draggable='false' class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
+                <figcaption class="c-bg_img_desc o-flx_el_b u-border_b">
+                <b>${this.name}</b>
+                <section class="o-card_b"><span>${this.description}</section>
                 </figcaption>
             </figure>
-            <section class="o-card_b"><span>${this.description}</section>
             ${this.quantity !== -1 ? `<div class="card-number-box">x${this.quantity}</div>` : ''}
         </article>`;
     
         return html;
+    }
+
+    displayCardModal(modalId){
+        const modal = document.getElementById(modalId);
+        const modalBody = modal.querySelector('.modal-body');
+        modalBody.innerHTML = this.generateCardDetailsHTML();
     }
 
     serialize(){
@@ -630,6 +635,29 @@ class CardAction extends Card {
         this.card_type = "Action - " + data.card_type;
         this.mana = data.mana;
         this.gold = this.calculateGold(data.level, data.rarity, data.quality);
+
+        this.updateDesc();
+
+    }
+
+    updateDesc(){
+        // Template string with placeholders replaced by object properties
+        // Process description to include color-coded attributes
+
+        // Assumes the description has placeholders like "Deal {0} STR damage and apply {1} INT Burn to the enemy"
+        let updatedDescription = this.description;
+        this.effects.forEach((effect, index) => {
+            let minValue = Object.values(effect.scaling)[0].min;
+            let maxValue = Object.values(effect.scaling)[0].max;
+            if (minValue && maxValue) {
+                // If the scaling has min and max values, replace with "minValue - maxValue"
+                updatedDescription = updatedDescription.replace(`{${index}}`, `${minValue} - ${maxValue}`);
+            } else {
+                // Otherwise, replace with the current scaling value
+                updatedDescription = updatedDescription.replace(`{${index}}`, Object.values(effect.scaling)[0]);
+            }
+        });
+        this.description = updatedDescription;
     }
 
     serialize(){
@@ -653,46 +681,21 @@ class CardAction extends Card {
         })
     }
     
-    /**
-     * Template string with placeholders replaced by object properties
-     * Process description to include color-coded attributes
-     *
-     * @param {any} short - if parameter, adds short class to card
-     * @return {type} returns html
-     */
-    generateHTML(short) {
-        // Template string with placeholders replaced by object properties
-            // Process description to include color-coded attributes
-
-            // Assumes the description has placeholders like "Deal {0} STR damage and apply {1} INT Burn to the enemy"
-        let updatedDescription = this.description;
-        this.effects.forEach((effect, index) => {
-            let minValue = Object.values(effect.scaling)[0].min;
-            let maxValue = Object.values(effect.scaling)[0].max;
-            if (minValue && maxValue) {
-                // If the scaling has min and max values, replace with "minValue - maxValue"
-                updatedDescription = updatedDescription.replace(`{${index}}`, `${minValue} - ${maxValue}`);
-            } else {
-                // Otherwise, replace with the current scaling value
-                updatedDescription = updatedDescription.replace(`{${index}}`, Object.values(effect.scaling)[0]);
-            }
-        });
-        this.description = updatedDescription;
-        
+    generateHTML(drag = false) {
         let processedDescription = this.description
         .replace(/STR/g, '<span class="attr-str">STR</span>')
         .replace(/DEX/g, '<span class="attr-dex">DEX</span>')
         .replace(/INT/g, '<span class="attr-int">INT</span>');
         const html = `
-            <article class="${'o-card' + (short ? ' card-short' : '')} ${this.available ? '' : 'card-unavailable'}" data-card-id="${this.GUID}">
-                <figure class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
+            <article class="col-6 col-md-3 o-card ${this.available ? '' : 'card-unavailable'}" data-cardid="${this.GUID}" ${drag && this.available?'draggable="true"':''}>
+                <figure draggable='false' class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
                 ${this.available ? '' : '<i class="bi bi-file-lock2 card-equipped"></i>'}
                     <header class="c-top_icons"><span class="c-icon">${this.mana}</span></header>
-                    <figcaption class="c-bg_img_desc o-flx_el_b u-border_b"><b>${this.name}</b>
-                        <blockquote>${this.card_type}</blockquote>
+                    <figcaption class="c-bg_img_desc o-flx_el_b u-border_b">
+                        <b>${this.name}</b>
+                        <section class="o-card_b"><p>${processedDescription}</p>
                     </figcaption>
                 </figure>
-                <section class="o-card_b"><span>${processedDescription}</section>
             </article>`;
         
         return html;
@@ -740,6 +743,26 @@ class CardEquipment extends Card {
         this.card_type = "Equipment - " + data.card_type; // Note the change here for consistency
         this.piece = data.card_type;
         this.gold = this.calculateGold(data.level, data.rarity, data.quality);
+
+        this.updateDesc();
+    }
+
+    updateDesc(){
+        let updatedDescription = this.description;
+        
+        Object.entries(this.stats).forEach(([key, value], index) => {
+            if (value.min && value.max) {
+                // If the scaling has min and max values, replace with "minValue - maxValue"
+                updatedDescription = updatedDescription.replace(`{${index}}`, `${value.min} - ${value.max}`);
+            } else {
+                // Otherwise, replace with the current scaling value
+                updatedDescription = updatedDescription.replace(`{${index}}`, value);
+            }
+            // Assuming you want to replace placeholders in the description with the stat values
+            updatedDescription = updatedDescription.replace(`{${index}}`, value);
+        });
+        
+        this.description = updatedDescription;
     }
 
     serialize(){
@@ -757,45 +780,21 @@ class CardEquipment extends Card {
             quality: this.quality
         })
     }
-
-    /**
-     * Template string with placeholders replaced by object properties
-     * Process description to include color-coded attributes
-     *
-     * @param {any} short - if parameter, adds short class to card
-     * @return {type} returns html
-     */
-    generateHTML(short) {
-        let updatedDescription = this.description;
-        
-        Object.entries(this.stats).forEach(([key, value], index) => {
-            if (value.min && value.max) {
-                // If the scaling has min and max values, replace with "minValue - maxValue"
-                updatedDescription = updatedDescription.replace(`{${index}}`, `${value.min} - ${value.max}`);
-            } else {
-                // Otherwise, replace with the current scaling value
-                updatedDescription = updatedDescription.replace(`{${index}}`, value);
-            }
-            // Assuming you want to replace placeholders in the description with the stat values
-            updatedDescription = updatedDescription.replace(`{${index}}`, value);
-        });
-        
-        this.description = updatedDescription;
-        
-
+    generateHTML(drag) {
         let processedDescription = this.description
         .replace(/STR/g, '<span class="attr-str">STR</span>')
         .replace(/DEX/g, '<span class="attr-dex">DEX</span>')
         .replace(/INT/g, '<span class="attr-int">INT</span>');
+
         const html = `
-            <article class="${'o-card' + (short ? ' card-short' : '')} ${this.available ? '' : 'card-unavailable'}" data-card-id="${this.GUID}">
-                <figure class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
+            <article class="col-6 col-md-3 o-card ${this.available ? '' : 'card-unavailable'}" data-cardid="${this.GUID}" ${drag && this.available?'draggable="true"':''}>
+                <figure draggable='false' class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
                     ${this.available ? '' : '<i class="bi bi-file-lock2 card-equipped"></i>'}
-                    <figcaption class="c-bg_img_desc o-flx_el_b u-border_b"><b>${this.name}</b>
-                        <blockquote>${this.card_type}</blockquote>
+                    <figcaption class="c-bg_img_desc o-flx_el_b u-border_b">
+                        <b>${this.name}</b>
+                        <section class="o-card_b"><span>${processedDescription}</section>
                     </figcaption>
                 </figure>
-                <section class="o-card_b"><span>${processedDescription}</section>
             </article>`;
         
         return html;
@@ -873,8 +872,8 @@ class Location {
 
     startQuest(hero) {
         hero.setAvailability(false);
+        user.startQuest(hero);
         let score = this.startBattle(hero); // Assume this method starts the battle and returns a score
-        console.log(`The hero ${hero.name} starts the quest ${this.name}.`);
         
         const endTime = new Date().getTime() + this.time * 1000; // Convert seconds to milliseconds
         const questData = { endTime: endTime, heroGUID: hero.GUID, score: score };
@@ -894,13 +893,12 @@ class Location {
     
             if (currentTime >= endTime) {
                 this.setAvailability('reward');
-                hero.setAvailability(true);
                 this.currentScore = score;
-                console.log(`The quest in ${this.name} who the hero ${hero.name} took has ended with a score of ${score}.`);
 
             } else {
                 // If the quest is not yet finished, set a timeout to check again at the estimated end time
                 this.setAvailability('quest');
+                this.currentHero.setAvailability(false);
                 setTimeout(() => {
                     this.checkQuestEnd(hero, score);
                 }, endTime - currentTime);
@@ -941,6 +939,7 @@ class Location {
         const prevExp = this.currentHero.getEXP();
         const exp = this.currentHero.receiveEXPAll(this.exp);
         const level = this.currentHero.level;
+        this.currentHero.setAvailability(true);
         saveToLocalStorage(this.currentHero);
 
         const maxExp = this.currentHero.getMaxEXP();
@@ -1124,15 +1123,8 @@ class User {
         this.goldEl.innerHTML = this.gold;
     }
 
-    testSave(){
-        this.cards.forEach(card => {
-            const serializedObject = card.serializeTest();
-            const key = localStorage.getItem(card.GUID) ? card.GUID : `guid-test${card.GUID}`;
-            localStorage.setItem(key, serializedObject);
-        });
-    }
-
     displayCrafters(){
+        this.crafters.sort((a, b) => a.id - b.id);
         this.crafterEl.innerHTML = '';
         this.crafters.forEach(crafter => {
             this.crafterEl.innerHTML += crafter.generateHTML();
@@ -1161,6 +1153,10 @@ class User {
         return testCard;
     }
 
+    getCard(cardId){
+        return this.cards.find(card => card.id === cardId);
+    }
+
     removeCard(card){
         card.quantity -= 1;
         if (card.quantity <= 0){
@@ -1173,7 +1169,7 @@ class User {
         this[name] = element
     }
 
-    displayCards(htmlElement, cardType = null){
+    displayCards(htmlElement, cardType = null, drag = false) {
 
         let tempEl = htmlElement;
         if(!htmlElement) tempEl = this.cardsEl;
@@ -1181,16 +1177,18 @@ class User {
         tempEl.innerHTML = this.cards
         .filter(card => cardType ? card.constructor === cardType : true)
         .map(card => {
-            const cardHtml = card.generateHTML();
-            const draggable = card.getAvailability() ? 'draggable-card' : '';
-            return `<div class="${draggable}" draggable="${card.getAvailability()}" data-card-id="${card.GUID}">${cardHtml}</div>`;
+            return card.generateHTML(drag);
         })
         .join('');
     
+        if(!drag) return;
         // Add event listeners for dragstart
-        tempEl.querySelectorAll('.draggable-card').forEach(cardElement => {
+        tempEl.querySelectorAll('.o-card').forEach(cardElement => {
+            // Check if card is available (class contains 'card-unaivalable')
+            if (cardElement.classList.contains('card-unaivalable')) return;
+            
             cardElement.addEventListener('dragstart', (event) => {
-                event.dataTransfer.setData('text/plain', event.target.dataset.cardId);
+                event.dataTransfer.setData('text/plain', event.target.dataset.cardid);
             });
         });
     }
@@ -1199,7 +1197,7 @@ class User {
         this.displayCards(htmlElement);
     
         this.cardsEl.querySelectorAll('.o-card').forEach(cardElement => {
-            let cardId = cardElement.dataset.cardId;
+            let cardId = cardElement.dataset.cardid;
             let card = this.cards.find(c => c.GUID === cardId);
             if(!card) return;
             if (!card.getAvailability()) return;
@@ -1262,6 +1260,7 @@ class User {
     
 
     displayHeroes(htmlElement, heroModal){
+        this.heroes.sort((a, b) => b.level - a.level);
         let tempEl = htmlElement;
         if(!htmlElement) tempEl = this.heroesEl;
         let modalEl = heroModal;
@@ -1288,7 +1287,8 @@ class User {
     }
 
     selectHeroQuest(hero){
-       const buttons =
+        if (!hero.isAvailable()) return
+        const buttons =
             [...document.querySelectorAll('[id^="hero-quest-hero-button"]')]
           ;
         const heroButton = document.getElementById(`hero-quest-hero-button-${hero.GUID}`);
@@ -1299,12 +1299,16 @@ class User {
         this.chosenHero = hero;
     }
 
-    startQuest(location){
+    startQuest(){
         if (!this.chosenHero) {
             console.log("Please select a hero");
             return;
         }
-        console.log(this.chosenHero.name + " takes a quest to " + location.name);
+        const heroButton = document.getElementById(`hero-quest-hero-button-${this.chosenHero.GUID}`);
+        heroButton.classList.remove('active');
+        heroButton.classList.add('d-none-button')
+        this.chosenHero.setAvailability(false);
+        this.chosenHero = null;
     }
 
 
@@ -1362,12 +1366,12 @@ class User {
         if (classType === CardAction) {
             actionButton.classList.remove('d-none-button');
             equipmentButton.classList.add('d-none-button');
-            this.displayCards(userCards, CardAction);
+            this.displayCards(userCards, CardAction, true);
             hero.displayActions(cardElement);
         } else if (classType === CardEquipment) {
             actionButton.classList.add('d-none-button');
             equipmentButton.classList.remove('d-none-button');
-            this.displayCards(userCards, CardEquipment);
+            this.displayCards(userCards, CardEquipment, true);
             hero.displayEquipment(cardElement);
         }
         this.allowHeroCardDrop(hero, cardElement, classType, modal);
@@ -1375,6 +1379,7 @@ class User {
 
     allowHeroCardDrop(hero, htmlElement, classType, heroModal){
         // Add drop event listeners for hero cards
+        if(!hero.isAvailable()) return;
         htmlElement.querySelectorAll('.o-card').forEach(heroCardElement => {
             heroCardElement.addEventListener('dragover', (event) => {
                 event.preventDefault(); // Necessary to allow dropping
@@ -1384,7 +1389,7 @@ class User {
                 event.preventDefault();
                 const userCardId = event.dataTransfer.getData('text/plain');
                 const userCard = this.cards.find(card => card.GUID === userCardId);
-                const heroCardId = heroCardElement.dataset.cardId;
+                const heroCardId = heroCardElement.dataset.cardid;
                 let heroCard;
                 if (classType == CardAction) heroCard = hero.getAction(heroCardId);
                 else if (classType == CardEquipment){
@@ -1398,7 +1403,6 @@ class User {
                 
                 if (userCard && heroCard) {
                     // Replace hero card with user card logic here...
-                    console.log(`The hero card ${heroCard.name} was replaced with ${userCard.name}`);
                     if (classType == CardAction){
                         hero.replaceAction(heroCard, userCard);
                         this.displayHeroModal(hero, heroModal, CardAction);
@@ -1533,13 +1537,14 @@ class Crafter{
 
     constructor(id, data, cardType, cardsData, slotNumber){
         this.name = data.name;
-        this.id = id;
+        this.id = parseInt(id);
         this.cardType = cardType;
         this.cardsData = cardsData;
         this.level = data.level;
         this.exp = data.exp;
         this.maxExp = this.level * this.level/2 * 100;
-        this.knownCards = data.knownCards;
+        if (data.knownCards) this.knownCards = data.knownCards;
+        else this.knownCards = {};
         this.updateMaxExp();
         this.MAX_LEVEL = 50;
         this.craftSlots = []
@@ -1606,27 +1611,27 @@ class Crafter{
     }
 
     updateCardMastery(card) {
-        console.log(card)
-        console.log(card.id)
-        if (this.knownCards.hasOwnProperty(card.id)) {
-            this.knownCards[card.id]++;
+        const stringId = card.id.toString();
+        if (this.knownCards[stringId]) {
+            this.knownCards[stringId]++;
         } else {
-            return 0;
+            this.knownCards[stringId] = 1;
         }
-        console.log(this);
     }
 
     getCraftingCount(card){
-        if (this.knownCards.hasOwnProperty(card.id)) {
-            return this.knownCards[card.id];
+        const stringId = card.id.toString();
+        if (this.knownCards[stringId]) {
+            return this.knownCards[stringId];
         } else {
             return 0;
         } 
     }
 
     getCardMastery(cardId) {
-        if (this.knownCards.hasOwnProperty(cardId)) {
-            return this.knownCards[cardId] - 1;
+        const stringId = cardId.toString();
+        if (this.knownCards[stringId]) {
+            return this.knownCards[stringId] - 1;
         } else {
             return 0;
         }      
@@ -1696,7 +1701,7 @@ class Crafter{
 
     generateHTML(){
         let html = `
-        <div class="col-12 row">
+        <div class="col-12">
             <div id="crafter-${this.id}" class="crafter m-3">
                 <h3>${this.name}</h3>
                 <div class="text">
@@ -1983,7 +1988,7 @@ class CraftSlot{
                 </div>
                 <div>
                     <h3>User Cards</h3>
-                    <div id="user-cards" class="user-cards d-flex flex-wrap"></div>
+                    <div id="user-cards" class="user-cards row"></div>
                 </div>
                 
             </div>
@@ -1995,7 +2000,7 @@ class CraftSlot{
         modalBody.innerHTML = html;
 
         let userBody = modalBody.querySelector('#user-cards');
-        user.displayCards(userBody, Card);
+        user.displayCards(userBody, Card, true);
 
 
         this.allowCraftCardDrop(modalBody, modal);
@@ -2084,11 +2089,11 @@ class CraftSlot{
                         cardElement.innerHTML = '';
                         slotClasses.add('unused');
                         cardSlot.removeCardFromSlot(heroCardElement.id);
-                        user.displayCards(userCardsElement, Card);
+                        user.displayCards(userCardsElement, Card, true);
                         cardElement.removeEventListener('click', clickHandler);
                     });
                     slotClasses.remove('unused');
-                    user.displayCards(userCardsElement, Card);
+                    user.displayCards(userCardsElement, Card, true);
                 }
             });
         });

@@ -41,11 +41,12 @@ article.o-card{
   min-width: 100px;
   /* min-height: 380px;
   width: 285px; */
-  width: 230px;
+  width: 250px;
+  max-width: 250px;
   min-height: 330px;
   /* box-shadow: 0 0 2rem black; */
   border-radius: 1rem;
-  background: black;
+  /* background: black; */
   display: flex;
   flex-direction: column;
   color: white;
@@ -53,8 +54,9 @@ article.o-card{
   position: relative;
   .o-card_b{
     flex: 1 ;
-    background-color: black;
-    padding: 0.3rem 0.8rem;
+    /* background-color: black; */
+    text-align: center;
+    /* padding: 0.5rem 0.8rem 0.6rem; */
     text-align: vertical;
     font-family: sans-serif;
     font-size: 14px;
@@ -62,6 +64,9 @@ article.o-card{
     display: flex;
     align-items: center;
     border-radius: 5px;
+    /* position: absolute;
+    top: 16.8rem; */
+    width: 100%;
   }
 }
 
@@ -69,7 +74,7 @@ article.o-card{
 .card-number-box {
   position: absolute;
   top: 0.8rem; /* Adjust as needed */
-  right: 0.8rem; /* Adjust as needed */
+  right: 1.4rem; /* Adjust as needed */
   background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
   color: white;
   padding: 0.5rem 0.8rem;
@@ -104,16 +109,24 @@ figure{
     background-repeat: no-repeat;
     background-image: url("https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450");
       figcaption.c-bg_img_desc{
+        text-align: center;
         color: white;
-        background-color: #00000088;
+        overflow: hidden;
+        /* background-color: #00000088; */
         display: block;
-        padding: 1rem;
+        padding: 0.5rem 0.8rem 0.6rem;
+        border-radius: 5px;
+        position: absolute;
+        bottom: 0;
+        text-shadow: 1px 1px 2px black;
+        width: 100%;
       
-        b{font-weight: 400;}
+        b{font-weight: 400; color: orange;}
         blockquote{
           color: orange;
           font-size: 0.9rem;
           margin-bottom: 0;
+          display: none;
         }
     }
     .c-top_icons{
@@ -134,15 +147,9 @@ figure{
   }
 }
 
-article.o-card.card-short{
-  width: 170px;
-  min-height: auto;
-  margin: 10px;
-  box-shadow: none;
-}
-
 .u-border_b{
-  border-bottom: 2px solid orange; 
+  width: auto;
+  /* border-bottom: 2px solid orange;  */
 }
 
 .u-snd{
@@ -312,10 +319,6 @@ footer {
   background-color: blue;
 }
 
-div:has(> .o-card){
-  margin: 10px;
-}
-
 .bootstrap-icon{
   font-family:'Bootstrap-icons';
 }
@@ -324,11 +327,15 @@ div:has(> .o-card){
   font-size: 1.5rem;
   margin: 10px 5px;
   padding: 1px 7px;
-  border-radius: 50px
+  border-radius: 50px;
 }
 
-.hero-container .o-card{
-  margin: 10px
+.card-sell-container{
+  background-color: black;
+}
+
+.o-card{
+  margin-bottom: 10px;
 }
 
 .o-card .card-equipped{
@@ -339,4 +346,45 @@ div:has(> .o-card){
 
 .hero-button{
   margin: 10px
+}
+
+#cardModal{
+  z-index: 99999;
+}
+
+.o-card b::before, .o-card b::after{
+  background-color: orange;
+  content: "";
+  display: inline-block;
+  height: 2px;
+  position: relative;
+  vertical-align: middle;
+  width: 50%;
+}
+
+.o-card b{
+  overflow: hidden;
+}
+
+.o-card b::before{
+  right: 0.5em;
+  margin-left: -50%;
+}
+
+.o-card b::after{
+  left: 0.5em;
+  margin-right: -50%;
+}
+
+.o-card_b p{
+  width: 100%;
+  text-align: center;
+}
+
+.slot .card-used{
+  padding-top: 10px;
+}
+
+#result .o-card{
+  margin-top: 10px;
 }
