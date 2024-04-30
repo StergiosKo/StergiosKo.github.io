@@ -2,7 +2,7 @@
     font-family: "Battambang", system-ui;
 }
 
-body{
+body, #main{
   overflow-x: hidden;
 }
 
@@ -43,7 +43,7 @@ article.o-card{
   width: 285px; */
   width: 250px;
   max-width: 250px;
-  min-height: 330px;
+  height: 330px;
   /* box-shadow: 0 0 2rem black; */
   border-radius: 1rem;
   /* background: black; */
@@ -292,7 +292,11 @@ footer {
 .crafting-card{
   width: 250px;
   height: 350px;
-  margin: 10px;
+  width: 70px;
+  height: 110px;
+  padding: 0;
+  /* margin: 10px; */
+  margin: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   background-color: gray;
   border: 1px solid black;
@@ -387,4 +391,57 @@ footer {
 
 #result .o-card{
   margin-top: 10px;
+}
+
+.scrollbar-container{
+  overflow-y: auto;
+}
+
+#cardsContainer .scrollbar-container{
+  height: 700px;
+}
+
+.crafting .btn-danger, .result-container button{
+  border-radius: 50px;
+  padding: 3px 7px;
+  min-width: 32px;
+}
+
+.crafting .slot-container{
+  margin: 0 10px;
+}
+
+.crafting .user-cards{
+  height: 335px;
+}
+
+#result.crafting-card{
+  width: 250px;
+  height: 350px;
+}
+
+.crafting .spacer{
+  display: flex;
+  align-items: center;
+}
+
+.modal-body{
+  padding-top: 0px;
+}
+
+#craft-card-button{
+  margin-top: 1rem;
+  padding: 10px 20px;
+}
+
+.crafting-slot article.o-card{
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  min-width: 78px;
+}
+
+.crafting-slot article figure figcaption.c-bg_img_desc{
+  display: none;
 }

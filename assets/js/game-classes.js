@@ -1799,9 +1799,10 @@ class CraftSlot{
 
         this.data = data;
 
-        this.craftSlots = {};
+        this.craftingSlots = {'1': null, '2': null, '3': null};
 
         // UI
+        this.modal;
         this.showModalButton;
         this.craftResultElement;
         this.craftButton;
@@ -1933,10 +1934,15 @@ class CraftSlot{
 
 
     returnUserMaterials(){
-        this.materials.forEach(material => {
-            user.receiveResourceCard(material, 1);
+        // Get map values of craftingSlots
+        const cardIds = Object.values(this.craftingSlots);
+
+        // add to user cards
+        cardIds.forEach(cardId => {
+            if(cardId){
+                user.receiveResourceCard(cardId, 1, false);
+            }
         });
-        this.materials = []
     }
 
     getCraftingCard(data){
@@ -1947,69 +1953,85 @@ class CraftSlot{
         return `<button id="crafter${this.crafter.id}-slot${this.id}" class="btn btn-primary available-button crafter-slot crafter-slot-${this.id} m-2" data-slotnumber="${this.id}">Craft</button>`
     }
 
+
+    generateCraftingSlotHTML(slotId){
+        let html = `
+        <div class="slot-container">
+            <h4>Slot ${slotId}</h4>
+            <div class="row">
+                <div id="crafting-slot${slotId}" class="slot col-8 col-md-12 crafting-card crafting-slot unused" data-slotnumber="${slotId}">
+                    <div class="card-used"></div>
+                </div>
+                <div class="col-4 col-md-12 spacer">
+                    <button class="btn btn-danger col-4 remove-card-button"><i class="bi bi-x-lg"></i></button>
+                </div>
+            </div>
+        </div>
+        `
+        return html;
+    }
+
+    generateCraftingSlos(){
+        let html = '';
+        for(let i = 1; i <= 3; i++){
+            html += this.generateCraftingSlotHTML(i);
+        }
+        return html;
+    }
+
     generateModal(modal){
+        this.modal = modal;
         let html = `
         <div class="">
-            <h3>${this.crafter.name}: Crafting Slot ${this.id}</h3>
             <div class="text">
                 <p>Level: ${this.crafter.level}, Exp: ${this.crafter.exp}/${this.crafter.maxExp}</p>
             </div>
-            <div class="crafting row mt-3">
-                <div class="crafting-slots d-flex flex-wrap justify-content-center col-8">
-                    <div class="text-center">
-                        <h4>Slot 1</h4>
-                        <div id="crafting-slot1" class="slot crafting-card crafting-slot unused">
-                            <div class="card-used"></div>
-                        </div>
+            <div class="crafting">
+                <div class="row">
+
+                    <div class="d-flex flex-wrap justify-content-center col-4 col-md-8">
+                        ${this.generateCraftingSlos()}
                     </div>
-                    <div class="text-center">
-                        <h4>Slot 2</h4>
-                        <div id="crafting-slot2" class="slot crafting-card crafting-slot unused">
-                            <div class="card-used"></div>
-                        </div>
-                    </div>
-                    <div class="text-center">
-                        <h4>Slot 3</h4>
-                        <div id="crafting-slot3" class="slot crafting-card crafting-slot unused">
-                            <div class="card-used"></div>
-                        </div>
-                    </div>
-                    
-                </div>
-                <div class="col-1 d-flex align-items-center">
-                    <button id="craft-card-button" class="btn btn-primary">Craft</button>
-                </div>
-                <div class="col-3 d-flex">
-                    <div class="text-center">
+                    <div class="text-center result-container col-8 col-md-4">
                         <h4>Result</h4>
                         <div id="result" class="crafting-card unused"> </div>
+                        <button id="craft-card-button" class="btn btn-primary">Craft</button>
                     </div>
-                    
+                
                 </div>
                 <div>
                     <h3>User Cards</h3>
-                    <div id="user-cards" class="user-cards row"></div>
+                    <div id="user-cards" class="user-cards row scrollbar-container"></div>
                 </div>
-                
             </div>
         </div>
         `;
 
-        
         let modalBody = modal.querySelector('.modal-body');
         modalBody.innerHTML = html;
 
         let userBody = modalBody.querySelector('#user-cards');
-        user.displayCards(userBody, Card, true);
+        user.displayCards(userBody, Card);
 
+        // Reset crafting slots
+        this.craftingSlots = {'1': null, '2': null, '3': null};
 
-        this.allowCraftCardDrop(modalBody, modal);
+        this.addCraftingSlotFunctionality(modalBody);
+
+        // Remove button functionality
+        this.slotContainers = modalBody.querySelectorAll('.slot-container');
+        this.slotContainers.forEach(slotContainer => {
+            slotContainer.querySelector('.remove-card-button').addEventListener('click', () => {
+                let slotNumber = slotContainer.querySelector('.crafting-slot').dataset.slotnumber;
+                this.removeCardFromSlot(slotNumber);
+            })
+        })
 
         this.craftResultElement = modal.querySelector('#result');
         this.craftButton = modal.querySelector('#craft-card-button');
 
         this.craftButton.addEventListener('click', () => {
-            this.craftCurrentCard(modal);
+            this.craftCurrentCard();
         });
 
         // Define a named function to handle the modal close event
@@ -2021,27 +2043,76 @@ class CraftSlot{
         // Attach the event listener using the named function
         $(modal).on('hidden.bs.modal', handleModalClose);
 
-        // console.log(modalBody.innerHTML)
+    }
+
+    getAvailableSlot(){
+        // search crafting slot map for null
+        for (const slotId in this.craftingSlots) {
+            if (this.craftingSlots[slotId] === null) {
+                return slotId;
+            }
+        }
+        return null;
 
     }
 
-    onCraftingClose() {
-        this.returnUserMaterials();
+    addCraftingSlotFunctionality(htmlElement){
+        // Get user cards
+        let userCards = htmlElement.querySelectorAll('#user-cards .o-card');
+
+        // Add click event listeners for cards
+        userCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const userCard = user.cards.find(userCard => userCard.GUID === card.dataset.cardid);
+                this.addCardToSlot(userCard);
+            })
+        })
+
+        return;
     }
 
-    addMaterial(material){
-        this.materials.push(material);
+    addCardToSlot(card){
+        let slotNumber = this.getAvailableSlot();
+        if(!slotNumber) return;
+
+        let slot = this.modal.querySelector(`#crafting-slot${slotNumber}`);
+        slot.classList.remove('unused');
+        slot.innerHTML = card.generateHTML();
+        this.craftingSlots[slotNumber] = card;
+        user.removeCard(card);
         this.checkCraftRecipe();
         this.updateCraftingUI();
     }
 
-    removeMaterial(material){
-        this.materials.splice(this.materials.indexOf(material), 1);
+    removeCardFromSlot(slotId){
+        const oldCard = this.craftingSlots[slotId];
+        if(!oldCard) return;
+
+        this.craftingSlots[slotId] = null;
+        let slot = this.modal.querySelector(`#crafting-slot${slotId}`);
+        slot.classList.add('unused');
+        slot.innerHTML = '';
+        if(oldCard) user.receiveResourceCard(oldCard, 1);
         this.checkCraftRecipe();
         this.updateCraftingUI();
+    }
+
+    checkCraftRecipe(){
+        // Get all card ids from crafting slots
+        let cards = Object.values(this.craftingSlots);
+
+        // Remove null values
+        cards = cards.filter(card => card !== null);
+
+        // Get card ids
+        const cardIds = cards.map(card => card.id);
+
+        const card = this.crafter.matchMaterialsToCard(cardIds);
+        this.cardToCraft = card;
     }
 
     updateCraftingUI(){
+        // For crafting card
         if(this.cardToCraft){
             const card = new this.crafter.cardType(this.cardToCraft, null, false)
             this.craftResultElement.innerHTML = card.generateHTML();
@@ -2049,14 +2120,14 @@ class CraftSlot{
         else{
             this.craftResultElement.innerHTML = 'Nothing to craft';
         }
+        
+        // For user cards
+        const userCardsEl = this.modal.querySelector('#user-cards');
+        user.displayCards(userCardsEl, Card);
+        this.addCraftingSlotFunctionality(this.modal);
+
     }
 
-    checkCraftRecipe(){
-        const matIds = this.materials.map(material => material.id);
-        let card = this.crafter.matchMaterialsToCard(matIds);
-        // console.log(this.materials)
-        this.cardToCraft = card;
-    }
 
     assignCrafterButtonFunctionality(modal, crafterElement){
         this.showModalButton = crafterElement.querySelector(`.crafter-slot-${this.id}`)
@@ -2064,70 +2135,26 @@ class CraftSlot{
         this.showModalButton.addEventListener('click', () => this.openModal(modal));
     }
 
-    allowCraftCardDrop(htmlElement, heroModal){
-        // Add drop event listeners for hero cards
-        const userCardsElement = heroModal.querySelector('#user-cards');
-        htmlElement.querySelectorAll('.crafting-slot').forEach(heroCardElement => {
-            this.craftSlots[heroCardElement.id] = null;
-            heroCardElement.addEventListener('dragover', (event) => {
-                event.preventDefault(); // Necessary to allow dropping
-            });
-    
-            heroCardElement.addEventListener('drop', (event) => {
-                event.preventDefault();
-                const userCardId = event.dataTransfer.getData('text/plain');
-                const userCard = user.cards.find(card => card.GUID === userCardId);
-                const slotClasses = heroCardElement.classList;
-                let craftingSlot = slotClasses.contains('crafting-slot');
-                                
-                if (userCard && craftingSlot) {
-                    this.addCardToSlot(heroCardElement.id, userCard);
-                    let cardElement = heroCardElement.querySelector('.card-used');
-                    cardElement.innerHTML = userCard.generateHTML();
-                    let cardSlot = this;
-                    cardElement.addEventListener('click', function clickHandler() {
-                        cardElement.innerHTML = '';
-                        slotClasses.add('unused');
-                        cardSlot.removeCardFromSlot(heroCardElement.id);
-                        user.displayCards(userCardsElement, Card, true);
-                        cardElement.removeEventListener('click', clickHandler);
-                    });
-                    slotClasses.remove('unused');
-                    user.displayCards(userCardsElement, Card, true);
-                }
-            });
-        });
-    }
-
-    addCardToSlot(slot, card){
-        this.removeCardFromSlot(slot);
-        this.addMaterial(card);
-        user.removeCard(card);
-        this.craftSlots[slot] = card;
-    }
-
-    removeCardFromSlot(slot, save = true){
-        let oldCard = this.craftSlots[slot];
-        if(!oldCard) return;
-
-        this.removeMaterial(oldCard);
-        if (save)user.receiveResourceCard(oldCard, 1, false);
-        this.craftSlots[slot] = null;
-    }
-
-    craftCurrentCard(modal){
+    craftCurrentCard(){
         let card = this.cardToCraft;
         if(!card) return;
         user.saveData();
-        this.materials = [];
+        
+        // reset crafting slots
+        this.craftingSlots = {'1': null, '2': null, '3': null};
+
         this.crafter.startCraftCard(this, card.id);
         this.changeStatus('crafting');
-        this.closeModal(modal);
+        this.closeModal(this.modal);
     }
 
     closeModal(modal){
         let modalJqueryId = "#" + $(modal).attr('id');
         $(modalJqueryId).modal('hide');
+    }
+
+    onCraftingClose() {
+        this.returnUserMaterials();
     }
 
 }
