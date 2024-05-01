@@ -1,31 +1,43 @@
 @media screen and (min-width: 720px) {
-    .crafting-card, #result.crafting-card{
-        max-width: 230px;
-        max-height: 330px;
-        width: 230px;
-        height: 330px;
-      }
+  .article.o-card{
+    height: 310px;
+  }
+  .crafting-card, #result.crafting-card{
+      max-width: 230px;
+      max-height: 330px;
+      width: 230px;
+      height: 330px;
+  }
 
-      .slot-container h4{
-        text-align: center;
-      }
+  article.o-card, .crafting-slot article.o-card{
+    height: 330px;
+  }
 
-      #result{
-        display: flex;
-        justify-content: center;
-      }
+  .slot-container h4{
+    text-align: center;
+  }
 
-      #result .o-card{
-        min-width: 100%;
-        padding: 0;
-        margin-top: 0;
-      }
-      
-      .crafting .btn-danger{
-        margin: 10px auto;
-      }
+  #result{
+    display: flex;
+    justify-content: center;
+  }
 
-      .crafting-slot article figure figcaption.c-bg_img_desc{
-        display: block;
-      }
+  #result article.o-card{
+    min-width: 100%;
+    padding: 0;
+    margin-top: 0;
+    height: auto;
+  }
+  
+  .crafting .btn-danger{
+    margin: 10px auto;
+  }
+
+  .crafting-slot article figure figcaption.c-bg_img_desc{
+    display: block;
+  }
+
+  .crafting .user-cards{
+    height: 335px;
+  }
 }

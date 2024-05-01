@@ -695,3 +695,15 @@ function getScaling(card, quality){
 
     return updatedCard;
 }
+
+function qualityToRank(quality){
+    if (quality < 40) return 'D';
+    if (quality < 60) return 'C';
+    if (quality < 80) return 'B';
+    if (quality < 95) return 'A';
+    return 'S';
+}
+
+function deleteFromLocalStorage(key) {
+    localStorage.removeItem(key);
+}

@@ -689,6 +689,7 @@ class CardAction extends Card {
         const html = `
             <article class="col-6 col-md-3 o-card ${this.available ? '' : 'card-unavailable'}" data-cardid="${this.GUID}" ${drag && this.available?'draggable="true"':''}>
                 <figure draggable='false' class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
+                <div class="ribbon"><span>${qualityToRank(this.quality)}</span></div>
                 ${this.available ? '' : '<i class="bi bi-file-lock2 card-equipped"></i>'}
                     <header class="c-top_icons"><span class="c-icon">${this.mana}</span></header>
                     <figcaption class="c-bg_img_desc o-flx_el_b u-border_b">
@@ -789,6 +790,7 @@ class CardEquipment extends Card {
         const html = `
             <article class="col-6 col-md-3 o-card ${this.available ? '' : 'card-unavailable'}" data-cardid="${this.GUID}" ${drag && this.available?'draggable="true"':''}>
                 <figure draggable='false' class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
+                    <div class="ribbon"><span>${qualityToRank(this.quality)}</span></div>
                     ${this.available ? '' : '<i class="bi bi-file-lock2 card-equipped"></i>'}
                     <figcaption class="c-bg_img_desc o-flx_el_b u-border_b">
                         <b>${this.name}</b>
@@ -1157,12 +1159,17 @@ class User {
         return this.cards.find(card => card.id === cardId);
     }
 
-    removeCard(card){
+    removeCard(card, save=false){
         card.quantity -= 1;
         if (card.quantity <= 0){
             this.cards.splice(this.cards.indexOf(card), 1);
+            if (save){
+                deleteFromLocalStorage("guid"+card.GUID);
+            }
         }
-        // saveToLocalStorage(card);
+        else{
+            if (save) saveToLocalStorage(card);
+        }
     }
 
     saveUIElement(element, name){
@@ -1236,8 +1243,9 @@ class User {
                 // Handle confirm action
                 console.log("Selling card")
                 user.addGold(card.gold);
-                user.removeCard(card);
+                user.removeCard(card, true);
                 user.displayCardsMain();
+                user.saveData();
                 // ...
                 removeTempElement(); // Call this to remove the element after confirming
             });
@@ -1957,7 +1965,6 @@ class CraftSlot{
     generateCraftingSlotHTML(slotId){
         let html = `
         <div class="slot-container">
-            <h4>Slot ${slotId}</h4>
             <div class="row">
                 <div id="crafting-slot${slotId}" class="slot col-8 col-md-12 crafting-card crafting-slot unused" data-slotnumber="${slotId}">
                     <div class="card-used"></div>
@@ -1986,16 +1993,20 @@ class CraftSlot{
             <div class="text">
                 <p>Level: ${this.crafter.level}, Exp: ${this.crafter.exp}/${this.crafter.maxExp}</p>
             </div>
-            <div class="crafting">
+            <div class="crafting mt-4">
+                <div class="row">
+                    <h4 class="col-4 col-md-8 text-center">Crafting</h4>
+                    <h4 class="col-8 col-md-4 text-center">Result</h4>
+                </div>
+                
                 <div class="row">
 
                     <div class="d-flex flex-wrap justify-content-center col-4 col-md-8">
                         ${this.generateCraftingSlos()}
                     </div>
                     <div class="text-center result-container col-8 col-md-4">
-                        <h4>Result</h4>
                         <div id="result" class="crafting-card unused"> </div>
-                        <button id="craft-card-button" class="btn btn-primary">Craft</button>
+                        <button id="craft-card-button" class="btn btn-primary d-none-button">Craft</button>
                     </div>
                 
                 </div>
@@ -2026,6 +2037,9 @@ class CraftSlot{
                 this.removeCardFromSlot(slotNumber);
             })
         })
+
+        // Add active slot style
+        this.updateAvailableSlot();
 
         this.craftResultElement = modal.querySelector('#result');
         this.craftButton = modal.querySelector('#craft-card-button');
@@ -2071,6 +2085,17 @@ class CraftSlot{
         return;
     }
 
+    updateAvailableSlot(){
+        const slots = this.modal.querySelectorAll('.crafting-slot');
+        slots.forEach(slot => slot.classList.remove('current'));
+
+        const slotId = this.getAvailableSlot();
+        if(!slotId) return;
+
+        let slot = this.modal.querySelector(`#crafting-slot${slotId}`);
+        slot.classList.add('current');
+    }
+
     addCardToSlot(card){
         let slotNumber = this.getAvailableSlot();
         if(!slotNumber) return;
@@ -2082,6 +2107,7 @@ class CraftSlot{
         user.removeCard(card);
         this.checkCraftRecipe();
         this.updateCraftingUI();
+        this.updateAvailableSlot();
     }
 
     removeCardFromSlot(slotId){
@@ -2095,6 +2121,7 @@ class CraftSlot{
         if(oldCard) user.receiveResourceCard(oldCard, 1);
         this.checkCraftRecipe();
         this.updateCraftingUI();
+        this.updateAvailableSlot();
     }
 
     checkCraftRecipe(){
@@ -2116,9 +2143,13 @@ class CraftSlot{
         if(this.cardToCraft){
             const card = new this.crafter.cardType(this.cardToCraft, null, false)
             this.craftResultElement.innerHTML = card.generateHTML();
+            this.craftButton.classList.remove('d-none-button');
+            this.craftResultElement.classList.add('craftable');
         }
         else{
             this.craftResultElement.innerHTML = 'Nothing to craft';
+            this.craftButton.classList.add('d-none-button');
+            this.craftResultElement.classList.remove('craftable');
         }
         
         // For user cards
