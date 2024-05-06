@@ -12,5 +12,12 @@
         "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
         "description": "The best resrource IRL",
         "rarity": "common"
+    },
+    {
+        "id": 1002,
+        "name": "Resource WoW",
+        "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
+        "description": "The best resrource IRL",
+        "rarity": "rare"
     }
 ]

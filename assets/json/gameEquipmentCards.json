@@ -13,5 +13,20 @@
             "INT": {"min": 3, "max": 8}
         },
         "materials": [1001, 1001]
+    },
+    {
+        "id": 3001,
+        "name": "Sword of Fire",
+        "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
+        "description": "Gain {0} STR | {1} DEX | {2} INT",
+        "card_type": "Weapon",
+        "rarity": "Common",
+        "level": 1,
+        "stats": {
+            "STR": {"min": 10, "max": 20},
+            "DEX": {"min": 1, "max": 5},
+            "INT": {"min": 3, "max": 8}
+        },
+        "materials": [1001, 1001, 1002]
     }
 ]

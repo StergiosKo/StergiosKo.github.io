@@ -574,7 +574,7 @@ class Card {
      */
     generateHTML(drag = false) {
         const html = `
-        <article id="cardId-${this.id}" ${drag && this.available?'draggable="true"':''} class="col-6 col-md-3 o-card ${this.available ? '' : 'card-unavailable'}" data-cardid="${this.GUID}">
+        <article id="cardId-${this.id}" ${drag && this.available?'draggable="true"':''} class="o-card ${this.available ? '' : 'card-unavailable'}" data-cardid="${this.GUID}">
             <figure draggable='false' class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
                 <figcaption class="c-bg_img_desc o-flx_el_b u-border_b">
                 <b>${this.name}</b>
@@ -687,13 +687,13 @@ class CardAction extends Card {
         .replace(/DEX/g, '<span class="attr-dex">DEX</span>')
         .replace(/INT/g, '<span class="attr-int">INT</span>');
         const html = `
-            <article class="col-6 col-md-3 o-card ${this.available ? '' : 'card-unavailable'}" data-cardid="${this.GUID}" ${drag && this.available?'draggable="true"':''}>
+            <article class="o-card ${this.available ? '' : 'card-unavailable'}" data-cardid="${this.GUID}" ${drag && this.available?'draggable="true"':''}>
                 <figure draggable='false' class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
                 <div class="ribbon"><span>${qualityToRank(this.quality)}</span></div>
                 ${this.available ? '' : '<i class="bi bi-file-lock2 card-equipped"></i>'}
                     <header class="c-top_icons"><span class="c-icon">${this.mana}</span></header>
                     <figcaption class="c-bg_img_desc o-flx_el_b u-border_b">
-                        <b>${this.name}</b>
+                        <b>${this.name} Lv:${this.level}</b>
                         <section class="o-card_b"><p>${processedDescription}</p>
                     </figcaption>
                 </figure>
@@ -788,12 +788,12 @@ class CardEquipment extends Card {
         .replace(/INT/g, '<span class="attr-int">INT</span>');
 
         const html = `
-            <article class="col-6 col-md-3 o-card ${this.available ? '' : 'card-unavailable'}" data-cardid="${this.GUID}" ${drag && this.available?'draggable="true"':''}>
+            <article class="o-card ${this.available ? '' : 'card-unavailable'}" data-cardid="${this.GUID}" ${drag && this.available?'draggable="true"':''}>
                 <figure draggable='false' class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
                     <div class="ribbon"><span>${qualityToRank(this.quality)}</span></div>
                     ${this.available ? '' : '<i class="bi bi-file-lock2 card-equipped"></i>'}
                     <figcaption class="c-bg_img_desc o-flx_el_b u-border_b">
-                        <b>${this.name}</b>
+                        <b>${this.name} Lv:${this.level}</b>
                         <section class="o-card_b"><span>${processedDescription}</section>
                     </figcaption>
                 </figure>
@@ -1539,11 +1539,42 @@ class User {
         this.heroCostEl.textContent = this.hireHeroCost
     }
 
+    haveMaterials(materialIds){
+        let materialAmount = {};
+
+        // For each material push to the materialAmount object
+        materialIds.forEach(materialId => {
+            if (!(materialId in materialAmount)) materialAmount[materialId] = 0;
+            materialAmount[materialId] += 1;
+        });
+
+        // Create new map with id as key and quantity as value from this.cards
+        const cardQuantities = Object.values(this.cards).map(card => card.quantity);
+        const cardQuantityMap = Object.fromEntries(
+            this.cards.map((card, index) => [card.id, cardQuantities[index]])
+        );
+        
+
+        let matFound = true;
+
+        // Loop through materialAmount to check if there are enough materials in cardQuantityMap
+        Object.entries(materialAmount).forEach(([id,quantity]) => {
+            // Check if id exists in cardQuantityMap
+            if (!(id in cardQuantityMap)) matFound = false;
+            // Check if quantity is enough
+            if (cardQuantityMap[id] < quantity) matFound = false;
+        })
+
+
+        return matFound;
+
+    }
+
 }
 
 class Crafter{
 
-    constructor(id, data, cardType, cardsData, slotNumber){
+    constructor(id, data, cardType, cardsData, slotNumber, materialData){
         this.name = data.name;
         this.id = parseInt(id);
         this.cardType = cardType;
@@ -1555,7 +1586,8 @@ class Crafter{
         else this.knownCards = {};
         this.updateMaxExp();
         this.MAX_LEVEL = 50;
-        this.craftSlots = []
+        this.craftSlots = [];
+        this.materialData = materialData;
 
         for(let i = 0; i < slotNumber; i++){
             this.craftSlots.push(new CraftSlot(this, i));
@@ -1627,12 +1659,14 @@ class Crafter{
         }
     }
 
-    getCraftingCount(card){
-        const stringId = card.id.toString();
+    // Get the amount of known cards
+    // If new card, return -1
+    getCraftingCount(cardId){
+        const stringId = cardId.toString();
         if (this.knownCards[stringId]) {
             return this.knownCards[stringId];
         } else {
-            return 0;
+            return -1;
         } 
     }
 
@@ -1731,7 +1765,7 @@ class Crafter{
 
     startCraftCard(slot, cardId){
         const card = this.cardsData.find(card => card.id === cardId);
-        const craftingCount = this.getCraftingCount(card);
+        const craftingCount = this.getCraftingCount(cardId);
         let quality = this.calculateQuality(card, craftingCount);
         const serializedData = this.serializeCraft(slot.id, cardId, quality.toFixed(2), 15);
         // this.checkCrafting()
@@ -1793,6 +1827,82 @@ class Crafter{
             if (!data) return;
             this.checkCraftEnd(data, slot)
         });
+    }
+
+    isNewCard(cardId){
+        if(this.getCraftingCount(cardId) == -1) return true;
+        else return false;
+    }
+
+    getAllKnownCards(){
+        const knownCards = [];
+        this.cardsData.forEach(card => {
+            if(!this.isNewCard(card.id)) knownCards.push(card);
+        })
+        return knownCards;
+    }
+
+    generateRecipesHTML(){
+        
+        console.log(this.knownCards)
+
+        const knownCardsIds = this.getAllKnownCards();
+
+        // Create temp cards
+        const cards = knownCardsIds.map(card => {
+            return new this.cardType(card, null, false);
+        })
+
+        // Order the cards by level
+        cards.sort((a, b) => a.level - b.level);
+
+        let html = ``;
+
+        // Generate HTML
+        cards.forEach(card => {
+
+            // Get card materials
+            let tempMaterials = [];
+            
+            // Match cardData.id with card.id to get materials
+            knownCardsIds.forEach(knownCard => {
+                if(knownCard.id === card.id) tempMaterials = knownCard.materials;
+            })
+            
+            // Generate material HTML
+            let materialHTML = ``;
+            tempMaterials.forEach(material => {
+                let unknowned = false;
+                let tempMaterial = user.getCard(material);
+                if (!tempMaterial){
+                    unknowned = true;
+                    // Match material id with materials to get card data
+                    let tempMaterialData = this.materialData.find(card => card.id === material);
+
+                    tempMaterial = new Card(tempMaterialData, null, -1, false);
+                }
+                materialHTML += `<div class="card-material col-4 ${unknowned? 'unknowned': ''}">${tempMaterial.generateHTML()}</div>`
+            })
+
+            const isCraftable = user.haveMaterials(tempMaterials);
+
+            let tempHTML = `
+                <div class="crafting-recipe col-12 col-md-6 row container ${isCraftable? '': 'd-none'}" data-craftable="${isCraftable}">
+                    <div class="col-6 col-md-6 material-cards row with-children-${tempMaterials.length}">
+                        ${materialHTML}
+                    </div>
+                    <div class="col-1 equal-button">=</div>
+                    <div class="col-5 col-md-5 crafting-card-recipe">
+                            <div class="">${card.generateHTML()}</div>                    
+                    </div>
+                </div>
+            `;
+
+            html += tempHTML;
+
+        })
+
+        return html;
     }
 
 }
@@ -1964,12 +2074,12 @@ class CraftSlot{
 
     generateCraftingSlotHTML(slotId){
         let html = `
-        <div class="slot-container">
+        <div class="slot-container unused">
             <div class="row">
-                <div id="crafting-slot${slotId}" class="slot col-8 col-md-12 crafting-card crafting-slot unused" data-slotnumber="${slotId}">
+                <div id="crafting-slot${slotId}" class="slot col-12 col-md-12 crafting-card crafting-slot" data-slotnumber="${slotId}">
                     <div class="card-used"></div>
                 </div>
-                <div class="col-4 col-md-12 spacer">
+                <div class="col-12 col-md-12 spacer">
                     <button class="btn btn-danger col-4 remove-card-button"><i class="bi bi-x-lg"></i></button>
                 </div>
             </div>
@@ -1993,26 +2103,36 @@ class CraftSlot{
             <div class="text">
                 <p>Level: ${this.crafter.level}, Exp: ${this.crafter.exp}/${this.crafter.maxExp}</p>
             </div>
-            <div class="crafting mt-4">
+            <div class="crafting mt-2">
                 <div class="row">
                     <h4 class="col-4 col-md-8 text-center">Crafting</h4>
                     <h4 class="col-8 col-md-4 text-center">Result</h4>
                 </div>
                 
                 <div class="row">
-
                     <div class="d-flex flex-wrap justify-content-center col-4 col-md-8">
                         ${this.generateCraftingSlos()}
                     </div>
-                    <div class="text-center result-container col-8 col-md-4">
-                        <div id="result" class="crafting-card unused"> </div>
+                    <div class="text-center result-container col-8 col-md-4 unused">
+                        <div id="result" class="crafting-card"> </div>
                         <button id="craft-card-button" class="btn btn-primary d-none-button">Craft</button>
                     </div>
                 
                 </div>
-                <div>
-                    <h3>User Cards</h3>
-                    <div id="user-cards" class="user-cards row scrollbar-container"></div>
+                <div class="pill-container-crafting">
+                    <div class="pill-switch mb-2">
+                        <div class="pill active" data-tab="user-cards">Cards</div>
+                        <div class="pill" data-tab="crafting-recipes">Recipes</div>
+                    </div>
+                </div>
+                <div id="user-cards" class="user-cards crafting-tab active">
+                    <div class="user-cards-container row scrollbar-container justify-content-center justify-content-md-start"></div>
+                </div>
+                <div class="crafting-recipes crafting-tab">
+                    <p class="text-center">Show uncraftable? <input id="show-uncraftable" type="checkbox"></p>
+                    <div class="crafting-recipes-container scrollbar-container row justify-content-center justify-content-md-start">
+                        ${this.crafter.generateRecipesHTML()}
+                    </div>
                 </div>
             </div>
         </div>
@@ -2021,7 +2141,7 @@ class CraftSlot{
         let modalBody = modal.querySelector('.modal-body');
         modalBody.innerHTML = html;
 
-        let userBody = modalBody.querySelector('#user-cards');
+        let userBody = modalBody.querySelector('.user-cards-container');
         user.displayCards(userBody, Card);
 
         // Reset crafting slots
@@ -2048,6 +2168,33 @@ class CraftSlot{
             this.craftCurrentCard();
         });
 
+        // Add recipe functionality
+        let recipes = modalBody.querySelectorAll('.crafting-recipe[data-craftable="true"]');
+
+        recipes.forEach(recipe => {
+            // Get crafting card element
+            let craftingCard = recipe.querySelector('.crafting-card-recipe');
+            
+            // Add click event listener
+            craftingCard.addEventListener('click', () => {
+
+                // Remove cards from crafting slots with slot id
+                for(let i = 1; i <= 3; i++){
+                    this.removeCardFromSlot(i);
+                }
+
+
+                // Get material cards
+                let materialCards = recipe.querySelectorAll('.card-material .o-card');
+
+                // Add materials to slot
+                materialCards.forEach(materialCard => {
+                    const userCard = user.cards.find(userCard => userCard.GUID === materialCard.dataset.cardid);
+                    this.addCardToSlot(userCard);
+                });
+            });
+        });
+
         // Define a named function to handle the modal close event
         const handleModalClose = () => {
             this.onCraftingClose();
@@ -2057,6 +2204,44 @@ class CraftSlot{
         // Attach the event listener using the named function
         $(modal).on('hidden.bs.modal', handleModalClose);
 
+        // Add pill switch functionality
+        let pills = modalBody.querySelectorAll('.pill');
+        pills.forEach(pill => {
+            pill.addEventListener('click', () => this.togglePill(pill));
+        });
+
+        // Add recipe craftable checkbox functionality
+        let showUncraftableCheckbox = modalBody.querySelector('#show-uncraftable');
+        showUncraftableCheckbox.addEventListener('change', () => {
+            let recipes = modalBody.querySelectorAll('.crafting-recipe');
+            recipes.forEach(recipe => {
+                let isCraftable = recipe.dataset.craftable === 'true';
+                let shouldShow = showUncraftableCheckbox.checked || isCraftable;
+                console.log(shouldShow)
+                if(shouldShow) recipe.classList.remove('d-none');
+                else recipe.classList.add('d-none');
+            });
+        });
+
+    }
+
+    togglePill(element) {
+        var pills = this.modal.querySelectorAll('.pill');
+        for (var i = 0; i < pills.length; i++) {
+          pills[i].classList.remove('active');
+        }
+        element.classList.add('active');
+
+        // Remove active from crafting-tabs
+        let craftingTabs = this.modal.querySelectorAll('.crafting-tab');
+        craftingTabs.forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        // Add active to crafting-tab based on data-tab attribute
+        const dataTab = element.getAttribute('data-tab');
+        const craftingTab = this.modal.querySelector(`.${dataTab}`);
+        craftingTab.classList.add('active');
     }
 
     getAvailableSlot(){
@@ -2101,7 +2286,8 @@ class CraftSlot{
         if(!slotNumber) return;
 
         let slot = this.modal.querySelector(`#crafting-slot${slotNumber}`);
-        slot.classList.remove('unused');
+        let slotContainer = slot.parentNode.parentNode;
+        slotContainer.classList.remove('unused');
         slot.innerHTML = card.generateHTML();
         this.craftingSlots[slotNumber] = card;
         user.removeCard(card);
@@ -2116,7 +2302,8 @@ class CraftSlot{
 
         this.craftingSlots[slotId] = null;
         let slot = this.modal.querySelector(`#crafting-slot${slotId}`);
-        slot.classList.add('unused');
+        let slotContainer = slot.parentNode.parentNode;
+        slotContainer.classList.add('unused');
         slot.innerHTML = '';
         if(oldCard) user.receiveResourceCard(oldCard, 1);
         this.checkCraftRecipe();
@@ -2139,21 +2326,36 @@ class CraftSlot{
     }
 
     updateCraftingUI(){
+
+        // Get crafting resultcontainer element
+        const resultElement = this.modal.querySelector('.result-container');
+
         // For crafting card
         if(this.cardToCraft){
-            const card = new this.crafter.cardType(this.cardToCraft, null, false)
-            this.craftResultElement.innerHTML = card.generateHTML();
+            // Check if crafter has crafted the card before (if -1 then craft is not known)
+            if(this.crafter.isNewCard(this.cardToCraft.id)){
+                this.craftResultElement.innerHTML = '<i class="bi bi-question-lg new-card-icon"></i>';
+            }
+            else{
+                const card = new this.crafter.cardType(this.cardToCraft, null, false)
+                this.craftResultElement.innerHTML = card.generateHTML();
+            }
             this.craftButton.classList.remove('d-none-button');
             this.craftResultElement.classList.add('craftable');
+
+            resultElement.classList.remove("unused");
+
         }
         else{
             this.craftResultElement.innerHTML = 'Nothing to craft';
             this.craftButton.classList.add('d-none-button');
             this.craftResultElement.classList.remove('craftable');
+
+            resultElement.classList.add("unused");
         }
         
         // For user cards
-        const userCardsEl = this.modal.querySelector('#user-cards');
+        const userCardsEl = this.modal.querySelector('.user-cards-container');
         user.displayCards(userCardsEl, Card);
         this.addCraftingSlotFunctionality(this.modal);
 

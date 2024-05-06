@@ -9,8 +9,18 @@
       height: 330px;
   }
 
+  article.o-card{
+    width: 230px;
+  }
+
   article.o-card, .crafting-slot article.o-card{
     height: 330px;
+    padding: 0;
+    margin: 10px;
+  }
+
+  .crafting-slot article.o-card{
+    margin: 0;
   }
 
   .slot-container h4{
@@ -37,7 +47,54 @@
     display: block;
   }
 
-  .crafting .user-cards{
-    height: 335px;
+  .crafting .user-cards-container, .crafting .crafting-recipes-container{
+    height: 342px;
+    padding: 0 20px;
+  }
+
+  .crafting-recipe .material-cards .card-material:not(:first-child){
+    margin-left: -3rem;
+  }
+
+  .crafting .crafting-recipe{
+    justify-content: center;
+    max-height: 360px;
+  }
+
+  .main-cards-container .o-card{
+    margin: 10px 20px;
+  }
+
+  .crafting-recipe .material-cards{
+    transform: scale(0.78);
+  }
+
+  .crafting-recipe .material-cards.with-children-2{
+    transform-origin: 78% 20%;
+  }
+  
+  .crafting-recipe .material-cards.with-children-3{
+    transform-origin: 22% 0%;
+  }
+
+  .crafting .equal-button {
+    max-height: 335px;
+    font-size: 40px;
+  }
+
+  .crafting-recipe .crafting-card-recipe{
+    transform: scale(1);
+  }
+
+  #craft-card-button{
+    left: 42%
+  }
+
+  .crafting .slot-container{
+    width: 230px;
+  }
+
+  #cardsContainer .scrollbar-container{
+    height: 700px;
   }
 }

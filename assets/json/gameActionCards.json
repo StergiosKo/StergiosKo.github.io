@@ -20,6 +20,29 @@
                 "scaling": {"INT": {"min": 0.2, "max": 0.8}}
             }
         ],
-        "materials": [1001, 1001]
+        "materials": [1001, 1001, 1000]
+    },
+    {
+        "id": 2001,
+        "name": "Fireball",
+        "artwork": "https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450",
+        "description": "Deal {0} INT damage and apply {1} INT Burn",
+        "mana": 3,
+        "card_type": "Fire",
+        "rarity": "Rare",
+        "level": 10,
+        "effects": [
+            {
+                "target": 1,
+                "effect": "damage",
+                "scaling": {"INT": {"min": 1.5, "max": 2.1}}
+            },
+            {
+                "target": 1,
+                "effect": "burn",
+                "scaling": {"INT": {"min": 0.5, "max": 1.4}}
+            }
+        ],
+        "materials": [1000, 1000]
     }
 ]

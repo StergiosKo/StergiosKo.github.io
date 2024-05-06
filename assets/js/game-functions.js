@@ -559,7 +559,7 @@ async function createExistingUser(){
     let equipmentData = await loadJSONFile("assets/json/gameEquipmentCards.json");
     let basicCardsData = await loadJSONFile("assets/json/gameRewards.json");
 
-    let crafters = deserializeCrafters(actionData, equipmentData);
+    let crafters = deserializeCrafters(actionData, equipmentData, basicCardsData);
 
     let cardsArray = deserializeAllGUIDs(actionData, equipmentData, basicCardsData);
 
@@ -610,7 +610,7 @@ function rarityToNumber(rarity) {
 }
 
 
-function deserializeCrafters(actionData, equipmentData){
+function deserializeCrafters(actionData, equipmentData, rewardsData){
     let deserializedObjects = [];
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -635,7 +635,7 @@ function deserializeCrafters(actionData, equipmentData){
                     break;
             }
 
-            const deserializedObject = new Crafter(id, itemJSON, classType, cardsData, 2);
+            const deserializedObject = new Crafter(id, itemJSON, classType, cardsData, 2, rewardsData);
 
             if (deserializedObject) deserializedObjects.push(deserializedObject);
         }

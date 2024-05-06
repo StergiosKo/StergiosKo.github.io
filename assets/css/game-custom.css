@@ -39,6 +39,7 @@ p{
 
 article.o-card{
   min-width: 100px;
+  width: 170px;
   /* width: 250px; */
   max-width: 250px;
   /* height: 310px; */
@@ -72,8 +73,8 @@ article.o-card{
 /* New styles for the number box */
 .card-number-box {
   position: absolute;
-  top: 0.8rem; /* Adjust as needed */
-  right: 1.4rem; /* Adjust as needed */
+  top: 3%; /* Adjust as needed */
+  right: 5%; /* Adjust as needed */
   background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
   color: white;
   padding: 0.5rem 0.8rem;
@@ -291,8 +292,8 @@ footer {
 .crafting-card{
   width: 250px;
   height: 350px;
-  width: 70px;
-  height: 110px;
+  width: 75px;
+  height: 105px;
   padding: 0;
   /* margin: 10px; */
   margin: auto;
@@ -302,8 +303,12 @@ footer {
   border-radius: 5px;
 }
 
-.crafting-card.unused{
+.unused .crafting-card{
   opacity: 0.6;
+}
+
+.unused .remove-card-button, .unused #craft-card-button{
+  display: none;
 }
 
 .crafting-slot .o-card .card-number-box{
@@ -398,7 +403,7 @@ footer {
 }
 
 #cardsContainer .scrollbar-container{
-  height: 700px;
+  height: 550px;
 }
 
 .crafting .btn-danger, .result-container button{
@@ -408,11 +413,12 @@ footer {
 }
 
 .crafting .slot-container{
-  margin: 0 10px;
+  margin: 5px 10px;
+  position: relative;
 }
 
-.crafting .user-cards{
-  height: 295px;
+.crafting .user-cards-container, .crafting .crafting-recipes-container{
+  height: 330px;
 }
 
 #result.crafting-card{
@@ -426,11 +432,16 @@ footer {
   padding: 0;
   margin: 0;
   height: 310px;
+  width: 100%;
 }
 
 .crafting .spacer{
   display: flex;
   align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 0%;
+  top: 34%;
 }
 
 .modal-body{
@@ -438,8 +449,11 @@ footer {
 }
 
 #craft-card-button{
-  margin-top: 1rem;
+  margin-top: 5px;
   padding: 10px 20px;
+  position: absolute;
+  top: 35%;
+  left: 35%;
 }
 
 .crafting-slot article.o-card{
@@ -447,7 +461,7 @@ footer {
   height: 100%;
   margin: 0;
   padding: 0;
-  min-width: 78px;
+  min-width: 55px;
 }
 
 .crafting-slot article figure figcaption.c-bg_img_desc{
@@ -487,6 +501,105 @@ footer {
   box-shadow: -5px -5px 30px 5px blue, 5px 5px 30px 5px cyan;
 }
 
-#result .ribbon{
+#result .ribbon, .crafting-card-recipe .ribbon{
   display: none;
+}
+
+#result .new-card-icon{
+  font-size: 225px;
+  color: gold;
+  text-shadow: 3px 4px 4px black;
+}
+
+.crafting-recipe .material-cards{
+  transform: scale(0.6);
+}
+
+.crafting-recipe .material-cards.with-children-2{
+  transform-origin: 26% 13%;
+}
+
+.crafting-recipe .material-cards.with-children-3{
+  transform-origin: top left;
+}
+
+.crafting-recipe .material-cards .card-material:not(:first-child){
+  margin-left: -1rem;
+  margin-top: 3rem;
+}
+
+.crafting-recipe .material-cards .card-material:nth-child(3){
+  margin-top: 6rem;
+}
+
+.crafting-recipe .crafting-card-recipe{
+  cursor: pointer;
+}
+
+.crafting-recipe{    
+  max-height: 250px;
+  justify-content: end;
+}
+
+.pill-container-crafting{
+  display: flex;
+  justify-content: center;
+  margin: 10px;
+}
+
+.pill-switch {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+  overflow: hidden;
+  max-width: 176px;
+}
+.pill {
+  padding: 10px 20px;
+  cursor: pointer;
+  background-color: white;
+  transition: background-color 0.3s ease;
+}
+.pill.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.crafting .crafting-tab:not(.active){
+  display: none;
+}
+
+.crafting-recipe .crafting-card-recipe{
+  padding: 0;
+  max-height: 255px;
+  transform: scale(0.84);
+  font-size: 15px;
+  transform-origin: top left;
+  min-width: 174px;
+}
+
+.main-cards-container .o-card{
+  margin: 4px;
+}
+
+.crafting-tab article.o-card{
+  padding: 0;
+  margin: 5px;
+}
+
+.crafting .equal-button{
+  max-height: 210px;
+  font-size: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-material.unknowned{
+  filter: brightness(0.5);
+}
+
+.bi-coin{
+  color: black;
+  /* font-weight: bold; */
 }
