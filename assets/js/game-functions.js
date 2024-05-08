@@ -340,7 +340,10 @@ function createCard(id, quantity, data, classType, quality, saveToStorage = true
             });
        }
         else{
-            cards.push(new Card(coolData, generateGUID(), quantity))
+            cards.push(new Card(specificCardData, generateGUID(), quantity))
+            if (saveToLocalStorage) {
+                saveToLocalStorage(cards[0]);
+            }
         }
 
         console.log("Created cards:", cards);
@@ -521,6 +524,12 @@ async function createNewUser() {
     saveToLocalStorage(hero);
     let newCard = createCard(2000, 1, actionData, CardAction, 50);
     allCards.push(newCard[0]);
+
+    let extraBasicCards1 = createCard(1000, 10, basicCardsData, Card, 100, true);
+    let extraBasicCards2 = createCard(1001, 10, basicCardsData, Card, 100, true);
+
+    allCards.push(...extraBasicCards1);
+    allCards.push(...extraBasicCards2);
 
     const jsonActionCrafter = {
         id: 0,

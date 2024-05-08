@@ -623,3 +623,7 @@ footer {
   display: flex;
   align-items: center;
 }
+
+.location .fight-container{
+  display: none;
+}

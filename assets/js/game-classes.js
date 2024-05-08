@@ -1017,7 +1017,7 @@ class Location {
             this.setAvailability('available');
             user.displayHeroesQuest();
         }
-        else if (!user.chosenHero || this.available !== 'available'){
+        else if (this.available !== 'available'){
             console.log("Hero not selected or unavailable");
             return
         }
@@ -1039,23 +1039,23 @@ class Location {
 
     generateHTML() {
         let html = `
-        <div class="location card mb-3" data-location-id="${this.id}">
+        <div class="location mb-3" data-location-id="${this.id}">
             <div class="row">
-                <div class="col-4">
+                <div class="col-12 col-md-4">
                     <h2 class="card-title text-center">${this.name}</h2>
                     <p class="card-text text-center">${this.description}</p>
                     <img src="${this.artwork}" class="card-img-top loc-image" alt="${this.name}">
                 </div>  
-                <div class="card-body col-4">
+                <div class="card-body col-12 col-md-4">
                     <h3 class="h5">Monster Stats</h3>
                     <p class="card-text"><small>${JSON.stringify(this.monsterData.stats)}</small></p>
                     <button id="location-button-${this.id}-actions" class="btn btn-primary" onclick="toggleSection('${this.id}', 'actions', 'location-button-${this.id}-')">Show Actions</button>
                     <button id="location-button-${this.id}-rewards" class="btn btn-primary d-none-button" onclick="toggleSection('${this.id}', 'rewards', 'location-button-${this.id}-')">Show Rewards</button>
                 </div>
-                <div class="col-4">
+                <div class="col-12 col-md-4 fight-container">
                     <h3>Selected Hero</h3>
                     <div class="selected-hero">
-                        ${user.displayChosenHero()}
+                       
                     </div>
                     ${this.available === 'available' ? `<button id="fight-button-${this.id}" class="btn btn-primary fight-button">Fight</button>` : ''}
                 </div>
