@@ -603,3 +603,23 @@ footer {
   color: black;
   /* font-weight: bold; */
 }
+
+.swap-buttons-container{
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  bottom: 10%;
+  left: -45%;
+}
+
+.swap-buttons-container button{
+  margin: 0.2rem 0;
+  border-radius: 25px;
+  font-size: 20px;
+}
+
+.h-align-center{
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+}

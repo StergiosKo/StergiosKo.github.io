@@ -563,6 +563,7 @@ class Card {
         this.available = true;
         this.saved = saved;
         this.gold = 1;
+        this.quality = 100;
     }
 
     /**
@@ -1100,7 +1101,10 @@ class User {
         this.goldEl= null;
         this.heroCostEl = null;
 
+        // User cards variables
         this.currentHoveredSellCard = null;
+        this.currentSort = null;
+        this.currentSortButton = null;
         
     }
 
@@ -1437,22 +1441,64 @@ class User {
         });
     }
 
-    sortCards(sortBy) {
+    sortCards(sortBy, desc=false) {
         // Check if sortBy is a function for special cases such as sorting by class
         if (typeof sortBy === 'function') {
             this.cards.sort(sortBy);
+
+            // Reverse the order if desc is true
+            if (desc){
+                this.cards.reverse();
+            }
         } else {
             // Sort by general properties (id, level, mana)
             this.cards.sort((a, b) => {
-                if (a[sortBy] < b[sortBy]) {
-                    return -1;
+                // Ascend sort
+                if (!desc){
+                    if (a[sortBy] < b[sortBy]) {
+                        return -1;
+                    }
+                    if (a[sortBy] > b[sortBy]) {
+                        return 1;
+                    }
+                    return 0;
                 }
-                if (a[sortBy] > b[sortBy]) {
-                    return 1;
+                // Descend sort
+                else{
+                    if (a[sortBy] < b[sortBy]) {
+                        return 1;
+                    }
+                    if (a[sortBy] > b[sortBy]) {
+                        return -1;
+                    }
+                    return 0;
                 }
-                return 0;
+
             });
         }
+    }
+
+    // Method to be called to call either ascending or descending sort
+    sortCardsOrder(sortBy, string, button){
+        // Remove last button icon
+        if (this.currentSortButton){
+            // Get button icon
+            const icon = this.currentSortButton.querySelector('.added-icon');
+            // Remove icon
+            this.currentSortButton.removeChild(icon);
+        }
+
+        if (this.currentSort != string){
+            this.sortCards(sortBy);
+            this.currentSort = string;
+            button.innerHTML += `<i class="bi bi-arrow-up added-icon"></i>`
+        }
+        else{
+            this.sortCards(sortBy, true)
+            this.currentSort = null;
+            button.innerHTML += `<i class="bi bi-arrow-down added-icon"></i>`
+        }
+        this.currentSortButton = button;
     }
 
     generateSortButtons(buttonContainer, cardContainer, classType = null) {
@@ -1461,21 +1507,21 @@ class User {
         if(!classType){
             const classSortButton = document.createElement('button');
             classSortButton.classList.add('btn', 'btn-primary', 'm-1');
-            classSortButton.textContent = 'Sort by Class';
+            classSortButton.textContent = 'Class';
             classSortButton.addEventListener('click', () => {
-                this.sortCards((a, b) => a.constructor.name.localeCompare(b.constructor.name))
+                this.sortCardsOrder((a, b) => a.constructor.name.localeCompare(b.constructor.name), 'Class', classSortButton);
                 this.displayCardsMain(cardContainer, classType);
+
             });
             buttonContainer.appendChild(classSortButton);
         }
 
-
         // Sorty by level
         const levelSortButton = document.createElement('button');
         levelSortButton.classList.add('btn', 'btn-primary', 'm-1');
-        levelSortButton.textContent = 'Sort by Level';
+        levelSortButton.textContent = 'Level';
         levelSortButton.addEventListener('click', () => {
-            this.sortCards('level');
+            this.sortCardsOrder('level', 'Level', levelSortButton);
             this.displayCardsMain(cardContainer, classType);
         });
         buttonContainer.appendChild(levelSortButton);
@@ -1483,9 +1529,9 @@ class User {
         // Sort by mana
         const manaSortButton = document.createElement('button');
         manaSortButton.classList.add('btn', 'btn-primary', 'm-1');
-        manaSortButton.textContent = 'Sort by Mana';
+        manaSortButton.textContent = 'Mana';
         manaSortButton.addEventListener('click', () => {
-            this.sortCards('mana');
+            this.sortCardsOrder('mana', 'Mana', manaSortButton);
             this.displayCardsMain(cardContainer, classType);
         });
         buttonContainer.appendChild(manaSortButton);
@@ -1493,14 +1539,12 @@ class User {
         // Sort by availability
         const availabilitySortButton = document.createElement('button');
         availabilitySortButton.classList.add('btn', 'btn-primary', 'm-1');
-        availabilitySortButton.textContent = 'Sort by Availability';
+        availabilitySortButton.textContent = 'Availability';
         availabilitySortButton.addEventListener('click', () => {
-            this.sortCards((a, b) => {
-                // true values first
+            this.sortCardsOrder(((a, b) => {
                 return (a.getAvailability() === b.getAvailability())? 0 : a.getAvailability()? -1 : 1;
-                // false values first
-                // return (a.getAvailability() === b.getAvailability())? 0 : a.getAvailability()? 1 : -1;
-            });
+
+            }), 'Availability', availabilitySortButton);
             this.displayCardsMain(cardContainer, classType);
         });
         buttonContainer.appendChild(availabilitySortButton);
@@ -1508,19 +1552,29 @@ class User {
         // Sort by rarity
         const raritySortButton = document.createElement('button');
         raritySortButton.classList.add('btn', 'btn-primary', 'm-1');
-        raritySortButton.textContent = 'Sort by Rarity';
+        raritySortButton.textContent = 'Rarity';
         raritySortButton.addEventListener('click', () => {
-            this.sortCards((a, b) => {
+            this.sortCardsOrder(((a, b) => {
                 // Assuming you have a rarityToNumber function defined somewhere that converts
                 // the rarity string to a number where a higher number means a rarer card
                 const rarityA = rarityToNumber(a.rarity);
                 const rarityB = rarityToNumber(b.rarity);
                 // For descending order, compare b with a instead of a with b
                 return rarityB - rarityA;
-            });
+            }), 'Rarity', raritySortButton);
             this.displayCardsMain(cardContainer, classType);
         });
         buttonContainer.appendChild(raritySortButton);
+
+        // Sort by quality
+        const qualitySortButton = document.createElement('button');
+        qualitySortButton.classList.add('btn', 'btn-primary', 'm-1');
+        qualitySortButton.textContent = 'Quality';
+        qualitySortButton.addEventListener('click', () => {
+            this.sortCardsOrder('quality', 'Quality', qualitySortButton);
+            this.displayCardsMain(cardContainer, classType);
+        });
+        buttonContainer.appendChild(qualitySortButton);
         
     }
 
@@ -1888,10 +1942,17 @@ class Crafter{
 
             let tempHTML = `
                 <div class="crafting-recipe col-12 col-md-6 row container ${isCraftable? '': 'd-none'}" data-craftable="${isCraftable}">
-                    <div class="col-6 col-md-6 material-cards row with-children-${tempMaterials.length}">
-                        ${materialHTML}
+                    <div class="col-6 col-md-6 row justify-content-center">
+                        <div class="material-cards row with-children-${tempMaterials.length}">${materialHTML}</div>
                     </div>
-                    <div class="col-1 equal-button">=</div>
+                    <div class="col-1 equal-button">
+                        <div>
+                            =
+                        </div>
+                        <div class="swap-buttons-container">
+                            <button class="btn btn-primary swap-button"><i class="bi bi-arrow-counterclockwise"></i></button>
+                        </div>
+                    </div>
                     <div class="col-5 col-md-5 crafting-card-recipe">
                             <div class="">${card.generateHTML()}</div>                    
                     </div>
@@ -2169,30 +2230,47 @@ class CraftSlot{
         });
 
         // Add recipe functionality
-        let recipes = modalBody.querySelectorAll('.crafting-recipe[data-craftable="true"]');
+        let recipes = modalBody.querySelectorAll('.crafting-recipe');
 
         recipes.forEach(recipe => {
             // Get crafting card element
             let craftingCard = recipe.querySelector('.crafting-card-recipe');
             
-            // Add click event listener
-            craftingCard.addEventListener('click', () => {
+            // If recipe has data-craftable attribute as true
+            if(recipe.getAttribute('data-craftable') === 'true'){
+                // Add click event listener
+                craftingCard.addEventListener('click', () => {
 
-                // Remove cards from crafting slots with slot id
-                for(let i = 1; i <= 3; i++){
-                    this.removeCardFromSlot(i);
-                }
+                    // Remove cards from crafting slots with slot id
+                    for(let i = 1; i <= 3; i++){
+                        this.removeCardFromSlot(i);
+                    }
 
+                    // Get material cards
+                    let materialCards = recipe.querySelectorAll('.card-material .o-card');
 
-                // Get material cards
-                let materialCards = recipe.querySelectorAll('.card-material .o-card');
-
-                // Add materials to slot
-                materialCards.forEach(materialCard => {
-                    const userCard = user.cards.find(userCard => userCard.GUID === materialCard.dataset.cardid);
-                    this.addCardToSlot(userCard);
+                    // Add materials to slot
+                    materialCards.forEach(materialCard => {
+                        const userCard = user.cards.find(userCard => userCard.GUID === materialCard.dataset.cardid);
+                        this.addCardToSlot(userCard);
+                    });
                 });
+            }
+
+
+            // Add material order swap functionality
+            const swapOrderButton = recipe.querySelector('.swap-button');
+            
+            // Add click event listener
+            swapOrderButton.addEventListener('click', () => {
+                // Move the last material html element to the first position
+                const lastMaterial = recipe.querySelector('.card-material:last-child');
+                const firstMaterial = recipe.querySelector('.card-material:first-child');
+                lastMaterial.parentNode.insertBefore(lastMaterial, firstMaterial);
             });
+            
+            
+
         });
 
         // Define a named function to handle the modal close event
@@ -2217,11 +2295,11 @@ class CraftSlot{
             recipes.forEach(recipe => {
                 let isCraftable = recipe.dataset.craftable === 'true';
                 let shouldShow = showUncraftableCheckbox.checked || isCraftable;
-                console.log(shouldShow)
                 if(shouldShow) recipe.classList.remove('d-none');
                 else recipe.classList.add('d-none');
             });
         });
+
 
     }
 
