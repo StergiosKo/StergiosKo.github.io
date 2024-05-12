@@ -974,13 +974,16 @@ class Location {
         console.log(htmlElement)
 
         // Check if the hero has leveled up
-        if (prevLevel == level) {
-            // Hero did not level up, just visualize the current EXP gain
-            visualizeBar(exp, prevExp, maxExp, 1000, htmlElement);
-        } else {
-            // Hero has leveled up at least once
-            visualizeBar(exp, 0, maxExp, 1000, htmlElement);
-        }
+        // Hold before progress bar is filled
+        setTimeout(() => {
+            if (prevLevel == level) {
+                // Hero did not level up, just visualize the current EXP gain
+                visualizeBar(htmlElement.querySelector('#new-exp-bar'), prevExp, exp, maxExp);
+            } else {
+                // Hero has leveled up at least once
+                visualizeBar(htmlElement.querySelector('#new-exp-bar'), 0, exp, maxExp);
+            }
+        }, 1000);
 
     }
 
@@ -1031,7 +1034,31 @@ class Location {
                 // get miniHTML element and change availability
 
                 $(modalJqueryId).modal('hide');
-        });
+            });
+
+            // Add swiper functionality
+            var actionSwiper = new Swiper('#action-swiper', {
+                slidesPerView: 1,
+                observer: true,
+                observeParents: true,
+                pagination: {
+                    el: ".swiper-pagination",
+                },
+                navigation: {
+                    nextEl: '.next-t',
+                    prevEl: '.prev-t',
+                },
+            });
+
+            // Add pill switch functionality
+            let pills = modalBody.querySelectorAll('.pill');
+            pills.forEach(pill => {
+                pill.addEventListener('click', () => {
+                    togglePill(pill, modalBody, '.pill-tab') 
+                    actionSwiper.update();
+                });
+            });
+
         }
         // Code to open the modal (e.g., using jQuery's modal method)
         $(modalJqueryId).modal('show');
@@ -1039,18 +1066,14 @@ class Location {
 
     generateHTML() {
         let html = `
-        <div class="location mb-3" data-location-id="${this.id}">
-            <div class="row">
+        <div class="location d-flex flex-column justify-content-between mb-3" data-location-id="${this.id}">
+            <div class="row info pill-tab active">
                 <div class="col-12 col-md-4">
                     <h2 class="card-title text-center">${this.name}</h2>
-                    <p class="card-text text-center">${this.description}</p>
                     <img src="${this.artwork}" class="card-img-top loc-image" alt="${this.name}">
                 </div>  
                 <div class="card-body col-12 col-md-4">
-                    <h3 class="h5">Monster Stats</h3>
                     <p class="card-text"><small>${JSON.stringify(this.monsterData.stats)}</small></p>
-                    <button id="location-button-${this.id}-actions" class="btn btn-primary" onclick="toggleSection('${this.id}', 'actions', 'location-button-${this.id}-')">Show Actions</button>
-                    <button id="location-button-${this.id}-rewards" class="btn btn-primary d-none-button" onclick="toggleSection('${this.id}', 'rewards', 'location-button-${this.id}-')">Show Rewards</button>
                 </div>
                 <div class="col-12 col-md-4 fight-container">
                     <h3>Selected Hero</h3>
@@ -1059,21 +1082,33 @@ class Location {
                     </div>
                     ${this.available === 'available' ? `<button id="fight-button-${this.id}" class="btn btn-primary fight-button">Fight</button>` : ''}
                 </div>
-            </div>         
-            <div id="actions-${this.id}" class="actions">
-            <h3>Actions</h3>
-            <div class="d-flex flex-wrap">`;
-        this.currentMonster.getActions().forEach(card => {
-            html += card.generateHTML();
-        });
-        html += `</div></div>
-        <div id="rewards-${this.id}" class="rewards d-none">
-                    <h3>Rewards</h3>
-                    <div class="d-flex flex-wrap">`;
-        this.rewards.forEach(card => {
-            html += card.generateHTML();
-        });
-        html += `</div></div>
+            </div>
+            <div id="action-${this.id}" class="actions pill-tab">
+                <div id="actions-swiper" class="swiper-container cards-swiper">
+                    <div class="swiper-wrapper">`;
+                    this.currentMonster.getActions().forEach(card => {
+                        html += `<div class="swiper-slide">`+ card.generateHTML() + `</div>`;
+                    });
+                    html += `</div>
+                    <div class="swiper-pagination"></div>
+                    <div class="swiper-button-prev prev-t"></div>
+                    <div class="swiper-button-next next-t"></div>
+                </div>
+            </div>
+            <div id="rewards-${this.id}" class="rewards pill-tab">
+                <div class="d-flex flex-wrap">`;
+                this.rewards.forEach(card => {
+                    html += card.generateHTML();
+                });
+                html += `</div>
+            </div>
+            <div class="pill-container align-self-center">
+                <div class="pill-switch mb-2">
+                    <div class="pill active" data-tab="info">Info</div>
+                    <div class="pill" data-tab="actions">Actions</div>
+                    <div class="pill" data-tab="rewards">Rewards</div>
+                </div>
+            </div>
         </div>`;
     
         return html;
@@ -1897,8 +1932,6 @@ class Crafter{
     }
 
     generateRecipesHTML(){
-        
-        console.log(this.knownCards)
 
         const knownCardsIds = this.getAllKnownCards();
 
@@ -1941,8 +1974,8 @@ class Crafter{
             const isCraftable = user.haveMaterials(tempMaterials);
 
             let tempHTML = `
-                <div class="crafting-recipe col-12 col-md-6 row container ${isCraftable? '': 'd-none'}" data-craftable="${isCraftable}">
-                    <div class="col-6 col-md-6 row justify-content-center">
+                <div class="crafting-recipe justify-content-start col-12 col-md-6 row container ${isCraftable? '': 'd-none'}" data-craftable="${isCraftable}">
+                    <div class="col-6 col-md-6 row justify-content-start material-container">
                         <div class="material-cards row with-children-${tempMaterials.length}">${materialHTML}</div>
                     </div>
                     <div class="col-1 equal-button">
@@ -2065,7 +2098,8 @@ class CraftSlot{
         
         const prevLevel = this.crafter.level;
         const prevExp = this.crafter.exp;
-        const exp = this.crafter.receiveEXPAll(this.crafter.getCardExp(card, this.data.quality))
+        const cardExp = this.crafter.getCardExp(card, this.data.quality);
+        const exp = this.crafter.receiveEXPAll(cardExp)
         const level = this.crafter.level;
 
         const maxExp = this.crafter.maxExp;
@@ -2084,7 +2118,7 @@ class CraftSlot{
                 <div>
                     <div class="row">
                     <p class="col-1">EXP Bar</p>
-                    <p class="col-10 text-center">${prevExp} + ${this.crafter.exp} = ${exp} / ${maxExp}</p>
+                    <p class="col-10 text-center">${prevExp} + ${cardExp} = ${exp} / ${maxExp}</p>
                     </div>
                     <div class="progress">
                         <div id="prev-exp-bar" class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: ${calculateWidth(prevExp, maxExp)}%" aria-valuenow="${prevExp}" aria-valuemin="0" aria-valuemax="${maxExp}"></div>
@@ -2101,13 +2135,17 @@ class CraftSlot{
         user.saveData();
 
         // Check if the hero has leveled up
-        if (prevLevel == level) {
-            // Hero did not level up, just visualize the current EXP gain
-            visualizeBar(exp, prevExp, maxExp, 1000, modalBody);
-        } else {
-            // Hero has leveled up at least once
-            visualizeBar(exp, 0, maxExp, 1000, modalBody);
-        }
+        // Hold before progress bar is filled
+        setTimeout(() => {
+            if (prevLevel == level) {
+                // Hero did not level up, just visualize the current EXP gain
+                visualizeBar(modalBody.querySelector('#new-exp-bar'), prevExp, exp, maxExp);
+            } else {
+                // Hero has leveled up at least once
+                visualizeBar(modalBody.querySelector('#new-exp-bar'), 0, exp, maxExp);
+            }
+        }, 1000);
+
 
     }
 
@@ -2136,13 +2174,9 @@ class CraftSlot{
     generateCraftingSlotHTML(slotId){
         let html = `
         <div class="slot-container unused">
-            <div class="row">
-                <div id="crafting-slot${slotId}" class="slot col-12 col-md-12 crafting-card crafting-slot" data-slotnumber="${slotId}">
-                    <div class="card-used"></div>
-                </div>
-                <div class="col-12 col-md-12 spacer">
-                    <button class="btn btn-danger col-4 remove-card-button"><i class="bi bi-x-lg"></i></button>
-                </div>
+            <div id="crafting-slot${slotId}" class="slot col-12 col-md-12 crafting-card crafting-slot" data-slotnumber="${slotId}">
+                <div class="card-used"></div>
+                <button class="btn btn-danger col-4 remove-card-button"><i class="bi bi-x-lg"></i></button>
             </div>
         </div>
         `
@@ -2160,23 +2194,31 @@ class CraftSlot{
     generateModal(modal){
         this.modal = modal;
         let html = `
-        <div class="">
+        <div class="crafting-container">
             <div class="text">
-                <p>Level: ${this.crafter.level}, Exp: ${this.crafter.exp}/${this.crafter.maxExp}</p>
+                <div class="progress">
+                    <div id="prev-exp-bar" class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: ${calculateWidth(this.crafter.exp, this.crafter.maxExp)}%" aria-valuenow="${this.crafter.exp}" aria-valuemin="0" aria-valuemax="${this.crafter.maxExp}"></div>
+                </div>
+                <p>Lv: ${this.crafter.level}, Exp: ${this.crafter.exp}/${this.crafter.maxExp}</p>
             </div>
             <div class="crafting mt-2">
                 <div class="row">
-                    <h4 class="col-4 col-md-8 text-center">Crafting</h4>
-                    <h4 class="col-8 col-md-4 text-center">Result</h4>
+                    <h5 class="col-5 col-md-8 text-center">Crafting</h5>
+                    <h5 class="col-7 col-md-4 text-center">Result</h5>
                 </div>
                 
                 <div class="row">
-                    <div class="d-flex flex-wrap justify-content-center col-4 col-md-8">
+                    <div class="d-flex flex-wrap justify-content-center col-5 col-md-8">
                         ${this.generateCraftingSlos()}
                     </div>
-                    <div class="text-center result-container col-8 col-md-4 unused">
-                        <div id="result" class="crafting-card"> </div>
-                        <button id="craft-card-button" class="btn btn-primary d-none-button">Craft</button>
+                    <div class="text-center result-container col-7 col-md-4 unused">
+                        <div id="result" class="crafting-card"> 
+                            <div class="card-used"></div>
+                            <div class="progress">
+                                <div id="new-exp-bar" class="progress-bar progress-bar-striped bg-warning" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div id="craft-card-button" class="d-none-button blink">Hold to craft</div>
+                        </div>
                     </div>
                 
                 </div>
@@ -2186,10 +2228,10 @@ class CraftSlot{
                         <div class="pill" data-tab="crafting-recipes">Recipes</div>
                     </div>
                 </div>
-                <div id="user-cards" class="user-cards crafting-tab active">
+                <div id="user-cards" class="user-cards pill-tab active">
                     <div class="user-cards-container row scrollbar-container justify-content-center justify-content-md-start"></div>
                 </div>
-                <div class="crafting-recipes crafting-tab">
+                <div class="crafting-recipes pill-tab">
                     <p class="text-center">Show uncraftable? <input id="show-uncraftable" type="checkbox"></p>
                     <div class="crafting-recipes-container scrollbar-container row justify-content-center justify-content-md-start">
                         ${this.crafter.generateRecipesHTML()}
@@ -2213,9 +2255,9 @@ class CraftSlot{
         // Remove button functionality
         this.slotContainers = modalBody.querySelectorAll('.slot-container');
         this.slotContainers.forEach(slotContainer => {
-            slotContainer.querySelector('.remove-card-button').addEventListener('click', () => {
+            slotContainer.querySelector('.card-used').addEventListener('click', () => {
                 let slotNumber = slotContainer.querySelector('.crafting-slot').dataset.slotnumber;
-                this.removeCardFromSlot(slotNumber);
+                if(slotNumber) this.removeCardFromSlot(slotNumber);
             })
         })
 
@@ -2225,9 +2267,11 @@ class CraftSlot{
         this.craftResultElement = modal.querySelector('#result');
         this.craftButton = modal.querySelector('#craft-card-button');
 
-        this.craftButton.addEventListener('click', () => {
-            this.craftCurrentCard();
-        });
+        // this.craftButton.addEventListener('click', () => {
+        //     this.craftCurrentCard();
+        // });
+
+        this.addCraftButtonFunctionality(1500);
 
         // Add recipe functionality
         let recipes = modalBody.querySelectorAll('.crafting-recipe');
@@ -2261,7 +2305,7 @@ class CraftSlot{
             // Add material order swap functionality
             const swapOrderButton = recipe.querySelector('.swap-button');
             
-            // Add click event listener
+            // Add click event listener for swap button
             swapOrderButton.addEventListener('click', () => {
                 // Move the last material html element to the first position
                 const lastMaterial = recipe.querySelector('.card-material:last-child');
@@ -2285,7 +2329,7 @@ class CraftSlot{
         // Add pill switch functionality
         let pills = modalBody.querySelectorAll('.pill');
         pills.forEach(pill => {
-            pill.addEventListener('click', () => this.togglePill(pill));
+            pill.addEventListener('click', () => togglePill(pill, this.modal, '.pill-tab'));
         });
 
         // Add recipe craftable checkbox functionality
@@ -2303,23 +2347,43 @@ class CraftSlot{
 
     }
 
-    togglePill(element) {
-        var pills = this.modal.querySelectorAll('.pill');
-        for (var i = 0; i < pills.length; i++) {
-          pills[i].classList.remove('active');
-        }
-        element.classList.add('active');
+    // If user holds the element for seconds craft current card
+    addCraftButtonFunctionality(time = 1500){
+        let timeoutId;
 
-        // Remove active from crafting-tabs
-        let craftingTabs = this.modal.querySelectorAll('.crafting-tab');
-        craftingTabs.forEach(tab => {
-            tab.classList.remove('active');
-        });
+        // Function to start the timeout
+        const startHoldTimer = () => {
 
-        // Add active to crafting-tab based on data-tab attribute
-        const dataTab = element.getAttribute('data-tab');
-        const craftingTab = this.modal.querySelector(`.${dataTab}`);
-        craftingTab.classList.add('active');
+            // If craft result element has no .o-card child return
+            if(!this.craftResultElement.querySelector('.o-card') || this.craftResultElement.classList.contains('holding-card')) return;
+
+            this.craftResultElement.classList.add('holding-card');
+
+            visualizeBar(this.craftResultElement.querySelector('#new-exp-bar'), 0, 100, 100);
+
+            timeoutId = setTimeout(() => {
+                this.craftCurrentCard();
+            }, time); // Set the timeout for 1.5 second
+        };
+        
+        // Function to clear the timeout
+        const clearHoldTimer = () => {
+            this.craftResultElement.classList.remove('holding-card');
+            // Reset bar width
+            this.craftResultElement.querySelector('#new-exp-bar').style.width = '0%';
+            clearTimeout(timeoutId);
+        };
+        
+        // Add mouse event listeners
+        this.craftResultElement.addEventListener('mousedown', startHoldTimer);
+        document.addEventListener('mouseup', clearHoldTimer);
+        
+        // Add touch event listeners for mobile devices
+        this.craftResultElement.addEventListener('touchstart', startHoldTimer);
+        document.addEventListener('touchend', clearHoldTimer);
+        
+        // Cancel the timeout if the touch moves too much
+        this.craftResultElement.addEventListener('touchmove', clearHoldTimer);
     }
 
     getAvailableSlot(){
@@ -2364,9 +2428,10 @@ class CraftSlot{
         if(!slotNumber) return;
 
         let slot = this.modal.querySelector(`#crafting-slot${slotNumber}`);
-        let slotContainer = slot.parentNode.parentNode;
+        let slotContainer = slot.parentNode;
         slotContainer.classList.remove('unused');
-        slot.innerHTML = card.generateHTML();
+        const slotHTMLContainer = slot.querySelector('.card-used');
+        slotHTMLContainer.innerHTML = card.generateHTML();
         this.craftingSlots[slotNumber] = card;
         user.removeCard(card);
         this.checkCraftRecipe();
@@ -2380,9 +2445,10 @@ class CraftSlot{
 
         this.craftingSlots[slotId] = null;
         let slot = this.modal.querySelector(`#crafting-slot${slotId}`);
-        let slotContainer = slot.parentNode.parentNode;
+        let slotContainer = slot.parentNode;
         slotContainer.classList.add('unused');
-        slot.innerHTML = '';
+        const slotHTMLContainer = slot.querySelector('.card-used');
+        slotHTMLContainer.innerHTML = '';
         if(oldCard) user.receiveResourceCard(oldCard, 1);
         this.checkCraftRecipe();
         this.updateCraftingUI();
@@ -2409,23 +2475,26 @@ class CraftSlot{
         const resultElement = this.modal.querySelector('.result-container');
 
         // For crafting card
+        const cardUsed = resultElement.querySelector('.card-used');
+
+        // For crafting card
         if(this.cardToCraft){
             // Check if crafter has crafted the card before (if -1 then craft is not known)
             if(this.crafter.isNewCard(this.cardToCraft.id)){
-                this.craftResultElement.innerHTML = '<i class="bi bi-question-lg new-card-icon"></i>';
+                cardUsed.innerHTML = '<i class="bi bi-question-lg new-card-icon"></i>';
             }
             else{
                 const card = new this.crafter.cardType(this.cardToCraft, null, false)
-                this.craftResultElement.innerHTML = card.generateHTML();
+                cardUsed.innerHTML = card.generateHTML();
             }
             this.craftButton.classList.remove('d-none-button');
-            this.craftResultElement.classList.add('craftable');
+            this.craftResultElement.classList.add('craftable');    
 
             resultElement.classList.remove("unused");
 
         }
         else{
-            this.craftResultElement.innerHTML = 'Nothing to craft';
+            cardUsed.innerHTML = 'Nothing to craft';
             this.craftButton.classList.add('d-none-button');
             this.craftResultElement.classList.remove('craftable');
 

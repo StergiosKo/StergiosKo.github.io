@@ -27,16 +27,10 @@
     text-align: center;
   }
 
-  #result{
-    display: flex;
-    justify-content: center;
-  }
-
   #result article.o-card{
     min-width: 100%;
     padding: 0;
     margin-top: 0;
-    height: auto;
   }
   
   .crafting .btn-danger{
@@ -87,7 +81,8 @@
   }
 
   #craft-card-button{
-    left: 42%
+    left: 25%;
+    font-size: 16px;
   }
 
   .crafting .slot-container{
@@ -96,5 +91,21 @@
 
   #cardsContainer .scrollbar-container{
     height: 700px;
+  }
+  
+  .modal-body{
+    height: 90vh;
+  }
+  .crafting .slot-container{
+    margin-top: 0 !important;
+    left: 0 !important;
+  }
+
+  article.o-card .o-card_b{
+    font-size: 14px;
+  }
+
+  .o-card figure figcaption.c-bg_img_desc b{
+    font-size: 16px;
   }
 }

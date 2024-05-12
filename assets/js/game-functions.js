@@ -536,7 +536,7 @@ async function createNewUser() {
         name: "Action Crafter",
         level: 1,
         exp: 0,
-        knownCards: []
+        knownCards: {}
     }
 
     const jsonEquipmentCrafter = {
@@ -544,7 +544,7 @@ async function createNewUser() {
         name: "Equipment Crafter",
         level: 1,
         exp: 0,
-        knownCards: []
+        knownCards: {}
     }
 
     let actionCrafter = new Crafter(0, jsonActionCrafter, CardAction, actionData, 2);
@@ -652,30 +652,13 @@ function deserializeCrafters(actionData, equipmentData, rewardsData){
     return deserializedObjects;
 }
 
-function visualizeBar(gained, start, end, speed, element){
-    let current = start;
-
-    const intervalTime = 30; // Time in milliseconds
-    const updateAmount = (gained - start) / (speed / intervalTime); // Adjust the 1000 to control the duration of the animation
-    const prevExpBar = element.querySelector('#prev-exp-bar');
-    const newExpBar = element.querySelector('#new-exp-bar');
-
-    // Set the initial width of the prevExpBar
-    prevExpBar.style.width = calculateWidth(start, end) + '%';
-
-    // Update the newExpBar over time
-    const interval = setInterval(() => {
-        current += updateAmount; // Increment the currentExp towards the target exp
-
-        if (current >= gained) {
-            current = gained; // Ensure we don't go over the target exp
-            clearInterval(interval); // Stop the interval when we reach the target exp
-        }
-
-        const newExpWidth = calculateWidth(current - start, end);
-        newExpBar.style.width = newExpWidth + '%';
-        newExpBar.setAttribute('aria-valuenow', current);
-    }, intervalTime);
+function visualizeBar(element, start, gained, end){
+    // Reset newExpBar
+    if(element){
+        // Ensure the bar is fully filled and correct any overshoot
+        element.style.width = calculateWidth(gained - start, end) + '%';
+        element.setAttribute('aria-valuenow', gained);
+    }
 }
 
 function getScaling(card, quality){
@@ -715,4 +698,23 @@ function qualityToRank(quality){
 
 function deleteFromLocalStorage(key) {
     localStorage.removeItem(key);
+}
+
+function togglePill(element, container, tabString) {
+    var pills = container.querySelectorAll('.pill');
+    for (var i = 0; i < pills.length; i++) {
+      pills[i].classList.remove('active');
+    }
+    element.classList.add('active');
+
+    // Remove active from crafting-tabs
+    let craftingTabs = container.querySelectorAll(tabString);
+    craftingTabs.forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Add active to crafting-tab based on data-tab attribute
+    const dataTab = element.getAttribute('data-tab');
+    const craftingTab = container.querySelector(`.${dataTab}`);
+    craftingTab.classList.add('active');
 }

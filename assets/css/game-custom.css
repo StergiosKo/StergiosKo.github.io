@@ -39,11 +39,11 @@ p{
 
 article.o-card{
   min-width: 100px;
-  width: 170px;
+  width: 160px;
   /* width: 250px; */
   max-width: 250px;
   /* height: 310px; */
-  height: 243px;
+  height: 230px;
   /* box-shadow: 0 0 2rem black; */
   border-radius: 1rem;
   /* background: black; */
@@ -59,7 +59,7 @@ article.o-card{
     /* padding: 0.5rem 0.8rem 0.6rem; */
     text-align: vertical;
     font-family: sans-serif;
-    font-size: 14px;
+    font-size: 12px;
     color: #c0c0c0;
     display: flex;
     align-items: center;
@@ -121,7 +121,10 @@ figure{
         text-shadow: 1px 1px 2px black;
         width: 100%;
       
-        b{font-weight: 400; color: orange;}
+        b{font-weight: 400; 
+          color: orange;
+          font-size: 14px;
+        }
         blockquote{
           color: orange;
           font-size: 0.9rem;
@@ -390,10 +393,6 @@ footer {
   text-align: center;
 }
 
-.slot .card-used{
-  padding-top: 10px;
-}
-
 #result .o-card{
   margin-top: 10px;
 }
@@ -417,21 +416,38 @@ footer {
   position: relative;
 }
 
-.crafting .user-cards-container, .crafting .crafting-recipes-container{
-  height: 330px;
+.crafting .slot-container:first-child{
+  left: -20px;
+}
+
+.crafting .slot-container:not(:first-child){
+  margin-top: -55px;
+  left: 5px;
+}
+
+.crafting .slot-container:nth-child(3){
+  left: 30px;
+}
+
+.crafting .user-cards-container{
+  height: 36vh;
+}
+
+.crafting .crafting-recipes-container{
+  height: 29vh;
 }
 
 #result.crafting-card{
   width: auto;
   height: auto;
-  max-width: 220px;
-  min-height: 310px;
+  max-width: 170px;
+  min-height: 230px;
+  position: relative;
 }
 
 #result article.o-card{
   padding: 0;
   margin: 0;
-  height: 310px;
   width: 100%;
 }
 
@@ -446,14 +462,22 @@ footer {
 
 .modal-body{
   padding-top: 0px;
+  height: 93vh;
 }
 
 #craft-card-button{
   margin-top: 5px;
-  padding: 10px 20px;
+  padding: 5px 10px;
   position: absolute;
   top: 35%;
-  left: 35%;
+  left: 23%;
+  font-size: 12px;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slot-container .card-used{
+  height: 105px;
 }
 
 .crafting-slot article.o-card{
@@ -506,7 +530,7 @@ footer {
 }
 
 #result .new-card-icon{
-  font-size: 225px;
+  font-size: 120px;
   color: gold;
   text-shadow: 3px 4px 4px black;
 }
@@ -544,7 +568,7 @@ footer {
 .pill-container-crafting{
   display: flex;
   justify-content: center;
-  margin: 10px;
+  margin: 10px 0 0 0;
 }
 
 .pill-switch {
@@ -552,7 +576,7 @@ footer {
   border: 1px solid #ccc;
   border-radius: 50px;
   overflow: hidden;
-  max-width: 176px;
+  max-width: fit-content;
 }
 .pill {
   padding: 10px 20px;
@@ -565,7 +589,7 @@ footer {
   color: white;
 }
 
-.crafting .crafting-tab:not(.active){
+.pill-tab:not(.active){
   display: none;
 }
 
@@ -575,14 +599,14 @@ footer {
   transform: scale(0.84);
   font-size: 15px;
   transform-origin: top left;
-  min-width: 174px;
+  /* min-width: 174px; */
 }
 
 .main-cards-container .o-card{
   margin: 4px;
 }
 
-.crafting-tab article.o-card{
+.pill-tab article.o-card{
   padding: 0;
   margin: 5px;
 }
@@ -616,6 +640,7 @@ footer {
   margin: 0.2rem 0;
   border-radius: 25px;
   font-size: 20px;
+  padding: 2px 7px;
 }
 
 .h-align-center{
@@ -626,4 +651,73 @@ footer {
 
 .location .fight-container{
   display: none;
+}
+
+.material-container{
+  max-height: 215px;
+}
+
+.crafting-container .progress{
+  background-color: gray;
+}
+
+.remove-card-button{
+  position: absolute;
+  top: 0;
+  display: none;
+}
+
+.blink{
+  animation: blinker 2.5s linear infinite;
+}
+
+@keyframes blinker {
+  0%, 100% {opacity: 1;}
+  33% {opacity: 0;}
+  66% {opacity: 0;}
+}
+
+.progress .progress-bar{
+  transition: width 3500ms;
+}
+
+#result .progress{
+  position: absolute;
+  width: 100%;
+  height: 2vh;
+  top: 45%;
+  background: transparent
+}
+
+#result .progress .progress-bar{
+  transition: width 1ms;
+  background-size: 0px 0px;
+  background-color: transparent !important; 
+}
+
+#result.holding-card #craft-card-button{
+  display: none;
+}
+
+#result.holding-card .progress{
+  background-color: gray;
+}
+
+#result.holding-card .progress .progress-bar{
+  transition: width 1500ms;
+  background-size: 1rem 1rem;
+  background-color: #ffc107 !important;
+}
+
+#result .card-used{
+  width: 100%;
+}
+
+.location .pill-tab{
+  max-height: 65vh;
+  overflow-y: hidden;
+}
+
+.location{
+  height: 95%;
 }
