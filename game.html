@@ -19,7 +19,7 @@
 <body class="homepage">
     <header class="  py-3 mb-4 border-bottom">
         <div class="container d-flex flex-wrap justify-content-center">
-            <div>
+            <div class="d-flex">
               <span><i class="bi bi-coin user-coin"></i></span>
               <span id="gold"></span>
               <div>
@@ -47,7 +47,7 @@
                 <!-- <button id="toggle-hero-btn">Show Heroes</button> -->
                 <div id="heroSlider" class="mt-1">
                     <!-- Content of heroContainer -->
-                    <div id="heroContainer" style="margin-top: 1rem;" class="d-flex flex-wrap">
+                    <div id="heroContainer" style="margin-top: 1rem;" class="d-flex flex-wrap scrollbar-container">
                       <!-- Content of heroContainer -->
                     </div>
                     <div id="hireHero" class="row mt-3">
@@ -76,15 +76,12 @@
               <!-- Quests -->
               <div class="swiper-slide text-center" id="quests">
                 <h2>Quests</h2>
-                <div>
-                  <h3>Choose Hero</h3>
-                  <div id="heroesQuestContainer" class="d-flex flex-wrap">
-                    <!-- Content of heroesQuestContainer -->
+                <div class="scrollbar-container">
+                  <div id="locationContainer" class="d-flex flex-wrap justify-content-center">
+
                   </div>
                 </div>
-                <div id="locationContainer" style="margin-top: 5rem;">
 
-                </div>
               </div>
             </div>
             <!-- If we need navigation buttons -->

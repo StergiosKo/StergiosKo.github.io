@@ -2,7 +2,7 @@ class Entity {
     constructor(name, attributes, maxStats, statusEffects) {
         this.name = name || "Uknown Entity";
         this.attributes = attributes || { "STR": 1, "DEX": 1, "INT": 20 };
-        this.maxStats = maxStats || { "HP": 10, "CRIT": 0.5, "MANA": 1, 'CRITD': 1.5};
+        this.maxStats = maxStats || { "HP": 10, "SPEED": 0.5, "MANA": 1};
         this.currentStats = {};
         this.cardsActions = [];
         this.statusEffects = statusEffects || {"burn": 0, "charge": 0, "paralysis": 0, "freeze": 0};
@@ -64,12 +64,7 @@ class Entity {
         // console.log(`${this.name} uses ${action.name} on ${opponent.name}`);
         // Simplified; here you would apply the card's effect to the opponent
 
-        // Determine if the action is a critical hit
-        const isCriticalHit = Math.random() * 100 < this.currentStats.CRIT;
-        if (isCriticalHit) {
-            // console.log('Critical hit!');
-        }
-        action.doAction(this, opponent, isCriticalHit, this.currentStats['CRITD']);
+        action.doAction(this, opponent);
     }
 
     roundStart(){
@@ -115,7 +110,7 @@ class Hero extends Entity {
         super(
             name,
             { "STR": 5, "DEX": 5, "INT": 5 }, 
-            { "HP": 10, "CRIT": 0.5, "MANA": 1, 'CRITD': 1.5}
+            { "HP": 10, "SPEED": 0.5, "MANA": 1}
         );
         this.MAX_LEVEL = 20;
         this.level = level;
@@ -173,7 +168,7 @@ class Hero extends Entity {
                 <span><button class="btn hero-name-save d-none" id="hero-name-save"><i class="bi bi-check-lg"></i></button></span>  
                 <div class="row ms-2">
                 <p class="attributes">Attributes: STR: ${this.attributes.STR}, DEX: ${this.attributes.DEX}, INT: ${this.attributes.INT}</p>
-                <p class="max-stats">Max Stats: HP: ${this.maxStats.HP}, CRIT: ${this.maxStats.CRIT}, MANA: ${this.maxStats.MANA}, CRITD: ${this.maxStats['CRITD']}</p>
+                <p class="max-stats">Max Stats: HP: ${this.maxStats.HP}, SPEED: ${this.maxStats.SPEED}, MANA: ${this.maxStats.MANA}</p>
                 </div>
                 <div class="row">
                 <p class="level-exp">Level: ${this.level} Exp: ${this.exp}/${this.maxExp}</p>
@@ -384,8 +379,7 @@ class Hero extends Entity {
     updateCurrentStats() {
         // Hero-specific logic for updating current stats
         this.maxStats.HP = this.attributes.STR * 3;
-        this.maxStats.CRIT = 0.5 + parseFloat((this.attributes.DEX * 0.5).toFixed(2));
-        this.maxStats.CRITD = 1.5 + parseFloat((this.attributes.DEX * 0.022).toFixed(2));
+        this.maxStats.SPEED = 1 + this.attributes.DEX * 2;
         this.maxStats.MANA = this.attributes.INT;
 
         this.currentStats = this.deepCopy(this.maxStats);
@@ -516,7 +510,25 @@ class Hero extends Entity {
         buttonSave.classList.add('d-none');
     }
 
-    
+    generateArtHTML(){
+        const html = `
+        <article id="heroGUID-${this.GUID}" class="o-card hero-card ${this.available ? '' : 'card-unavailable'}" data-heroGUID="${this.GUID}" data-availability="${this.available?'1':'0'}">
+            <figure class="c-bg_img o-flx_c" style="background-image: url(https://cdnb.artstation.com/p/assets/images/images/008/410/265/large/victoria-collins-black-lotus.jpg?1512581450);">
+                ${generateAttributesHTML(this.attributes)}
+                <figcaption class="c-bg_img_desc o-flx_el_b u-border_b">
+                    <b>${this.name} Lv:<span class="hero-level">${this.level}</span></b>
+                    <section class="o-card_b">
+                        <div class="progress w-100">
+                            <div id="exp-bar" class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: ${calculateWidth(this.exp, this.maxExp)}%" aria-valuenow="${this.exp}" aria-valuemin="0" aria-valuemax="${this.maxExp}"></div>
+                            <div id="new-exp-bar" class="progress-bar progress-bar-striped bg-warning" role="progressbar" style="width: 0%" aria-valuenow="${this.exp}" aria-valuemin="${this.exp}" aria-valuemax="${this.maxExp}"></div>
+                            <span class="bar-text">EXP: <span class="current-exp-text">${this.exp}</span> / ${this.maxExp}</span>
+                        </div>
+                    </section>
+                </figcaption>
+            </figure>
+        </article>`;
+        return html;
+    }
 
 
 }
@@ -703,7 +715,7 @@ class CardAction extends Card {
         return html;
     }
 
-    doAction(user, opponent, isCriticalHit, critD){
+    doAction(user, opponent){
         // Apply the effect based on its type
         this.effects.forEach(effect => {
             // Determine the target of the effect
@@ -712,9 +724,6 @@ class CardAction extends Card {
             const attributeValue = user.attributes[Object.keys(effect.scaling)[0]]; // e.g., "STR": 1.5
             let magnitude = attributeValue * Object.values(effect.scaling)[0];; // e.g., {"STR": 1.5} * effect magnitude
 
-            if (isCriticalHit) {
-                magnitude *= critD; // Adjust magnitude for critical damage
-            }
             // Apply the effect based on its type
             switch (effect.effect) {
                 case 'damage':
@@ -926,7 +935,8 @@ class Location {
         return cards;
     }
 
-    giveRewards(htmlElement){
+    
+    async giveRewards(htmlElement){
         localStorage.removeItem(`questData-${this.id}`);
         
         if (this.currentScore < 0){
@@ -937,72 +947,118 @@ class Location {
             return;
         }
 
+        // Get values to display
         const cards = this.receiveCards(this.currentScore);
         const prevLevel = this.currentHero.level;
         const prevExp = this.currentHero.getEXP();
-        const exp = this.currentHero.receiveEXPAll(this.exp);
-        const level = this.currentHero.level;
-        this.currentHero.setAvailability(true);
-        saveToLocalStorage(this.currentHero);
 
         const maxExp = this.currentHero.getMaxEXP();
 
-        // Create a dynamic progress bar
         let html = `
-        <div class="rewards">
-            <h3>Quest Victory</h3>
-            <p>The quest in ${this.name} who the hero ${this.currentHero.name} took has ended with a score of ${Math.round(this.currentScore)}.</p>
-            <div class="reward-cards d-flex flex-wrap">
-                ${cards.map(card => card.generateHTML()).join('')}
+        <div class="rewards d-flex flex-column align-items-center">
+            <div class="score d-flex flex-column">
+                <h3>Quest Victory</h3><span> Score: ${Math.round(this.currentScore)}</span>
             </div>
-            <div class="reward-exp">
-            <h4>${this.currentHero.name} Level = <span id="hero-level">${prevLevel < level ? ` ${prevLevel} -> ` : ''}${level}</span></h4>
-                <div>
-                    <div class="row">
-                    <p class="col-1">EXP Bar</p>
-                    <p class="col-10 text-center">${prevExp} + ${this.exp} = ${exp} / ${this.currentHero.getMaxEXP()}</p>
-                    </div>
-                    <div class="progress">
-                        <div id="prev-exp-bar" class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: ${calculateWidth(prevExp, maxExp)}%" aria-valuenow="${prevExp}" aria-valuemin="0" aria-valuemax="${maxExp}"></div>
-                        <div id="new-exp-bar" class="progress-bar progress-bar-striped bg-warning" role="progressbar" style="width: 0%" aria-valuenow="${prevExp}" aria-valuemin="${prevExp}" aria-valuemax="${maxExp}"></div>
-                    </div>
+            <div class="reward-exp exp pill-tab exp active">
+                ${this.currentHero.generateArtHTML()}
+            </div>
+            <div class="cards d-flex flex-wrap items pill-tab">
+                <div id="cards-swiper" class="swiper-container cards-swiper">
+                    <div class="swiper-wrapper">`;
+                    cards.forEach(card => {
+                        html += `<div class="swiper-slide d-flex justify-content-center">`+ card.generateHTML() + `</div>`;
+                    });
+                    html += `</div>
+                    <div class="swiper-pagination pagination-rewards"></div>
+                </div>  
+            </div>
+
+            <div class="pill-container align-self-center d-flex flex-column align-items-center">
+                <div class="pill-switch mb-2">
+                    <div class="pill active" data-tab="exp">Exp</div>
+                    <div class="pill" data-tab="items">Items</div>
                 </div>
             </div>
+
         </div>`;
 
         htmlElement.innerHTML = html;
-        console.log(htmlElement)
 
-        // Check if the hero has leveled up
-        // Hold before progress bar is filled
-        setTimeout(() => {
-            if (prevLevel == level) {
-                // Hero did not level up, just visualize the current EXP gain
-                visualizeBar(htmlElement.querySelector('#new-exp-bar'), prevExp, exp, maxExp);
-            } else {
-                // Hero has leveled up at least once
-                visualizeBar(htmlElement.querySelector('#new-exp-bar'), 0, exp, maxExp);
+        const exp = this.currentHero.receiveEXPAll(this.exp);
+        const level = this.currentHero.level;
+
+        this.currentHero.setAvailability(true);
+        saveToLocalStorage(this.currentHero);
+
+        var cardsSwipper = new Swiper('#cards-swiper', {
+            effect: "cards",
+            grabCursor: true,
+            pagination: {
+                el: ".pagination-rewards",
+                type: "bullets",
+                clickable: true,
+            },
+        });
+
+        // Add pill switch functionality
+        let pills = htmlElement.querySelectorAll('.pill');
+        pills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                togglePill(pill, htmlElement, '.pill-tab');
+                cardsSwipper.update(); 
+            });
+        });
+
+        this.updateHeroEXPUI(htmlElement, prevLevel, level, prevExp, exp, maxExp);
+
+    }
+
+    async updateHeroEXPUI(htmlElement, prevLevel, level, prevExp, exp, maxExp){
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Current exp html element
+        const currentExp = htmlElement.querySelector('.current-exp-text');
+        currentExp.innerHTML = exp;
+
+        if (prevLevel == level) {
+            await visualizeBarAsync(htmlElement.querySelector('#new-exp-bar'), prevExp, exp, maxExp);
+        }
+        else{
+            await visualizeBarAsync(htmlElement.querySelector('#new-exp-bar'), prevExp, maxExp, maxExp);
+            await resetBar(htmlElement.querySelector('#exp-bar'));
+
+            // Get hero level UI
+            const heroLevel = htmlElement.querySelector('.hero-level');
+
+            // Loop each level up and visualize the progress bar with async
+            for (let i = prevLevel; i < level; i++) {
+                await resetBar(htmlElement.querySelector('#new-exp-bar'));
+                if (i == level - 1) 
+                    await visualizeBarAsync(htmlElement.querySelector('#new-exp-bar'), 0, exp, maxExp);
+                else
+                    await visualizeBarAsync(htmlElement.querySelector('#new-exp-bar'), 0, 100, 100);
+                
+                // Increase level UI
+                heroLevel.innerHTML = i + 1;
             }
-        }, 1000);
 
+        }
     }
 
     generateMiniHTML(){
         let html = `
-        <div class="location-mini">
-        <button id="location-mini-${this.id}">
+        <button id="location-mini-${this.id}" class="location-mini">
             <p class="location-status w100 ${this.available}">${capitalizeWord(this.available)}</p>
-            <h3>${this.name}</h3>
-            <img src="${this.artwork}" alt="${this.name}">
-        </button>
-        </div>`
+            ${this.generateCardArt()}
+        </button>`
         
         return html;
     }
 
     addMiniButtonFunctionality(modal){
         let button = document.getElementById(`location-mini-${this.id}`);
-        button.addEventListener('click', () => this.displayLocModal(modal));
+        button.addEventListener('click', async() => await this.displayLocModal(modal));
         this.availabilityUI = button.querySelector('.location-status');
     }
 
@@ -1012,13 +1068,12 @@ class Location {
         this.availabilityUI.classList.add(availability);
     }
 
-    displayLocModal(modal){
+    async displayLocModal(modal){
         const modalBody = modal.querySelector('.modal-body');
         let modalJqueryId = "#" + $(modal).attr('id');
         if (this.available === 'reward'){
-            this.giveRewards(modalBody);
+            await this.giveRewards(modalBody);
             this.setAvailability('available');
-            user.displayHeroesQuest();
         }
         else if (this.available !== 'available'){
             console.log("Hero not selected or unavailable");
@@ -1027,7 +1082,49 @@ class Location {
         else {
             modalBody.innerHTML = this.generateHTML();
             const fightButton = modal.querySelector(`#fight-button-${this.id}`);
+
+            // Add swiper functionality
+            var actionSwiper = new Swiper('#actions-swiper', {
+                effect: "cards",
+                grabCursor: true,
+                pagination: {
+                    el: ".pagination-actions",
+                    type: "bullets",
+                    clickable: true,
+                },
+            });
+
+            var rewardsSwiper = new Swiper('#rewards-swiper', {
+                effect: "cards",
+                grabCursor: true,
+                pagination: {
+                    el: ".pagination-rewards",
+                    type: "bullets",
+                    clickable: true,
+                },
+            });
+
+            var fightSwiper = new Swiper('#fight-swiper', {
+                effect: "cards",
+                grabCursor: true,
+                pagination: {
+                    el: ".pagination-fight",
+                    type: "bullets",
+                    clickable: true,
+                },
+            });
+
             fightButton.addEventListener('click', () => {
+
+                // Get current hero from fighter swiper
+                const heroCard = fightSwiper.slides[fightSwiper.activeIndex].querySelector('.o-card');
+                
+                let currentHeroGUID = heroCard.dataset.heroguid;
+                user.chosenHero = user.heroes.find(hero => hero.GUID === currentHeroGUID);
+
+                // If hero is not available return
+                if (!user.chosenHero.isAvailable()) return;
+
                 this.startQuest(user.chosenHero);
                 this.available = 'quest';
 
@@ -1036,26 +1133,14 @@ class Location {
                 $(modalJqueryId).modal('hide');
             });
 
-            // Add swiper functionality
-            var actionSwiper = new Swiper('#action-swiper', {
-                slidesPerView: 1,
-                observer: true,
-                observeParents: true,
-                pagination: {
-                    el: ".swiper-pagination",
-                },
-                navigation: {
-                    nextEl: '.next-t',
-                    prevEl: '.prev-t',
-                },
-            });
-
             // Add pill switch functionality
             let pills = modalBody.querySelectorAll('.pill');
             pills.forEach(pill => {
                 pill.addEventListener('click', () => {
                     togglePill(pill, modalBody, '.pill-tab') 
                     actionSwiper.update();
+                    rewardsSwiper.update();
+                    fightSwiper.update();
                 });
             });
 
@@ -1066,51 +1151,81 @@ class Location {
 
     generateHTML() {
         let html = `
-        <div class="location d-flex flex-column justify-content-between mb-3" data-location-id="${this.id}">
+        <div class="location d-flex flex-column justify-content-center mb-3" data-location-id="${this.id}">
             <div class="row info pill-tab active">
-                <div class="col-12 col-md-4">
-                    <h2 class="card-title text-center">${this.name}</h2>
-                    <img src="${this.artwork}" class="card-img-top loc-image" alt="${this.name}">
+                <div class="col-12 col-md-4 d-flex flex-column align-items-center">
+                    ${this.generateCardArt()}
                 </div>  
-                <div class="card-body col-12 col-md-4">
-                    <p class="card-text"><small>${JSON.stringify(this.monsterData.stats)}</small></p>
-                </div>
                 <div class="col-12 col-md-4 fight-container">
                     <h3>Selected Hero</h3>
                     <div class="selected-hero">
                        
                     </div>
-                    ${this.available === 'available' ? `<button id="fight-button-${this.id}" class="btn btn-primary fight-button">Fight</button>` : ''}
                 </div>
             </div>
             <div id="action-${this.id}" class="actions pill-tab">
                 <div id="actions-swiper" class="swiper-container cards-swiper">
                     <div class="swiper-wrapper">`;
                     this.currentMonster.getActions().forEach(card => {
-                        html += `<div class="swiper-slide">`+ card.generateHTML() + `</div>`;
+                        html += `<div class="swiper-slide d-flex justify-content-center">`+ card.generateHTML() + `</div>`;
                     });
                     html += `</div>
-                    <div class="swiper-pagination"></div>
-                    <div class="swiper-button-prev prev-t"></div>
-                    <div class="swiper-button-next next-t"></div>
+                    <div class="swiper-pagination pagination-actions"></div>
                 </div>
             </div>
             <div id="rewards-${this.id}" class="rewards pill-tab">
-                <div class="d-flex flex-wrap">`;
-                this.rewards.forEach(card => {
-                    html += card.generateHTML();
-                });
-                html += `</div>
+
+                <div id="rewards-swiper" class="swiper-container cards-swiper">
+                    <div class="swiper-wrapper">`;
+                    this.rewards.forEach(card => {
+                        html += `<div class="swiper-slide d-flex justify-content-center">`+ card.generateHTML() + `</div>`;
+                    });
+                    html += `</div>
+                    <div class="swiper-pagination pagination-rewards"></div>
+                </div>           
             </div>
-            <div class="pill-container align-self-center">
+            <div class="fight pill-tab d-flex flex-column align-items-center">
+                <h3>Choose hero</h3>
+                <div class="available-heroes">
+                    <div id="fight-swiper" class="swiper-container cards-swiper">
+                        <div class="swiper-wrapper">`;
+                        // Sort heroes by availability
+                        user.sortHeroesAvailability();
+                        user.heroes.forEach(hero => {
+                            html += `<div class="swiper-slide d-flex justify-content-center">`+ hero.generateArtHTML() + `</div>`;
+                        });
+                        html += `</div>
+                        </div>
+                        <div class="swiper-pagination pagination-fight"></div>
+                    </div>  
+                    ${this.available === 'available' ? `<button id="fight-button-${this.id}" class="btn btn-danger fight-button">Fight</button>` : ''}
+                </div>
+            </div>
+            <div class="pill-container align-self-center d-flex flex-column align-items-center">
                 <div class="pill-switch mb-2">
                     <div class="pill active" data-tab="info">Info</div>
                     <div class="pill" data-tab="actions">Actions</div>
                     <div class="pill" data-tab="rewards">Rewards</div>
+                    <div class="pill" data-tab="fight">Fight</div>
                 </div>
             </div>
         </div>`;
     
+        return html;
+    }
+
+    generateCardArt(){
+        let html = `        
+            <article class="o-card">
+                <figure draggable='false' class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
+                    ${generateStatsHTML(this.monsterData.stats)}
+                    ${generateAttributesHTML(this.monsterData.attributes)}
+                    <figcaption class="c-bg_img_desc o-flx_el_b u-border_b">
+                        <b>${this.name}</b>
+                        <section class="o-card_b"><span>${this.description}</section>
+                    </figcaption>
+                </figure>
+            </article>`;
         return html;
     }
 
@@ -1321,16 +1436,8 @@ class User {
         this.setHeroCost();
     }
 
-    displayHeroesQuest(htmlElement){
-        let tempEl = htmlElement;
-        if(!htmlElement) tempEl = this.heroQuestEl;
-        tempEl.innerHTML = this.heroes.map(hero => hero.generateButtonHTML("hero-quest")).join('');
-        this.heroes.forEach(hero => {
-            const button = document.getElementById(`hero-quest-hero-button-${hero.GUID}`);
-            button.addEventListener('click',  () => {
-                this.selectHeroQuest(hero);
-            });
-        });
+    sortHeroesAvailability(){
+        this.heroes.sort((a, b) => b.isAvailable() - a.isAvailable());
     }
 
     selectHeroQuest(hero){
@@ -1351,9 +1458,6 @@ class User {
             console.log("Please select a hero");
             return;
         }
-        const heroButton = document.getElementById(`hero-quest-hero-button-${this.chosenHero.GUID}`);
-        heroButton.classList.remove('active');
-        heroButton.classList.add('d-none-button')
         this.chosenHero.setAvailability(false);
         this.chosenHero = null;
     }
@@ -2354,8 +2458,8 @@ class CraftSlot{
         // Function to start the timeout
         const startHoldTimer = () => {
 
-            // If craft result element has no .o-card child return
-            if(!this.craftResultElement.querySelector('.o-card') || this.craftResultElement.classList.contains('holding-card')) return;
+            // If craft is not craftable return
+            if(!this.craftResultElement.classList.contains('craftable')) return;
 
             this.craftResultElement.classList.add('holding-card');
 

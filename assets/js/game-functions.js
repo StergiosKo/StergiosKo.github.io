@@ -468,7 +468,6 @@ async function readyGame(user){
         location.addMiniButtonFunctionality(locModal);
     })
 
-    user.displayHeroesQuest(heroesQuestContainer);
 
     checkOngoingQuests(locations, user.heroes);
 
@@ -661,6 +660,18 @@ function visualizeBar(element, start, gained, end){
     }
 }
 
+async function visualizeBarAsync(element, start, gained, end){
+    // Reset newExpBar
+    if(element){
+        // Ensure the bar is fully filled and correct any overshoot
+        element.style.width = calculateWidth(gained - start, end) + '%';
+        element.setAttribute('aria-valuenow', gained);
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    console.log("bar finished")
+}
+
 function getScaling(card, quality){
     const updatedCard = JSON.parse(JSON.stringify(card)); // Create a deep copy of the card object
 
@@ -717,4 +728,45 @@ function togglePill(element, container, tabString) {
     const dataTab = element.getAttribute('data-tab');
     const craftingTab = container.querySelector(`.${dataTab}`);
     craftingTab.classList.add('active');
+}
+
+function generateStatsHTML(stats) {
+    let statsHTML = `
+    <div class="stats-container container">
+        <div class="stats d-flex">
+            <div class="stats-row stat-hp"><strong>HP:</strong> ${stats.HP}</div>
+            <div class="stats-row stat-speed"><strong>SPEED:</strong> ${stats.SPEED}</div>
+            <div class="stats-row stat-mana"><strong>MANA:</strong> ${stats.MANA}</div>
+        </div>
+    </div>
+    `;
+    return statsHTML;
+}
+
+function generateAttributesHTML(attributes){
+    let html = `
+    <div class="attributes-container container">
+        <div class="attributes info info-left">
+            <div class="stats-row stat-str ribbon-pop d-flex justify-content-between"><strong>STR:</strong> ${attributes.STR}</div>
+            <div class="stats-row stat-dex ribbon-pop d-flex justify-content-between"><strong>DEX:</strong> ${attributes.DEX}</div>
+            <div class="stats-row stat-int ribbon-pop d-flex justify-content-between"><strong>INT:</strong> ${attributes.INT}</div>
+        </div>
+    </div>
+    `
+    return html
+}
+
+async function resetBar(element, valuemax = 100){
+    element.classList.add('reset-bar');
+    element.style.width = '0%';
+    element.setAttribute('aria-valuenow', 0);
+    element.setAttribute('aria-valuemax', valuemax);
+    element.setAttribute('aria-valuemin', 0);
+    setTimeout(() => {
+        element.classList.remove('reset-bar');
+    }, 100);
+
+    // Wait 0.3 sec
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
 }

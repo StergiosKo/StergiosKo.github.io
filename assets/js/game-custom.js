@@ -30,9 +30,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     else if (swiper.realIndex === 2) {
       user.displayCardsMain();
     }
-    else if (swiper.realIndex === 3) {
-      user.displayHeroesQuest();
-    }
   });
 
   // Handle footer button clicks

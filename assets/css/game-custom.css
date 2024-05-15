@@ -178,9 +178,9 @@ figure{
 }
 
 .loc-image {
-  max-height: 300px; /* Adjust height as necessary */
-  object-fit: cover; /* Ensure the image covers the card top area without stretching */
-  border-bottom: 1px solid #dee2e6; /* Bootstrap's border color for separation */
+  max-width: 250px;
+  object-fit: cover;
+  border-bottom: 1px solid #dee2e6;
 }
 
 .card-title {
@@ -259,8 +259,10 @@ footer {
   background-color: red !important;
 }
 
-.location-mini button{
+.location-mini{
   padding: 0;
+  border-radius: 10px;
+  margin: 3px;
 }
 
 .location-mini img{
@@ -268,12 +270,7 @@ footer {
 }
 
 .location .fight-button{
-  max-width: 100px;
-  margin: 20px auto;
-}
-
-.location-mini .location-status{
-  border-bottom: 1px solid gray;
+  max-width: fit-content;
 }
 
 .location-mini .location-status.available{
@@ -579,7 +576,7 @@ footer {
   max-width: fit-content;
 }
 .pill {
-  padding: 10px 20px;
+  padding: 10px 2vh;
   cursor: pointer;
   background-color: white;
   transition: background-color 0.3s ease;
@@ -590,7 +587,7 @@ footer {
 }
 
 .pill-tab:not(.active){
-  display: none;
+  display: none !important;
 }
 
 .crafting-recipe .crafting-card-recipe{
@@ -657,8 +654,8 @@ footer {
   max-height: 215px;
 }
 
-.crafting-container .progress{
-  background-color: gray;
+.progress{
+  background-color: darkgray;
 }
 
 .remove-card-button{
@@ -714,10 +711,142 @@ footer {
 }
 
 .location .pill-tab{
-  max-height: 65vh;
-  overflow-y: hidden;
+  overflow: hidden;
 }
 
 .location{
-  height: 95%;
+  height: 90%;
+}
+
+.location .pill-tab.actions, .location .pill-tab.rewards{
+  margin-top: 2rem;
+}
+
+.location .swiper-pagination{
+  position: relative;
+}
+
+.location .swiper-3d .swiper-slide-shadow{
+  background: transparent;
+}
+
+.location article.o-card, .rewards article.o-card{
+  width: 38vh;
+  height: 55vh;
+  font-size: 18px;
+  max-width: inherit;
+}
+
+.location .pill-container{
+  position: absolute;
+  bottom: 1rem;
+}
+
+.attributes-container .info{
+  position: absolute;
+  bottom: 25%;
+  font-size: 16px;
+}
+
+.attributes-container .info-left{
+  left: -1vh;
+}
+
+.attributes-container .info-right{
+  right: 5%;
+}
+
+.attributes-container .stats-row{
+  margin: 7px 0;
+}
+
+.ribbon-pop {
+  background: linear-gradient(270deg, #4f396a 5.25%, #576bb0 96.68%);
+  padding: 1px 6px 1px 6px;
+  color: white;
+  position: relative;
+  border-radius: 5px 5px 5px 0;
+  width: 110%;
+}
+.ribbon-pop:after {
+  content: "";
+  width: 0;
+  height: 0;
+  top: 0;
+  position: absolute;
+  right: 0;
+  border-right: 10px solid transparent;
+  border-top: 11px solid transparent;
+  border-bottom: 11px solid transparent;
+}
+.ribbon-pop:before {
+  height: 0;
+  width: 0;
+  border-top: 10px solid #381f57;
+  border-left: 10px solid transparent;
+  position: absolute;
+  content: "";
+  left: 0;
+  bottom: -10px;
+}
+.ribbon-pop.stat-str{
+  background: linear-gradient(270deg, #ad3d3d 5.25%, #b17987 96.68%);
+}
+.ribbon-pop.stat-dex{
+  background: linear-gradient(270deg, #103f13 5.25%, #5cc780 96.68%);
+}
+.ribbon-pop.stat-int{
+  background: linear-gradient(270deg, #ca4adb 5.25%, #3e7bc0 96.68%);
+}
+
+.stats-container .stats{
+  font-size: 14px;
+}
+
+.stats-container .stats-row{
+  margin: 0 5px;
+}
+
+.location .c-bg_img figcaption.c-bg_img_desc b{
+  font-size: 18px;
+}
+
+.location article.o-card .o-card_b{
+  font-size: 14px;
+}
+
+.pill:not(:last-child){
+  border-right: 1px solid gray;
+}
+
+.progress .bar-text{
+  color: floralwhite;
+  font-size: 13px;
+  width: 100%;
+  position: absolute;
+  left: 0%;
+}
+
+.location .swiper-wrapper, .rewards .swiper-wrapper{
+  width: 90vh;
+}
+
+.location article.o-card.card-unavailable{
+  filter: brightness(0.5);
+}
+
+.location-mini .o-card{
+  margin: 0;
+}
+
+.location-mini .o-card .stats-container, .location-mini .o-card .attributes-container{
+  display: none;
+}
+
+.rewards .swiper-3d .swiper-slide-shadow{
+  background: transparent;
+}
+
+.reset-bar{
+  transition: width 0ms !important;
 }

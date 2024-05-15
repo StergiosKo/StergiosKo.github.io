@@ -6,18 +6,17 @@
         "description": "A cool first enemy",
         "level": 5,
         "rewards": [1000, 1001],
-        "exp": 20,
-        "time": 8,
+        "exp": 500,
+        "time": 4,
         "attributes": {
             "STR": 5,
             "DEX": 3,
             "INT": 1
         },
         "stats":{ 
-            "HP": 60, 
-            "CRIT": 0.1, 
-            "MANA": 1, 
-            "CRIT-D": 1.5
+            "HP": 60,
+            "SPEED": 3,
+            "MANA": 1
         },
         "actions":[1,1,1,1,1],
         "cardsActions": [
