@@ -668,8 +668,8 @@ async function visualizeBarAsync(element, start, gained, end){
         element.setAttribute('aria-valuenow', gained);
     }
 
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    console.log("bar finished")
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
 }
 
 function getScaling(card, quality){
@@ -756,17 +756,17 @@ function generateAttributesHTML(attributes){
     return html
 }
 
-async function resetBar(element, valuemax = 100){
+function resetBar(element, valuemax = 100) {
     element.classList.add('reset-bar');
     element.style.width = '0%';
     element.setAttribute('aria-valuenow', 0);
     element.setAttribute('aria-valuemax', valuemax);
     element.setAttribute('aria-valuemin', 0);
-    setTimeout(() => {
-        element.classList.remove('reset-bar');
-    }, 100);
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            element.classList.remove('reset-bar');
 
-    // Wait 0.3 sec
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
+            resolve(); // Resolve the promise after the timeout and reset logic
+        }, 300); // Set the desired timeout duration in milliseconds
+    });
 }

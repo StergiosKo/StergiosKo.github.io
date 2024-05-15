@@ -952,7 +952,7 @@ class Location {
         const prevLevel = this.currentHero.level;
         const prevExp = this.currentHero.getEXP();
 
-        const maxExp = this.currentHero.getMaxEXP();
+        let maxExp = this.currentHero.getMaxEXP();
 
         let html = `
         <div class="rewards d-flex flex-column align-items-center">
@@ -990,6 +990,8 @@ class Location {
         this.currentHero.setAvailability(true);
         saveToLocalStorage(this.currentHero);
 
+        if (prevLevel != level) maxExp = this.currentHero.maxExp;
+
         var cardsSwipper = new Swiper('#cards-swiper', {
             effect: "cards",
             grabCursor: true,
@@ -1013,38 +1015,48 @@ class Location {
 
     }
 
-    async updateHeroEXPUI(htmlElement, prevLevel, level, prevExp, exp, maxExp){
-
+    
+    async updateHeroEXPUI(htmlElement, prevLevel, level, prevExp, exp, maxExp) {
         await new Promise(resolve => setTimeout(resolve, 1000));
-
+    
         // Current exp html element
         const currentExp = htmlElement.querySelector('.current-exp-text');
         currentExp.innerHTML = exp;
-
+    
+        // Get hero level UI
+        const heroLevel = htmlElement.querySelector('.hero-level');
+    
         if (prevLevel == level) {
             await visualizeBarAsync(htmlElement.querySelector('#new-exp-bar'), prevExp, exp, maxExp);
-        }
-        else{
-            await visualizeBarAsync(htmlElement.querySelector('#new-exp-bar'), prevExp, maxExp, maxExp);
-            await resetBar(htmlElement.querySelector('#exp-bar'));
-
-            // Get hero level UI
-            const heroLevel = htmlElement.querySelector('.hero-level');
-
-            // Loop each level up and visualize the progress bar with async
+        } else {
             for (let i = prevLevel; i < level; i++) {
-                await resetBar(htmlElement.querySelector('#new-exp-bar'));
-                if (i == level - 1) 
-                    await visualizeBarAsync(htmlElement.querySelector('#new-exp-bar'), 0, exp, maxExp);
-                else
-                    await visualizeBarAsync(htmlElement.querySelector('#new-exp-bar'), 0, 100, 100);
-                
-                // Increase level UI
-                heroLevel.innerHTML = i + 1;
+                await this.animateLevelUp(htmlElement, i, level, maxExp, exp, heroLevel);
             }
-
         }
     }
+    
+    async animateLevelUp(htmlElement, currentLevel, targetLevel, maxExp, exp, heroLevel) {
+        const newExpBar = htmlElement.querySelector('#new-exp-bar');
+        const expBar = htmlElement.querySelector('#exp-bar');
+    
+        await visualizeBarAsync(newExpBar, 0, maxExp, maxExp);
+        await resetBar(expBar);
+    
+        // Update the level text and reset the new exp bar for the next iteration
+        heroLevel.innerHTML = currentLevel + 1;
+        await resetBar(newExpBar);
+    
+        // If it's the last level up, fill the new exp bar to the current exp amount
+        if (currentLevel == targetLevel - 1) {
+            // Call the following functions in sequential order
+            await resetBar(newExpBar, maxExp);
+            await visualizeBarAsync(newExpBar, 0, exp, maxExp);
+        } else {
+            // Otherwise, fill it to simulate the bar being "full" before the next level up
+            await visualizeBarAsync(newExpBar, 0, 100, 100);
+        }
+    }
+
 
     generateMiniHTML(){
         let html = `
@@ -1153,14 +1165,8 @@ class Location {
         let html = `
         <div class="location d-flex flex-column justify-content-center mb-3" data-location-id="${this.id}">
             <div class="row info pill-tab active">
-                <div class="col-12 col-md-4 d-flex flex-column align-items-center">
+                <div class="col-12 d-flex flex-column align-items-center">
                     ${this.generateCardArt()}
-                </div>  
-                <div class="col-12 col-md-4 fight-container">
-                    <h3>Selected Hero</h3>
-                    <div class="selected-hero">
-                       
-                    </div>
                 </div>
             </div>
             <div id="action-${this.id}" class="actions pill-tab">
