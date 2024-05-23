@@ -354,7 +354,7 @@ footer {
 }
 
 .hero-button{
-  margin: 10px
+  margin: 5px;
 }
 
 #cardModal{
@@ -675,7 +675,7 @@ footer {
 }
 
 .progress .progress-bar{
-  transition: width 3500ms;
+  /* transition: width 3500ms; */
 }
 
 #result .progress{
@@ -731,8 +731,8 @@ footer {
 }
 
 .location article.o-card, .rewards article.o-card{
-  width: 38vh;
-  height: 55vh;
+  width: 35vh;
+  height: 50vh;
   font-size: 18px;
   max-width: inherit;
 }
@@ -849,4 +849,14 @@ footer {
 
 .reset-bar{
   transition: width 0ms !important;
+}
+
+.prevent-select {
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+
+.crafting-item .progress .bar-text{
+  padding-left: 1rem;
 }

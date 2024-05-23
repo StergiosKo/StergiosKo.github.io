@@ -189,9 +189,9 @@ class Hero extends Entity {
 
     generateButtonHTML(idname, modalId) {
         return `
-            <button id="${idname}-hero-button-${this.GUID}" class="hero-button btn btn-primary ${this.available ? '' : 'd-none-button'}" ${modalId ? 'data-toggle="modal"' : ''}  data-target="#${modalId}">
-                ${this.generateBasicHTML()}
-            </button>
+            <div id="${idname}-hero-button-${this.GUID}" class="hero-button ${this.available ? '' : 'd-none-button'}" ${modalId ? 'data-toggle="modal"' : ''}  data-target="#${modalId}">
+                ${this.generateArtHTML()}
+            </div>
         `;
     }
 
@@ -589,9 +589,9 @@ class Card {
         const html = `
         <article id="cardId-${this.id}" ${drag && this.available?'draggable="true"':''} class="o-card ${this.available ? '' : 'card-unavailable'}" data-cardid="${this.GUID}">
             <figure draggable='false' class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
-                <figcaption class="c-bg_img_desc o-flx_el_b u-border_b">
-                <b>${this.name}</b>
-                <section class="o-card_b"><span>${this.description}</section>
+                <figcaption class="c-bg_img_desc o-flx_el_b u-border_b prevent-select">
+                    <b>${this.name}</b>
+                    <section class="o-card_b"><span>${this.description}</section>
                 </figcaption>
             </figure>
             ${this.quantity !== -1 ? `<div class="card-number-box">x${this.quantity}</div>` : ''}
@@ -705,7 +705,7 @@ class CardAction extends Card {
                 <div class="ribbon"><span>${qualityToRank(this.quality)}</span></div>
                 ${this.available ? '' : '<i class="bi bi-file-lock2 card-equipped"></i>'}
                     <header class="c-top_icons"><span class="c-icon">${this.mana}</span></header>
-                    <figcaption class="c-bg_img_desc o-flx_el_b u-border_b">
+                    <figcaption class="c-bg_img_desc o-flx_el_b u-border_b prevent-select">
                         <b>${this.name} Lv:${this.level}</b>
                         <section class="o-card_b"><p>${processedDescription}</p>
                     </figcaption>
@@ -802,7 +802,7 @@ class CardEquipment extends Card {
                 <figure draggable='false' class="c-bg_img o-flx_c" style="background-image: url(${this.artwork});">
                     <div class="ribbon"><span>${qualityToRank(this.quality)}</span></div>
                     ${this.available ? '' : '<i class="bi bi-file-lock2 card-equipped"></i>'}
-                    <figcaption class="c-bg_img_desc o-flx_el_b u-border_b">
+                    <figcaption class="c-bg_img_desc o-flx_el_b u-border_b prevent-select">
                         <b>${this.name} Lv:${this.level}</b>
                         <section class="o-card_b"><span>${processedDescription}</section>
                     </figcaption>
@@ -1029,31 +1029,17 @@ class Location {
         if (prevLevel == level) {
             await visualizeBarAsync(htmlElement.querySelector('#new-exp-bar'), prevExp, exp, maxExp);
         } else {
+
+            // Level up once
+            await this.animateLevelUp(htmlElement, prevLevel, level, maxExp, exp, heroLevel);
+            prevLevel++;
+            
+            // Return if not level up
+            if (prevLevel == level) return;
+
             for (let i = prevLevel; i < level; i++) {
-                await this.animateLevelUp(htmlElement, i, level, maxExp, exp, heroLevel);
+                await animateLevelUp(htmlElement, i, level, maxExp, exp, heroLevel);
             }
-        }
-    }
-    
-    async animateLevelUp(htmlElement, currentLevel, targetLevel, maxExp, exp, heroLevel) {
-        const newExpBar = htmlElement.querySelector('#new-exp-bar');
-        const expBar = htmlElement.querySelector('#exp-bar');
-    
-        await visualizeBarAsync(newExpBar, 0, maxExp, maxExp);
-        await resetBar(expBar);
-    
-        // Update the level text and reset the new exp bar for the next iteration
-        heroLevel.innerHTML = currentLevel + 1;
-        await resetBar(newExpBar);
-    
-        // If it's the last level up, fill the new exp bar to the current exp amount
-        if (currentLevel == targetLevel - 1) {
-            // Call the following functions in sequential order
-            await resetBar(newExpBar, maxExp);
-            await visualizeBarAsync(newExpBar, 0, exp, maxExp);
-        } else {
-            // Otherwise, fill it to simulate the bar being "full" before the next level up
-            await visualizeBarAsync(newExpBar, 0, 100, 100);
         }
     }
 
@@ -1169,26 +1155,30 @@ class Location {
                     ${this.generateCardArt()}
                 </div>
             </div>
-            <div id="action-${this.id}" class="actions pill-tab">
-                <div id="actions-swiper" class="swiper-container cards-swiper">
-                    <div class="swiper-wrapper">`;
-                    this.currentMonster.getActions().forEach(card => {
-                        html += `<div class="swiper-slide d-flex justify-content-center">`+ card.generateHTML() + `</div>`;
-                    });
-                    html += `</div>
-                    <div class="swiper-pagination pagination-actions"></div>
+            <div class="d-flex flex-row">
+            
+                <div id="action-${this.id}" class="actions pill-tab">
+                    <div id="actions-swiper" class="swiper-container cards-swiper">
+                        <div class="swiper-wrapper">`;
+                        this.currentMonster.getActions().forEach(card => {
+                            html += `<div class="swiper-slide d-flex justify-content-center">`+ card.generateHTML() + `</div>`;
+                        });
+                        html += `</div>
+                        <div class="swiper-pagination pagination-actions"></div>
+                    </div>
                 </div>
-            </div>
-            <div id="rewards-${this.id}" class="rewards pill-tab">
+                <div id="rewards-${this.id}" class="rewards pill-tab">
 
-                <div id="rewards-swiper" class="swiper-container cards-swiper">
-                    <div class="swiper-wrapper">`;
-                    this.rewards.forEach(card => {
-                        html += `<div class="swiper-slide d-flex justify-content-center">`+ card.generateHTML() + `</div>`;
-                    });
-                    html += `</div>
-                    <div class="swiper-pagination pagination-rewards"></div>
-                </div>           
+                    <div id="rewards-swiper" class="swiper-container cards-swiper">
+                        <div class="swiper-wrapper">`;
+                        this.rewards.forEach(card => {
+                            html += `<div class="swiper-slide d-flex justify-content-center">`+ card.generateHTML() + `</div>`;
+                        });
+                        html += `</div>
+                        <div class="swiper-pagination pagination-rewards"></div>
+                    </div>           
+                </div>
+
             </div>
             <div class="fight pill-tab d-flex flex-column align-items-center">
                 <h3>Choose hero</h3>
@@ -1942,14 +1932,26 @@ class Crafter{
 
     generateHTML(){
         let html = `
-        <div class="col-12">
-            <div id="crafter-${this.id}" class="crafter m-3">
-                <h3>${this.name}</h3>
-                <div class="text">
-                    <p>Level: ${this.level}, Exp: ${this.exp}/${this.maxExp}</p>
-                </div>
-                <div class="slots">
-                    ${this.craftSlots.map(slot => slot.generateButtonHTML()).join('')}
+        <div class="mt-3 crafter-el-container border rounded p-2">
+            <div id="crafter-${this.id}" class="crafter>
+                <div class="d-flex flex-column text container">
+                    <div class="d-flex flex-row align-items-center justify-content-between">
+                        <h4 class="m-0">${this.name}</h4>
+                        <div class="slots">
+                            ${this.craftSlots.map(slot => slot.generateButtonHTML()).join('')}
+                        </div>
+                    </div>
+                    <div class="row pt-2 align-items-center">
+                        <div class="col-3">
+                            <p class="m-0">Lv: ${this.level}</p>
+                        </div>
+
+                        <div class="progress col-8 p-0">
+                            <div id="exp-bar-${this.id}" class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: ${calculateWidth(this.exp, this.maxExp)}%" aria-valuenow="${this.exp}" aria-valuemin="0" aria-valuemax="${this.maxExp}"></div>
+                            <span class="bar-text">EXP: <span class="current-exp-text">${this.exp}</span> / ${this.maxExp}</span>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
@@ -2142,13 +2144,13 @@ class CraftSlot{
     }
 
 
-    openModal(modal){
+    async openModal(modal){
         const modalJqueryId = "#" + $(modal).attr('id');
         if (this.status == 'rewards'){
             this.changeStatus('available');
             localStorage.removeItem(`craftCard-${this.crafter.id}-${this.id}`);
             const craftedCard = this.crafter.deserializeCraft(this.data);
-            this.generateRewardHTML(modal, craftedCard);
+            await this.generateRewardHTML(modal, craftedCard);
             $(modalJqueryId).modal('show');
             user.displayCrafters();
             return;
@@ -2191,7 +2193,7 @@ class CraftSlot{
                 this.showModalButton.classList.add('crafting-button');
                 break;
             case 'rewards':
-                this.showModalButton.innerHTML = 'Get Rewards';
+                this.showModalButton.innerHTML = 'Ready';
                 this.cleanseButtonCSS();
                 this.showModalButton.classList.add('rewards-button');
                 break;
@@ -2204,7 +2206,7 @@ class CraftSlot{
         this.showModalButton.classList.remove('rewards-button'); 
     }
 
-    generateRewardHTML(modal, card){
+    async generateRewardHTML(modal, card){
         
         const prevLevel = this.crafter.level;
         const prevExp = this.crafter.exp;
@@ -2217,24 +2219,27 @@ class CraftSlot{
         const modalBody = modal.querySelector('.modal-body');
 
         let html = `
-        <div class="rewards">
-            <h3>${card.name}</h3>
-            <p>Crafted the following card with a score of ${this.data.quality} </p>
+        <div class="rewards d-flex flex-column">
+        
+            <div class="row pt-2 align-items-center">
+
+                <div class="col-3">
+                    <p class="m-0">Lv: ${this.crafter.level}</p>
+                </div>
+
+                <div class="progress col-8 p-0">
+                    <div id="prev-exp-bar" class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: ${calculateWidth(prevExp, maxExp)}%" aria-valuenow="${prevExp}" aria-valuemin="0" aria-valuemax="${maxExp}"></div>
+                    <div id="new-exp-bar" class="progress-bar progress-bar-striped bg-warning" role="progressbar" style="width: 0%" aria-valuenow="${prevExp}" aria-valuemin="${prevExp}" aria-valuemax="${maxExp}"></div>
+                    <span class="bar-text">EXP: <span class="current-exp-text">${this.crafter.exp}</span> / ${this.crafter.maxExp}</span>
+                </div>
+
+            </div>
+
+            <div class="mt-2 mb-2">
+                <p class="m-0">Crafted ${card.name} with a score of ${this.data.quality}</p>
+            </div>
             <div class="rewards-card">
                 ${card.generateHTML()}
-            </div>
-            <div class="reward-exp">
-            <h4>Level = <span id="hero-level">${prevLevel < level ? ` ${prevLevel} -> ` : ''}${level}</span></h4>
-                <div>
-                    <div class="row">
-                    <p class="col-1">EXP Bar</p>
-                    <p class="col-10 text-center">${prevExp} + ${cardExp} = ${exp} / ${maxExp}</p>
-                    </div>
-                    <div class="progress">
-                        <div id="prev-exp-bar" class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: ${calculateWidth(prevExp, maxExp)}%" aria-valuenow="${prevExp}" aria-valuemin="0" aria-valuemax="${maxExp}"></div>
-                        <div id="new-exp-bar" class="progress-bar progress-bar-striped bg-warning" role="progressbar" style="width: 0%" aria-valuenow="${prevExp}" aria-valuemin="${prevExp}" aria-valuemax="${maxExp}"></div>
-                    </div>
-                </div>
             </div>
         </div>
         `;
@@ -2244,18 +2249,23 @@ class CraftSlot{
 
         user.saveData();
 
-        // Check if the hero has leveled up
-        // Hold before progress bar is filled
-        setTimeout(() => {
-            if (prevLevel == level) {
-                // Hero did not level up, just visualize the current EXP gain
-                visualizeBar(modalBody.querySelector('#new-exp-bar'), prevExp, exp, maxExp);
-            } else {
-                // Hero has leveled up at least once
-                visualizeBar(modalBody.querySelector('#new-exp-bar'), 0, exp, maxExp);
-            }
-        }, 1000);
+        const htmlElement = document.querySelector('.rewards');
 
+        if (prevLevel == level) {
+            await visualizeBarAsync(htmlElement.querySelector('#new-exp-bar'), prevExp, exp, maxExp);
+        } else {
+
+            // Level up once
+            await this.animateLevelUp(htmlElement, prevLevel, level, maxExp, exp, level);
+            prevLevel++;
+            
+            // Return if not level up
+            if (prevLevel == level) return;
+
+            for (let i = prevLevel; i < level; i++) {
+                await animateLevelUp(htmlElement, i, level, maxExp, exp, level);
+            }
+        }
 
     }
 
@@ -2304,13 +2314,21 @@ class CraftSlot{
     generateModal(modal){
         this.modal = modal;
         let html = `
-        <div class="crafting-container">
-            <div class="text">
-                <div class="progress">
-                    <div id="prev-exp-bar" class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: ${calculateWidth(this.crafter.exp, this.crafter.maxExp)}%" aria-valuenow="${this.crafter.exp}" aria-valuemin="0" aria-valuemax="${this.crafter.maxExp}"></div>
+        <div class="crafting-container crafting-item">
+
+            <div class="row pt-2 align-items-center">
+
+                <div class="col-3">
+                    <p class="m-0">Lv: ${this.crafter.level}</p>
                 </div>
-                <p>Lv: ${this.crafter.level}, Exp: ${this.crafter.exp}/${this.crafter.maxExp}</p>
+
+                <div class="progress col-8 p-0">
+                    <div id="exp-bar-${this.crafter.cid}" class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: ${calculateWidth(this.crafter.exp, this.crafter.maxExp)}%" aria-valuenow="${this.crafter.exp}" aria-valuemin="0" aria-valuemax="${this.crafter.maxExp}"></div>
+                    <span class="bar-text">EXP: <span class="current-exp-text">${this.crafter.exp}</span> / ${this.crafter.maxExp}</span>
+                </div>
+
             </div>
+
             <div class="crafting mt-2">
                 <div class="row">
                     <h5 class="col-5 col-md-8 text-center">Crafting</h5>
@@ -2619,10 +2637,10 @@ class CraftSlot{
     }
 
 
-    assignCrafterButtonFunctionality(modal, crafterElement){
+    async assignCrafterButtonFunctionality(modal, crafterElement){
         this.showModalButton = crafterElement.querySelector(`.crafter-slot-${this.id}`)
         // this.showModalButton.addEventListener('click', () => this.generateModal(modalBody));
-        this.showModalButton.addEventListener('click', () => this.openModal(modal));
+        this.showModalButton.addEventListener('click', async() => await this.openModal(modal));
     }
 
     craftCurrentCard(){

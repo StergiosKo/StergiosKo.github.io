@@ -661,14 +661,28 @@ function visualizeBar(element, start, gained, end){
 }
 
 async function visualizeBarAsync(element, start, gained, end){
+
+    // Get time from difference where if start = 0, gained = 100, end = 100, time will be 1500
+    const time = Math.abs(start - gained) / (end - start) * 1000
+    console.log(time);
+
     // Reset newExpBar
     if(element){
+
+        // Set element width animation to time
+        element.style.transition = `width ${time}ms`;
+
         // Ensure the bar is fully filled and correct any overshoot
         element.style.width = calculateWidth(gained - start, end) + '%';
         element.setAttribute('aria-valuenow', gained);
     }
 
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => {
+        setTimeout(() => {
+            element.style.transition = '';
+            resolve();
+        }, time + 500);
+    });
     
 }
 
@@ -756,17 +770,36 @@ function generateAttributesHTML(attributes){
     return html
 }
 
-function resetBar(element, valuemax = 100) {
-    element.classList.add('reset-bar');
+async function resetBar(element, valuemax = 100) {
+    element.style.transition = `width 0ms`;
     element.style.width = '0%';
     element.setAttribute('aria-valuenow', 0);
     element.setAttribute('aria-valuemax', valuemax);
     element.setAttribute('aria-valuemin', 0);
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            element.classList.remove('reset-bar');
 
-            resolve(); // Resolve the promise after the timeout and reset logic
-        }, 300); // Set the desired timeout duration in milliseconds
-    });
+    // Wait for 300ms
+    await new Promise(resolve => setTimeout(resolve, 300));
+}
+
+async function animateLevelUp(htmlElement, currentLevel, targetLevel, maxExp, exp, heroLevel) {
+    const newExpBar = htmlElement.querySelector('#new-exp-bar');
+    const expBar = htmlElement.querySelector('#exp-bar');
+
+    await visualizeBarAsync(newExpBar, 0, maxExp, maxExp);
+    await resetBar(expBar);
+
+    // Update the level text and reset the new exp bar for the next iteration
+    heroLevel.innerHTML = currentLevel + 1;
+
+    // If it's the last level up, fill the new exp bar to the current exp amount
+    if (currentLevel == targetLevel - 1) {
+        // Call the following functions in sequential order
+        await resetBar(expBar);
+        await resetBar(newExpBar, maxExp);
+        await visualizeBarAsync(newExpBar, 0, exp, maxExp);
+    } else {
+        await resetBar(newExpBar);
+        // Otherwise, fill it to simulate the bar being "full" before the next level up
+        await visualizeBarAsync(newExpBar, 0, 100, 100);
+    }
 }
