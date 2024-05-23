@@ -63,7 +63,15 @@
                 <!-- <button id="toggle-cards-btn">Show owned Cards</button> -->
                 <div id="cardsContainer" style="margin-top: 1rem;">
                     <div id="button-sorting-container" class="d-flex flex-wrap mt-1">
-                      <h4 class="h-align-center">Sort Buttons</h4>
+                      
+                      <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuSort" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          Sort
+                        </button>
+                        <div id="sorting-container" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        </div>
+                      </div>
+
                     </div>
                     <div class="scrollbar-container">
                       <div id="all-cardsContainer" class="main-cards-container d-flex flex-wrap justify-content-center mt-1">
@@ -165,6 +173,7 @@
 
 
     <script src="assets/js/jquery-3.7.1.min.js"></script>
+    <script src="assets/js/popper.min.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>
     <script src="assets/js/game-functions.js"></script>
     <script src="assets/js/game-classes.js"></script>

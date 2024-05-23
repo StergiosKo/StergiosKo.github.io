@@ -1636,13 +1636,18 @@ class User {
         this.currentSortButton = button;
     }
 
+    createHTMLSortButton(text){
+        const sortButton = document.createElement('button');
+        sortButton.classList.add('w-100', 'mb-1');
+        sortButton.textContent = text;
+        return sortButton
+    }
+
     generateSortButtons(buttonContainer, cardContainer, classType = null) {
 
         // Sort by class if classType is not provided
         if(!classType){
-            const classSortButton = document.createElement('button');
-            classSortButton.classList.add('btn', 'btn-primary', 'm-1');
-            classSortButton.textContent = 'Class';
+            const classSortButton = this.createHTMLSortButton('Class');
             classSortButton.addEventListener('click', () => {
                 this.sortCardsOrder((a, b) => a.constructor.name.localeCompare(b.constructor.name), 'Class', classSortButton);
                 this.displayCardsMain(cardContainer, classType);
@@ -1652,9 +1657,7 @@ class User {
         }
 
         // Sorty by level
-        const levelSortButton = document.createElement('button');
-        levelSortButton.classList.add('btn', 'btn-primary', 'm-1');
-        levelSortButton.textContent = 'Level';
+        const levelSortButton = this.createHTMLSortButton('Level');
         levelSortButton.addEventListener('click', () => {
             this.sortCardsOrder('level', 'Level', levelSortButton);
             this.displayCardsMain(cardContainer, classType);
@@ -1662,9 +1665,7 @@ class User {
         buttonContainer.appendChild(levelSortButton);
 
         // Sort by mana
-        const manaSortButton = document.createElement('button');
-        manaSortButton.classList.add('btn', 'btn-primary', 'm-1');
-        manaSortButton.textContent = 'Mana';
+            const manaSortButton = this.createHTMLSortButton('Mana');
         manaSortButton.addEventListener('click', () => {
             this.sortCardsOrder('mana', 'Mana', manaSortButton);
             this.displayCardsMain(cardContainer, classType);
@@ -1672,9 +1673,7 @@ class User {
         buttonContainer.appendChild(manaSortButton);
 
         // Sort by availability
-        const availabilitySortButton = document.createElement('button');
-        availabilitySortButton.classList.add('btn', 'btn-primary', 'm-1');
-        availabilitySortButton.textContent = 'Availability';
+        const availabilitySortButton = this.createHTMLSortButton('Availability');
         availabilitySortButton.addEventListener('click', () => {
             this.sortCardsOrder(((a, b) => {
                 return (a.getAvailability() === b.getAvailability())? 0 : a.getAvailability()? -1 : 1;
@@ -1685,9 +1684,7 @@ class User {
         buttonContainer.appendChild(availabilitySortButton);
 
         // Sort by rarity
-        const raritySortButton = document.createElement('button');
-        raritySortButton.classList.add('btn', 'btn-primary', 'm-1');
-        raritySortButton.textContent = 'Rarity';
+        const raritySortButton = this.createHTMLSortButton('Rarity');
         raritySortButton.addEventListener('click', () => {
             this.sortCardsOrder(((a, b) => {
                 // Assuming you have a rarityToNumber function defined somewhere that converts
@@ -1702,9 +1699,7 @@ class User {
         buttonContainer.appendChild(raritySortButton);
 
         // Sort by quality
-        const qualitySortButton = document.createElement('button');
-        qualitySortButton.classList.add('btn', 'btn-primary', 'm-1');
-        qualitySortButton.textContent = 'Quality';
+        const qualitySortButton = this.createHTMLSortButton('Quality');
         qualitySortButton.addEventListener('click', () => {
             this.sortCardsOrder('quality', 'Quality', qualitySortButton);
             this.displayCardsMain(cardContainer, classType);

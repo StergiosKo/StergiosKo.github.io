@@ -437,7 +437,7 @@ async function readyGame(user){
     const crafterModal = document.getElementById('crafterModal');
 
     const cardsContainer = document.getElementById('all-cardsContainer');
-    const cardsSortButtonContainer = document.getElementById('button-sorting-container');
+    const cardsSortButtonContainer = document.getElementById('sorting-container');
 
     const goldElement = document.getElementById('gold');
 

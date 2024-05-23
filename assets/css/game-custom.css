@@ -399,7 +399,7 @@ footer {
 }
 
 #cardsContainer .scrollbar-container{
-  height: 550px;
+  height: 64vh;
 }
 
 .crafting .btn-danger, .result-container button{
@@ -859,4 +859,8 @@ footer {
 
 .crafting-item .progress .bar-text{
   padding-left: 1rem;
+}
+
+#sorting-container{
+  padding: 5px;
 }
