@@ -62,7 +62,6 @@ class Entity {
     executeAction(opponent, cardIndex) {
         const action = this.cardsActions[cardIndex];
         // console.log(`${this.name} uses ${action.name} on ${opponent.name}`);
-        // Simplified; here you would apply the card's effect to the opponent
 
         action.doAction(this, opponent);
     }
@@ -98,9 +97,17 @@ class Entity {
 
         // Iterate through each action and append its HTML to the div
         this.cardsActions.forEach(action => {
-            const actionHtml = action.generateHTML(); // Assuming generateHTML returns a string of HTML
+            const actionHtml = action.generateHTML();
             div.innerHTML += actionHtml; // Append the action's HTML to the div
         });
+    }
+
+    generateActionHTML(){
+        let html = '';
+        this.cardsActions.forEach(action => {
+            html += action.generateHTML();
+        })
+        return html
     }
     
 }
@@ -164,20 +171,20 @@ class Hero extends Entity {
         return `
             <div class="hero-container d-flex flex-wrap">
                 <h2 id="model-hero-name">${this.name}</h2>
-                <span><button class="btn hero-name-edit" id="hero-name-edit"><i class="bi bi-pencil"></i></button></span>
-                <span><button class="btn hero-name-save d-none" id="hero-name-save"><i class="bi bi-check-lg"></i></button></span>  
+                    <span><button class="btn hero-name-edit" id="hero-name-edit"><i class="bi bi-pencil"></i></button></span>
+                    <span><button class="btn hero-name-save d-none" id="hero-name-save"><i class="bi bi-check-lg"></i></button></span>  
                 <div class="row ms-2">
-                <p class="attributes">Attributes: STR: ${this.attributes.STR}, DEX: ${this.attributes.DEX}, INT: ${this.attributes.INT}</p>
-                <p class="max-stats">Max Stats: HP: ${this.maxStats.HP}, SPEED: ${this.maxStats.SPEED}, MANA: ${this.maxStats.MANA}</p>
+                    <p class="attributes">Attributes: STR: ${this.attributes.STR}, DEX: ${this.attributes.DEX}, INT: ${this.attributes.INT}</p>
+                    <p class="max-stats">Max Stats: HP: ${this.maxStats.HP}, SPEED: ${this.maxStats.SPEED}, MANA: ${this.maxStats.MANA}</p>
                 </div>
                 <div class="row">
-                <p class="level-exp">Level: ${this.level} Exp: ${this.exp}/${this.maxExp}</p>
-                <p> Availability: ${this.available ? "Yes" : "No"}</p>
-                <p> Available Mana: ${this.getAvailableMana()}</p>
+                    <p class="level-exp">Level: ${this.level} Exp: ${this.exp}/${this.maxExp}</p>
+                    <p> Availability: ${this.available ? "Yes" : "No"}</p>
+                    <p> Available Mana: ${this.getAvailableMana()}</p>
                 </div>
                 <div>
-                <button class="btn btn-primary" id="hero-button-actions">Actions</button>
-                <button class="btn btn-primary d-none-button" id="hero-button-equipment">Equipment</button>
+                    <button class="btn btn-primary" id="hero-button-actions">Actions</button>
+                    <button class="btn btn-primary d-none-button" id="hero-button-equipment">Equipment</button>
                 </div>
                 <div class="w-100"></div>
                 <div>
@@ -187,9 +194,123 @@ class Hero extends Entity {
         `;
     }
 
-    generateButtonHTML(idname, modalId) {
+    generateHTML(modal) {
+
+        const self = this;
+
+        // Get modal body element
+        const modalBody = modal.querySelector('.modal-body');
+        let html = `
+            <div class="hero-container d-flex flex-column">
+                <div id="hero-info" class="hero-info pill-tab active d-flex justify-content-center align-items-center">
+                    ${this.generateArtHTML()}
+                </div>
+                <div id="hero-actions" class="hero-actions pill-tab d-flex flex-column align-items-center">
+
+                    <div class="row ms-2">
+                        <p class="attributes">Attributes: STR: ${this.attributes.STR}, DEX: ${this.attributes.DEX}, INT: ${this.attributes.INT}</p>
+                        <p class="max-stats">Max Stats: HP: ${this.maxStats.HP}, SPEED: ${this.maxStats.SPEED}, MANA: ${this.maxStats.MANA}</p>
+                    </div>
+
+                    <div class="hero-cards">
+                        
+                        <div id="hero-actions-swiper" class="swiper-container cards-swiper">
+                            <div class="swiper-wrapper">`;
+                            this.cardsActions.forEach(card => {
+                                html += `<div class="swiper-slide d-flex justify-content-center">`+ card.generateHTML() + `</div>`;
+                            });
+                            html += `</div>
+                            <div class="swiper-pagination pagination-actions"></div>
+                        </div>  
+
+                    `
+                        
+                    html += `</div>
+                    <div class="user-cards"></div>
+                </div>
+                <div id="hero-equipment" class="hero-equipment pill-tab">
+
+                    <div class="row ms-2">
+                        <p class="attributes">Attributes: STR: ${this.attributes.STR}, DEX: ${this.attributes.DEX}, INT: ${this.attributes.INT}</p>
+                        <p class="max-stats">Max Stats: HP: ${this.maxStats.HP}, SPEED: ${this.maxStats.SPEED}, MANA: ${this.maxStats.MANA}</p>
+                    </div>
+
+                    <div class="hero-cards">
+        
+                        <div id="hero-equipment-swiper" class="swiper-container cards-swiper">
+                            <div class="swiper-wrapper">`;
+                            // Loop equipment map
+                            Object.keys(self.cardsEquipment).forEach( function (key) {
+                                html += `<div class="swiper-slide d-flex justify-content-center">`+ self.cardsEquipment[key].generateHTML() + `</div>`
+                            });
+                            html += `</div>
+                            <div class="swiper-pagination pagination-equipment"></div>
+                        </div>  
+                    </div>
+                    <div class="user-cards"></div>
+                </div>
+            </div>
+
+            <div class="pill-container-crafting">
+                <div class="pill-switch mb-2">
+                    <div class="pill active" data-tab="hero-info">Info</div>
+                    <div class="pill" data-tab="hero-actions">Actions</div>
+                    <div class="pill" data-tab="hero-equipment">Equipment</div>
+                </div>
+            </div>
+        `;
+
+        modalBody.innerHTML = html;
+
+        // Add swiper functionality
+        var heroActionSwiper = new Swiper('#hero-actions-swiper', {
+            effect: "cards",
+            grabCursor: true,
+            pagination: {
+                el: ".pagination-actions",
+                type: "bullets",
+                clickable: true,
+            },
+        });
+
+        // Add swiper functionality
+        var heroEquipmentSwiper = new Swiper('#hero-equipment-swiper', {
+            effect: "cards",
+            grabCursor: true,
+            pagination: {
+                el: ".pagination-equipment",
+                type: "bullets",
+                clickable: true,
+            },
+        });
+
+        // Add pill switch functionality
+        let pills = modalBody.querySelectorAll('.pill');
+        pills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                togglePill(pill, modal, '.pill-tab');
+                heroActionSwiper.update();
+                heroEquipmentSwiper.update();
+            });
+        });
+    }
+
+    addButtonFunctionality(modal){
+        let button = document.getElementById(`hero-button-${this.GUID}`);
+        button.addEventListener('click', () => this.openModal(modal));
+    }
+
+    openModal(modal){
+        const modalJqueryId = "#" + $(modal).attr('id');
+        this.generateHTML(modal);
+
+        // Code to open the modal (e.g., using jQuery's modal method)
+        $(modalJqueryId).modal('show');
+    }
+
+    generateButtonHTML() {
         return `
-            <div id="${idname}-hero-button-${this.GUID}" class="hero-button ${this.available ? '' : 'd-none-button'}" ${modalId ? 'data-toggle="modal"' : ''}  data-target="#${modalId}">
+            <div id="hero-button-${this.GUID}" class="hero-button ${this.available ? '' : 'd-none-button'}">
                 ${this.generateArtHTML()}
             </div>
         `;
@@ -1011,36 +1132,8 @@ class Location {
             });
         });
 
-        this.updateHeroEXPUI(htmlElement, prevLevel, level, prevExp, exp, maxExp);
+        updateEXPUI(htmlElement, prevLevel, level, prevExp, exp, maxExp);
 
-    }
-
-    
-    async updateHeroEXPUI(htmlElement, prevLevel, level, prevExp, exp, maxExp) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    
-        // Current exp html element
-        const currentExp = htmlElement.querySelector('.current-exp-text');
-        currentExp.innerHTML = exp;
-    
-        // Get hero level UI
-        const heroLevel = htmlElement.querySelector('.hero-level');
-    
-        if (prevLevel == level) {
-            await visualizeBarAsync(htmlElement.querySelector('#new-exp-bar'), prevExp, exp, maxExp);
-        } else {
-
-            // Level up once
-            await this.animateLevelUp(htmlElement, prevLevel, level, maxExp, exp, heroLevel);
-            prevLevel++;
-            
-            // Return if not level up
-            if (prevLevel == level) return;
-
-            for (let i = prevLevel; i < level; i++) {
-                await animateLevelUp(htmlElement, i, level, maxExp, exp, heroLevel);
-            }
-        }
     }
 
 
@@ -1424,10 +1517,10 @@ class User {
         let modalEl = heroModal;
         if(!heroModal) modalEl = this.heroModalEl;
 
-        tempEl.innerHTML = this.heroes.map(hero => hero.generateButtonHTML("preview", modalEl.id)).join('');
+        tempEl.innerHTML = this.heroes.map(hero => hero.generateButtonHTML("preview")).join('');
+
         this.heroes.forEach(hero => {
-            const button = document.getElementById(`preview-hero-button-${hero.GUID}`);
-            button.addEventListener('click', () => this.displayHeroModal(hero, modalEl))
+            hero.addButtonFunctionality(modalEl);
         });
         this.setHeroCost();
     }
@@ -1998,12 +2091,6 @@ class Crafter{
     }
 
     serializeCraft(slotId, cardId, quality, time){
-        // const jsonString = JSON.stringify({
-        //     slotId: slotId,
-        //     cardId: cardId,
-        //     quality: parseFloat(quality).toFixed(2), // Convert string to float and format to 2 decimal places
-        //     endTime: new Date().getTime() + time * 500
-        // });
         let qualityFlaot = parseFloat(quality)
         const jsonString = JSON.stringify({
             slotId: slotId,
@@ -2219,7 +2306,7 @@ class CraftSlot{
             <div class="row pt-2 align-items-center">
 
                 <div class="col-3">
-                    <p class="m-0">Lv: ${this.crafter.level}</p>
+                    <p class="m-0 hero-level">Lv: ${this.crafter.level}</p>
                 </div>
 
                 <div class="progress col-8 p-0">
@@ -2233,7 +2320,7 @@ class CraftSlot{
             <div class="mt-2 mb-2">
                 <p class="m-0">Crafted ${card.name} with a score of ${this.data.quality}</p>
             </div>
-            <div class="rewards-card">
+            <div class="rewards-card d-flex justify-content-center">
                 ${card.generateHTML()}
             </div>
         </div>
@@ -2246,21 +2333,7 @@ class CraftSlot{
 
         const htmlElement = document.querySelector('.rewards');
 
-        if (prevLevel == level) {
-            await visualizeBarAsync(htmlElement.querySelector('#new-exp-bar'), prevExp, exp, maxExp);
-        } else {
-
-            // Level up once
-            await this.animateLevelUp(htmlElement, prevLevel, level, maxExp, exp, level);
-            prevLevel++;
-            
-            // Return if not level up
-            if (prevLevel == level) return;
-
-            for (let i = prevLevel; i < level; i++) {
-                await animateLevelUp(htmlElement, i, level, maxExp, exp, level);
-            }
-        }
+        updateEXPUI(htmlElement, prevLevel, level, prevExp, exp, maxExp);
 
     }
 

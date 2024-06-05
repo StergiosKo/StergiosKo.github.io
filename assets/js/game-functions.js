@@ -803,3 +803,30 @@ async function animateLevelUp(htmlElement, currentLevel, targetLevel, maxExp, ex
         await visualizeBarAsync(newExpBar, 0, 100, 100);
     }
 }
+
+async function updateEXPUI(htmlElement, prevLevel, level, prevExp, exp, maxExp) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Current exp html element
+    const currentExp = htmlElement.querySelector('.current-exp-text');
+    currentExp.innerHTML = exp;
+
+    // Get hero level UI
+    const heroLevel = htmlElement.querySelector('.hero-level');
+
+    if (prevLevel == level) {
+        await visualizeBarAsync(htmlElement.querySelector('#new-exp-bar'), prevExp, exp, maxExp);
+    } else {
+
+        // Level up once
+        await animateLevelUp(htmlElement, prevLevel, level, maxExp, exp, heroLevel);
+        prevLevel++;
+        
+        // Return if not level up
+        if (prevLevel == level) return;
+
+        for (let i = prevLevel; i < level; i++) {
+            await animateLevelUp(htmlElement, i, level, maxExp, exp, heroLevel);
+        }
+    }
+}

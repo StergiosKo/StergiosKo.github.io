@@ -1,24 +1,175 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Stergios Kokorotsikos Page</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
-        <link rel="stylesheet" href="assets/css/custom.css">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-<body class="homepage">
-    <header>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stergios Kokorotsikos Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body class="portfolio">
 
-    </header>
-    <div class="container text-center">
-        <h1>Site is in production...</h1>
-        <p>Check out my game in production</p>
-        <a class="custom-button" href="game.html">HERE</a>
-        <br>
-        <br>
-        <p>See Custom MtG cards from the Land of the Lustrous manga</p>
-        <a class="custom-button" href="HousekiNoKuni.html">HERE</a>
+<nav class="navbar navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Stergios Kokorotsikos</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#about">ABOUT ME</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#experience">EXPERIENCE & EDUCATION</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#projects">PROJECTS</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#hobbies">HOBBIES</a>
+                </li>
+            </ul>
+        </div>
     </div>
+</nav>
 
+<div class="container mt-1 pt-5 text-center">
+    <section id="about" class="text-center">
+        <h1 class="section-title">ABOUT ME</h1>
+        <p class="lead">I am Stergios Kokorotsikos, a Junior Fullstack Developer</p>
+        <p class="lead">and aspiring Game Developer</p>
+        <p class="lead">Thessaloniki, Greece.</p>
+        <ul class="icon-list round-icons">
+            <li><a href="https://github.com/StergiosKo"><img src="assets/images/portfolio/github.png" alt="Github"></a></li>
+            <li><a href="https://www.linkedin.com/in/stergios-kokorotsikos-942248223/"><img src="assets/images/portfolio/linkedin.png" alt="Linked In"></a></li>
+            <li><a href="https://www.facebook.com/stergios.kokorotsik"><img src="assets/images/portfolio/facebook.png" alt="Facebook"></a></li>
+        </ul>
+    </section>
+
+
+    <section id="experience">
+        <div class="section-title d-flex align-items-center justify-content-center">
+            <h2><span id="work-tab" class="semi-button">WORK EXPERIENCE</span> 
+            & <span id="education-tab" class="semi-button">EDUCATION</span></h2>
+            </div>
+        <div class="tab-content" id="experienceTabContent">
+            <div class="tab-pane fade show active" id="work" role="tabpanel" aria-labelledby="work-tab">
+                <p class="lead">Worked as Fullstack Junior Developer for 1.5 years at <a href="https://www.astrolabs.gr/" target="_blank">Astrolabs</a></p>
+                <ul class="icon-list round-icons">
+                    <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML" target="_blank"><img src="assets/images/portfolio/html.png" alt="HTML5"></a></li>
+                    <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS" target="_blank"><img src="assets/images/portfolio/css.png" alt="CSS3"></a></li>
+                    <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank"><img src="assets/images/portfolio/js.png" alt="JavaScript"></a></li>
+                    <li><a href="https://wordpress.org/" target="_blank"><img src="assets/images/portfolio/wordpress.png" alt="WordPress"></a></li>
+                    <li><a href="https://www.prestashop.com/" target="_blank"><img src="assets/images/portfolio/prestashop.png" alt="PrestaShop"></a></li>
+                    <li><a href="https://modx.com/" target="_blank"><img src="assets/images/portfolio/modx.png" alt="MODX"></a></li>
+                </ul>
+            </div>
+            <div class="tab-pane fade" id="education" role="tabpanel" aria-labelledby="education-tab">
+                <p class="lead">Undergraduate in the last year of education at <a href="https://www.uom.gr/" target="_blank">University of Macedonia</a></p>
+                <ul class="icon-list round-icons">
+                    <li><a href="https://www.python.org/" target="_blank"><img src="assets/images/portfolio/python.png" alt="Python"></a></li>
+                    <li><a href="https://www.oracle.com/java/" target="_blank"><img src="assets/images/portfolio/java.png" alt="Java"></a></li>
+                    <li><a href="https://docs.microsoft.com/en-us/dotnet/csharp/" target="_blank"><img src="assets/images/portfolio/c_sharp.svg" alt="C#"></a></li>
+                    <li><a href="https://unity.com/" target="_blank"><img src="assets/images/portfolio/unity.png" alt="Unity"></a></li>
+                    <li><a href="https://godotengine.org/" target="_blank"><img src="assets/images/portfolio/godot.png" alt="Godot"></a></li>
+                    <li><a href="https://developer.android.com/studio" target="_blank"><img src="assets/images/portfolio/android_studio.png" alt="Android Studio"></a></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects">
+        <h2 class="section-title mb-5">PROJECTS</h2>
+        <div id="projectsCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <div class="d-flex justify-content-center">
+                        <div class="card bg-dark text-white" style="width: 18rem;">
+                            <div class="card-body">
+                                <a href="https://github.com/StergiosKo/HeroRealms" target="_blank">
+                                    <h5 class="card-title">Hero Realms</h5>
+                                    <p class="card-text">Digitalized the card game Hero Realms in Unity as my first big project</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div class="d-flex justify-content-center">
+                        <div class="card bg-dark text-white" style="width: 18rem;">
+                            <div class="card-body">
+                                <a href="https://github.com/StergiosKo/RL-Taxi-Agent" target="_blank">
+                                    <h5 class="card-title">Reinforcement Learning Thesis</h5>
+                                    <p class="card-text">The taxi agent, using Reinforcement Learning under development</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div class="d-flex justify-content-center">
+                        <div class="card bg-dark text-white" style="width: 18rem;">
+                            <div class="card-body">
+                                <a href="game.html" target="_blank">
+                                    <h5 class="card-title">Card Brewer</h5>
+                                    <p class="card-text">Web game in JS, currently in development</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#projectsCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#projectsCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+        <div class="mt-5 round-icons">
+            <h3 class="text-center">Check out these and other projects <a class="m-2" href="https://github.com/StergiosKo?tab=repositories" target="_blank"><img src="assets/images/portfolio/github.png" alt="GitHub"></a></h3>
+            
+        </div>
+    </section>
+    
+    <section id="hobbies">
+        <h2 class="section-title mb-5">HOBBIES</h2>
+        <p>Check my custom MtG cards from the Land of the Lustrous manga <br><span class="font-weight-bold">Images not owned, please follow the artists!</span></p>
+        <div class="container mt-5">
+            <a href="HousekiNoKuni.html">
+                <img class="card-1" src="assets/images/HnK/Phosphophylite Curious Gem.png">
+                <img class="card-2" src="assets/images/HnK/Diamond Jealousy and Kindness.png">
+            </a>
+        </div>
+
+    </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the first tab as active
+        document.querySelector('#work-tab').classList.add('active');
+        document.querySelector('#work').classList.add('show', 'active');
+
+        // Handle tab toggling
+        document.querySelector('#work-tab').addEventListener('click', function() {
+            document.querySelector('#education-tab').classList.remove('active');
+            document.querySelector('#education').classList.remove('show', 'active');
+            this.classList.add('active');
+            document.querySelector('#work').classList.add('show', 'active');
+        });
+
+        document.querySelector('#education-tab').addEventListener('click', function() {
+            document.querySelector('#work-tab').classList.remove('active');
+            document.querySelector('#work').classList.remove('show', 'active');
+            this.classList.add('active');
+            document.querySelector('#education').classList.add('show', 'active');
+        });
+    });
+</script>
 </body>
 </html>

@@ -40,7 +40,7 @@ a:hover{
     margin: 1.5rem 0;
 }
 .mtg-card a{
-    color: black
+    color: white;
 }
 .mtg-card h3{
     padding-top: 10px
@@ -48,12 +48,15 @@ a:hover{
 .mtg-card a{
     margin-top: 5px;
 }
+.mtg-card img{
+    border-radius: 25px;
+}
 .filters{
     max-width: 1000px;
     margin: auto
 }
 .filters ul li a{
-    color: black
+    color: white;
 }
 .filters ul{
     display: flex;
@@ -63,7 +66,7 @@ a:hover{
 }
 .filters ul li{
     display: flex;
-    border: 1px solid black;
+    border: 1px solid white;
     margin: 10px;
     font-weight: bold;
     text-transform: uppercase;
@@ -162,6 +165,103 @@ a:hover{
     background: var(--mtg-land);
 }
 
+.portfolio section{
+    margin: 5rem 0 15rem 0;
+}
+
+.portfolio section#experience a{
+    color: cyan;
+}
+.portfolio section#experience a:hover{
+    color: rgb(20, 110, 110);
+}
+body {
+    background-color: #121212;
+    color: #ffffff;
+}
+.portfolio .navbar-dark .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba%28255, 255, 255, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+.portfolio .section-title {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+.tab-content {
+    margin-top: 20px;
+}
+.portfolio .semi-button{
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.portfolio .semi-button.active{
+    color: cyan;
+}
+.portfolio .semi-button:hover{
+    color: gray;
+}
+.icon-list {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.round-icons li {
+    margin: 10px;
+    border-radius: 25px;
+}
+
+.round-icons a {
+    display: inline-block;
+    padding: 10px;
+    background-color: #333;
+    text-align: center;
+    border-radius: 25px;
+    border: 1px solid transparent;
+}
+
+.round-icons img {
+    width: 40px;
+    height: 40px;
+}
+
+.round-icons a:hover{
+    transform: scale(1.2);
+    border-color: cyan;
+    border: 1px solid cyan;
+}
+
+.portfolio section#projects a{
+    color: white;
+}
+
+.portfolio #hobbies img{
+    border-radius: 25px;
+    height: 450px;
+}
+
+.font-weight-bold{
+    font-weight: 700 !important;
+}
+
+.portfolio #hobbies .card-1, .portfolio #hobbies a{
+    position: relative;
+}
+
+.portfolio #hobbies .card-1{
+    z-index: 20;
+    transform: rotate3d(1, 1, 1, -2deg);
+    left: -3%;
+}
+
+.portfolio #hobbies .card-2{
+    position: absolute;
+    left: 30%;
+    transform: rotate3d(1, 1, 1, 9deg);
+    z-index: 10;
+}
+
 /* Responsiveness */
 @media only screen and (max-width: 992px) {
     .filters ul li a{
@@ -173,5 +273,17 @@ a:hover{
     }
     .filters ul li img{
         margin-right: 0;
+    }
+    .portfolio section{
+        margin: 5rem 0;
+    }
+    .portfolio #hobbies img{
+        height: 300px;
+    }
+    .portfolio #hobbies .container{
+        display: flex;
+    }
+    .portfolio #hobbies .card-1{
+        left: 20%;
     }
 }

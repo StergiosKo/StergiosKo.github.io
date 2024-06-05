@@ -714,7 +714,7 @@ footer {
   overflow: hidden;
 }
 
-.location{
+.location, .hero-container{
   height: 90%;
 }
 
@@ -730,7 +730,7 @@ footer {
   background: transparent;
 }
 
-.location article.o-card, .rewards article.o-card{
+.location article.o-card, .rewards article.o-card, #hero-info article.o-card{
   width: 35vh;
   height: 50vh;
   font-size: 18px;
@@ -827,7 +827,7 @@ footer {
   left: 0%;
 }
 
-.location .swiper-wrapper, .rewards .swiper-wrapper{
+.location .swiper-wrapper, .rewards .swiper-wrapper, .hero-cards .swiper-wrapper{
   width: 90vh;
 }
 
@@ -843,7 +843,7 @@ footer {
   display: none;
 }
 
-.rewards .swiper-3d .swiper-slide-shadow{
+.rewards .swiper-3d .swiper-slide-shadow, .hero-cards .swiper-3d .swiper-slide-shadow{
   background: transparent;
 }
 
@@ -863,4 +863,8 @@ footer {
 
 #sorting-container{
   padding: 5px;
+}
+
+#hero-info{
+  height: 95%;
 }
